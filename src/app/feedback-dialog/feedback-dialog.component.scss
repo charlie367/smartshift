@@ -1,0 +1,125 @@
+
+
+:root {
+    // 全域變數
+    --dark-bule: #182d3b;
+    --dark-purple: #29091e;
+    --font-size-main: 16px;
+  }
+  
+  .mainDiv {
+    width: 600px;
+    margin: 0 auto;              // 水平置中
+    display: flex;
+    flex-direction: column;
+    align-items: center;          // 水平置中裡面內容
+    justify-content: center;      // 垂直置中
+    padding: 50px;  
+    box-sizing: border-box; 
+  }
+  
+  // =========== 使用者資料 CSS =============
+  
+
+
+.fillinRow {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+    width: 400px;
+    margin-left: auto;
+    margin-right: 75px;
+    margin-bottom: 10px;
+  }
+  
+  .fillinRow label {
+    width: 100px;   
+    text-align: right; 
+    color: black;
+  }
+  
+  .inputCss {
+    flex: 1;           
+    max-width: 250px;  
+    padding: 5px 5px;
+    background: #ccc;
+    border: 2px black solid;
+  
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  .fillinRow1 {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 12px;
+  
+    width: 400px;
+    margin-left: auto;
+    margin-right: 12%;
+    margin-bottom: 10px;
+  }
+  
+  .fillinRow label {
+    width: 100px;   
+    text-align: right; 
+    color: black;
+  }
+  
+  .inputCss {
+    flex: 1;           
+    max-width: 250px;  
+    padding: 5px 5px;
+    background: #ccc;
+    border: 2px black solid;
+  
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  // =========== 底下意見回饋 CSS =============
+  
+  .title {
+    text-align:left;
+    font-size: 20px;
+    color: block;
+   
+  }
+  
+  .areaCss { // 意見輸入框
+    padding: 5px 10px; // 填寫文字位置
+    background: #ccc;
+    border: 2px black solid;
+  
+    cursor: pointer; // 改變滑鼠游標 - 手指
+    border-radius: 5px;
+    margin-bottom: 20px;
+  
+    width: 400px;
+    height: 300px;
+    font-size: 16px;
+    line-height: 1.5; // 文字段落行高
+  }
+  
+  .btnCss {
+    padding: 5px 15px;
+    background: #626262;
+    border: 2px black solid;
+    color: #ffffff; // 字體顏色
+    cursor: pointer;  // 改變滑鼠游標 - 手指
+    border-radius: 5px;
+  }
+  
+  .btnCss:active {
+    background: #434343;
+    transform: scale(0.95); // 微縮，模擬壓下去
+  }
+  .btnRow {
+    display: flex;
+    justify-content: flex-end;  
+    gap: 10px;                
+    width: 100%;             
+         
+  }
+  

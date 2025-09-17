@@ -1,0 +1,22 @@
+.dialog-container {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .dialog-video {
+    width: 150px;
+    height: auto;
+    margin-bottom: 20px;
+    border-radius: 10px;
+  }
+  
+  .dialog-actions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  
+    button {
+      min-width: 100px;
+    }
+  }
+  

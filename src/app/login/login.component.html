@@ -1,0 +1,59 @@
+
+
+<div id="vanta-bg"></div>
+<div class="page">
+  <div class="card" [class.show]="show">
+    <h1 class="title">{{ displayLabel }}</h1>
+    
+
+    <!-- 一般情況：有 key 的欄位 (name, age) -->
+    <ng-container *ngIf="step.key as key">
+      <input #autoFocusInput
+              class="field"
+             [type]="step.type || 'text'"
+             [placeholder]="step.placeholder || ''"
+             [(ngModel)]="form[key]"
+             (keyup.enter)="onEnter()"
+             [attr.inputmode]="step.type === 'number' ? 'numeric' : null" />
+    </ng-container>
+
+    <!-- 特殊情況：passwordSuccess 顯示等待動畫 -->
+    <ng-container *ngIf="step.id === 'passwordSuccess'">
+ 
+      <mat-progress-bar class="progress-bar" mode="indeterminate" color="accent"></mat-progress-bar>
+      <p style="margin-top:10px; font-weight: bold; color: white;"class="progress-text">
+        {{ statusMsg }}
+      </p>
+ 
+    </ng-container>
+
+    <!-- 特殊情況：credentials 同一頁兩個欄位 -->
+    <ng-container *ngIf="step.id === 'credentials'">
+             <input
+             #autoFocusInput 
+             class="field"
+             type="text"
+             placeholder="員工編號"
+             [(ngModel)]="form.employeeId"
+             (keyup.enter)="next()"  
+             autocomplete="off" />
+
+             <input 
+             #autoFocusInput
+             #passwordInput
+             class="field"
+             type="password"
+             placeholder="密碼"
+             [(ngModel)]="form.loginPassword" 
+             (keyup.enter)="onEnter()" />
+    </ng-container>
+
+
+    <!-- 進度點點 -->
+    <div class="dots" *ngIf="step.id !== 'done'">
+      <span *ngFor="let s of steps; let i = index" [class.active]="i === index"></span>
+    </div>
+  </div>
+</div>
+
+<!-- <router-outlet></router-outlet> -->

@@ -1,0 +1,15 @@
+<div class="dialog-container">
+    <!-- 動畫影片 -->
+    <video autoplay loop muted playsinline class="dialog-video">
+      <source src="true.mp4" type="video/mp4" />
+      您的瀏覽器不支援影片播放
+    </video>
+  
+    <!-- 按鈕區域 -->
+    <div class="dialog-actions">
+        <button mat-raised-button color="warn" (click)="onCancel()">我再想想</button>
+      <button mat-raised-button color="primary" (click)="onConfirm()">確認送出</button>
+
+    </div>
+  </div>
+  

@@ -1,0 +1,17 @@
+<div class="notice-board">
+
+    <div class="notice-header-bar">
+      <h2 class="notice-title">📢 通知布告欄</h2>
+    </div>
+    <div class="extra-line"></div>
+    <div *ngFor="let notify of notifyList; let i = index" 
+         class="notice-item"
+         (click)="showEditDialog(notify)">
+      <div class="notice-header">
+        <span class="notice-date">{{notify.notify_startTime}} - {{notify.notify_endTime}}</span>
+      </div>
+      <p class="notice-content">{{notify.notify_text}}</p>
+    </div>
+  
+  </div>
+  
