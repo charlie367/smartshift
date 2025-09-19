@@ -37,7 +37,15 @@ interface Message {
 })
 export class SchedulingComponent implements OnInit{
 
-  
+  viewMode: 'dashboard' | 'schedule' = 'dashboard';
+
+showSchedule() {
+  this.viewMode = 'schedule';
+}
+
+showDashboard() {
+  this.viewMode = 'dashboard';
+}
 
   ngOnInit(): void {
     

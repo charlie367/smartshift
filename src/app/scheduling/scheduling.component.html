@@ -17,7 +17,7 @@
     <label >問題意見</label>
   </div>
 
-  <div class="menu-item">
+  <div class="menu-item" (click)="showSchedule()">
     <mat-icon>next_week</mat-icon>
     <label>班表總覽
     </label>
@@ -31,7 +31,7 @@
     <label>請假狀況</label>
   </div>
 </div>
-
+<div *ngIf="viewMode === 'dashboard'">
 <div class="chat-box">
     <div *ngFor="let msg of messages" [ngClass]="msg.sender">
       <ng-container *ngIf="msg.sender === 'assistant'">
@@ -238,5 +238,7 @@
     </mat-tab>
 
   </mat-tab-group>
-      
-  <!-- <router-outlet></router-outlet> -->
+</div> 
+<div *ngIf="viewMode === 'schedule'" class="schedule-wrapper">
+  <daypilot-scheduler [config]="config" [events]="events"></daypilot-scheduler>
+</div>

@@ -7,6 +7,8 @@ import { CommonModule } from '@angular/common';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import * as THREE from 'three';
 import GLOBE from 'vanta/dist/vanta.globe.min';
+import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 
 
 type Label = string | ((v: Record<string, any>) => string);
@@ -30,7 +32,7 @@ interface Step {
 })
 export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
 
-  constructor(private http: HttpClient,private router:Router,private el: ElementRef) {}
+  constructor(private http: HttpClient,private router:Router,private el: ElementRef, private dialog: MatDialog   ) {}
 //動態背景
   private vantaEffect: any;
 //在檢視初始化之後，畫面渲染完成後的操作
@@ -130,9 +132,49 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
 
   get isLast() { return this.index >= this.steps.length - 1; }
   
-  get canPrev() { return this.index > 0; }
-
   statusMsg: string = '正在新增密碼...';
+
+  canGoNext(): boolean {
+    const s = this.step;
+    if (!s.key) {
+      if (s.id === 'credentials') {
+        const hasId  = this.idLocked || String(this.form.employeeId).trim().length > 0;
+        const hasPwd = String(this.form.loginPassword).trim().length > 0;
+        return hasId && hasPwd;
+      }
+      return s.id !== 'done';
+    }
+  
+    const val = this.form[s.key];
+    if (s.required) {
+      if (s.type === 'text' || s.type === 'password') {
+        return String(val ?? '').trim().length > 0;
+      }
+    }
+    return true;
+  }
+  
+
+  onEnter() {
+    //目前有沒有動畫在跑
+    if (!this.canGoNext() || this.isAnimating) return;
+  
+    // Step1：輸入員工編號後，先檢查是否需要改密碼
+    if (this.step.id === 'employeeId') {
+      this.checkAccountStatus();
+      return;
+    }
+  
+    // Step4：在輸入帳密頁，按 Enter 直接登入
+    if (this.step.id === 'credentials') {
+      this.onComplete();
+      return;
+    }
+  
+    if (this.isLast) this.onComplete();
+    else this.next();
+  }
+  
 
   next() {
     if (!this.canGoNext() || this.isAnimating) return;
@@ -173,11 +215,9 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
                 // 先把文字換成成功
                 this.statusMsg = '密碼新增成功！';
                 this.needsChangePassword = false;
-           
-      
-                this.idLocked = true;          // 👈 改這裡：顯示「員工編號 + 密碼」
-                this.form.loginPassword = '';   // 清空密碼，讓使用者重新輸入
-                // 成功字樣再停留一下，然後帶動畫切到輸入密碼
+                //鎖住「員工編號輸入框」
+                this.idLocked = true;          
+                this.form.loginPassword = '';  
                 setTimeout(() => {
                   this.jumpTo('credentials');
                 }, HOLD_SUCCESS_MS);
@@ -185,17 +225,10 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
             } else {
               setTimeout(() => {
                 this.statusMsg = res.message || '密碼新增失敗';
-                // 失敗就停在這頁讓使用者看到訊息，必要時自己再加返回邏輯
               }, wait);
             }
           },
-          error: (err) => {
-            const wait = Math.max(0, MIN_SPIN_MS - (Date.now() - startedAt));
-            setTimeout(() => {
-              console.error('設定密碼失敗', err);
-              this.statusMsg = '伺服器錯誤';
-            }, wait);
-          }
+        
         });
       
         return; // 這裡 return，避免往下跑其他轉場邏輯
@@ -208,7 +241,18 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
   }
   
 
-  
+  reset() {
+    this.form = {  employeeId: '', newPassword: '', loginPassword: '' };
+    this.needsChangePassword = false;
+    this.idLocked = false;   
+    this.index = 0;
+    this.completed = false;
+    this.show = true;
+    //「動畫已經跑完，現在可以允許使用者操作了。」
+    this.isAnimating = false;
+    this.focusInput();
+  }
+
   private jumpTo(toId: string) {
     this.isAnimating = true;
     this.show = false;
@@ -224,7 +268,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
     const raw = String(this.form.employeeId || '').trim();
     if (!raw) return;
   
-    // ⚠ 如果你的 DB 員編是全大寫才改成 raw.toUpperCase()
+    //  如果你的 DB 員編是全大寫才改成 raw.toUpperCase()
     const id = raw; // or: const id = raw.toUpperCase();
     this.isAnimating = true;
   
@@ -233,218 +277,122 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
   
     this.http.post('http://localhost:8080/head/login', payload).subscribe({
       next: (res: any) => {
-        const code = Number(res?.code ?? 0);
-        // 標準化訊息：底線/連字號 → 空白，小寫化
-        const msgNorm = String(res?.message ?? '')
-          .toLowerCase()
-          .replace(/[_-]+/g, ' ');
-  
+        const code = Number(res.code ?? 0);
+        const message = res.message || "";
+      
         // 狀態判斷
-        const isNotFound =
-          code === 404 || /not\s*found|查無|不存在/.test(msgNorm);
-  
-        // 後端若 DB=0000 會回 PIEASE_CHANGE_PASSWORD（含底線）
-        const mustChange =
-          code === 401 ||
-          /change\s*password|piease\s*change\s*password|請.*(更改|變更|重設).*密碼/.test(msgNorm);
-  
-        // 若已改過，探測時用 0000 多半會回密碼不符/unauthorized
-        const isPwdMismatch =
-          /password\s*mismatch|密碼.*(錯|不正確|不符)|unauthorized/.test(msgNorm);
-  
+        const isNotFound = code === 404 || message === "Not Found";
+        const mustChange = code === 400 && message === "Please Change Password";
+        const isPwdMismatch = code === 400 && message === "Password Mismatch!!";
+      
         if (isNotFound) {
-          alert('查無此職員');
+          this.dialog.open(ErrorDialogComponent, {
+            data: { message: "查無此職員" },
+          });
           this.reset();
           return;
         }
-  
+      
         if (mustChange) {
-          // → 還是 0000，先換新密碼
           this.needsChangePassword = true;
-          this.form.newPassword = '';
-          this.idLocked = false;     // 顯示員編 + 新密碼欄
-          this.jumpTo('newPassword');
+          this.form.newPassword = "";
+          this.idLocked = false;
+          this.jumpTo("newPassword");
           return;
         }
-  
         // 走到這裡代表「已不是 0000」
         // 直接鎖住員編，請使用者輸入既有密碼登入
         if (isPwdMismatch || code === 200) {
           this.needsChangePassword = false;
-          this.idLocked = true;       // ✅ 鎖住員編，只輸入密碼
+          this.idLocked = true;       //  鎖住員編，只輸入密碼
           this.jumpTo('credentials');
           return;
         }
-  
-        // 其他非預期：也當成已改過，去輸入密碼
-        this.needsChangePassword = false;
-        this.idLocked = true;
-        this.jumpTo('credentials');
       },
       error: (err) => {
         console.log('[login probe error]', err);
-        alert(err?.error?.message || '伺服器錯誤');
+
+        this.dialog.open(ErrorDialogComponent, {
+          data: { message: err?.error?.message || '伺服器錯誤' },
+          width: '280px'
+        });
         this.reset();
       }
     });
   }
   
-  
-  
-
-
-onEnter() {
-  if (!this.canGoNext() || this.isAnimating) return;
-
-  // Step1：輸入員工編號後，先檢查是否需要改密碼
-  if (this.step.id === 'employeeId') {
-    this.checkAccountStatus();
-    return;
-  }
-
-  // Step4：在輸入帳密頁，按 Enter 直接登入
-  if (this.step.id === 'credentials') {
-    this.onComplete();
-    return;
-  }
-
-  if (this.isLast) this.onComplete();
-  else this.next();
-}
-
 
 needsChangePassword: boolean = false;
-// 放在 class 裡（若已存在可略過）
-private blurActiveInput() {
-  const el = document.activeElement as HTMLInputElement | null;
-  el?.blur();
-}
 
 onComplete() {
   if (this.completed) return;
+  //所以程式在第一次送出請求時就「鎖」起來：
+  //代表「登入流程正在跑，不要再跑第二次」。
   this.completed = true;
 
   const payload = { id: this.form.employeeId, password: this.form.loginPassword };
 
   this.http.post('http://localhost:8080/head/login', payload).subscribe({
     next: (res: any) => {
-      // 兼容字串/數字 code，並把 message 標準化（底線/連字號→空白、小寫）
-      const code = typeof res?.code === 'string' ? parseInt(res.code, 10) : (Number(res?.code) || 0);
-      const msgNorm = String(res?.message ?? '').toLowerCase().replace(/[_-]+/g, ' ').trim();
-
+      const code = Number(res.code ?? 0);
+      const message = res.message || "";
+    
       // 1) 需要改密碼（DB 仍是 0000）
-      if (code === 401 || /change\s*password|piease\s*change\s*password|請.*(更改|變更|重設).*密碼/.test(msgNorm)) {
+      if (code === 400 && message === "Please Change Password") {
         this.needsChangePassword = true;
         this.completed = false;
-        this.form.newPassword = '';
-        this.idLocked = false; // 改密碼步驟不顯示密碼欄，這裡保持 false 即可
-        this.index = this.steps.findIndex(s => s.id === 'newPassword');
+        this.form.newPassword = "";
+        this.idLocked = false; 
+        this.index = this.steps.findIndex(s => s.id === "newPassword");
         this.show = true;
         this.focusInput();
         return;
       }
-
+    
       // 2) 登入成功
-      if (code === 200 || /success|ok/.test(msgNorm)) {
-        this.blurActiveInput();           // 先失焦，避免殘影
-        const HOLD_MS = 900;              // 停留時間可調整 600~1200ms
-        this.jumpTo('done');              // 進「登入成功」卡片
-
+      if (code === 200 && message === "Success") {
+        const HOLD_MS = 900;
+        this.jumpTo("done");
+    
         setTimeout(() => {
           setTimeout(() => {
-            this.show = false;            // 退場動畫
-            setTimeout(() => this.router.navigateByUrl('/scheduling'), this.TRANSITION_MS);
+            this.show = false;
+            setTimeout(() => this.router.navigateByUrl("/scheduling"), this.TRANSITION_MS);
           }, HOLD_MS);
         }, this.TRANSITION_MS);
         return;
       }
-
-      // 3) 查無此職員
-      if (code === 404 || /not\s*found|查無|不存在/.test(msgNorm)) {
+    
+    
+      // 4) 密碼不正確
+      if (code === 400 && message === "Password Mismatch!!") {
         this.completed = false;
-        alert('查無此職員');
-        this.reset();
-        return;
-      }
-
-      // 4) 密碼不正確（已改過密碼但輸錯）
-      if (code === 401 || /password\s*mismatch|密碼.*(錯|不正確|不符)|unauthorized/.test(msgNorm)) {
-        this.completed = false;
-        alert('密碼不正確');
-        this.form.loginPassword = '';
+        this.dialog.open(ErrorDialogComponent, {
+          data: { message: "密碼不正確" },
+          width: '280px' 
+        });
+        this.form.loginPassword = "";
         this.focusInput();
         return;
       }
-
+    
       // 5) 其他錯誤
       this.completed = false;
-      alert(res?.message || '登入失敗');
+      alert(message || "登入失敗");
       this.reset();
-    },
+    },    
     error: (err) => {
-      console.error('登入失敗', err);
-      this.completed = false;
-      alert(err?.error?.message || '伺服器錯誤');
+      console.log('[login probe error]', err);
+  
+      this.dialog.open(ErrorDialogComponent, {
+        data: { message: err?.error?.message || '伺服器錯誤' },
+        width: '280px'
+      });
       this.reset();
     }
   });
 }
 
-
-
-
-
-  prev() {
-    if (!this.canPrev || this.isAnimating) return;
-    this.isAnimating = true;
-
-    if (this.doneTimer) { clearTimeout(this.doneTimer); this.doneTimer = undefined; this.completed = false; }
-
-    this.show = false;
-    setTimeout(() => {
-      this.index = Math.max(this.index - 1, 0);
-      this.show = true;
-      this.focusInput();
-      setTimeout(() => { this.isAnimating = false; }, this.TRANSITION_MS);
-    }, this.TRANSITION_MS);
-  }
-
-
-
-  canGoNext(): boolean {
-    const s = this.step;
-    if (!s.key) {
-      if (s.id === 'credentials') {
-        const hasId  = this.idLocked || String(this.form.employeeId).trim().length > 0;
-        const hasPwd = String(this.form.loginPassword).trim().length > 0;
-        return hasId && hasPwd;
-      }
-      return s.id !== 'done';
-    }
-  
-    const val = this.form[s.key];
-    if (s.required) {
-      if (s.type === 'text' || s.type === 'password') {
-        return String(val ?? '').trim().length > 0;
-      }
-    }
-    return true;
-  }
-  
-  
-
-  reset() {
-    this.form = { name: '', age: null, employeeId: '', newPassword: '', loginPassword: '' };
-    this.needsChangePassword = false;
-    this.idLocked = false;     // ← 加這行
-    this.index = 0;
-    this.completed = false;
-    if (this.doneTimer) { clearTimeout(this.doneTimer); this.doneTimer = undefined; }
-    this.show = true;
-    this.isAnimating = false;
-    this.focusInput();
-  }
   
 }
   
-
