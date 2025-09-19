@@ -1,0 +1,77 @@
+
+.notice-board {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 24px;
+    background-color: transparent; 
+    border-radius: 12px;         
+    box-shadow: none;            
+    font-family: 'Segoe UI', sans-serif;
+
+  }
+  /* 標題與新增按鈕區域 */
+  .notice-header-bar {
+    display: flex;
+    flex-direction: column;  // 垂直排列
+    align-items: center; 
+    margin-bottom: 12px;
+
+    padding-bottom: 12px;
+  // 佔滿父容器寬度
+ 
+  }
+
+  .extra-line {
+    border: none;
+    height: 2px;
+    background-color: #999;
+    width: 470px;  
+  }
+  
+  /* 標題樣式 */
+  .notice-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #3f51b5;
+    margin: 0;
+  }
+  
+
+  /* 單筆通知區塊 */
+  .notice-item {
+    border-left: 5px solid #3f51b5;
+    background-color: #f5f7ff;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    transition: background-color 0.3s;
+    cursor: pointer;
+  }
+  
+  .notice-item:hover {
+    background-color: #e8edff;
+  }
+  
+  /* 通知標題與日期列 */
+  .notice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+ 
+  }
+  
+  /* 日期文字 */
+  .notice-date {
+    font-size: 14px;
+    color: #666;
+  }
+  
+  /* 通知內容段落 */
+  .notice-content {
+    font-size: 16px;
+    color: #333;
+    line-height: 1.6;
+    margin: 0;
+  }
+  
