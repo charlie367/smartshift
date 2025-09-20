@@ -16,6 +16,8 @@ import { FeedbackDialogComponent } from '../feedback-dialog/feedback-dialog.comp
 import { AnnouncementDialogComponent } from '../announcement-dialog/announcement-dialog.component';
 import { ClockComponent } from '../clock/clock.component';
 import { WaterdropComponent } from '../waterdrop/waterdrop.component';
+import { DayPilot, DayPilotModule } from '@daypilot/daypilot-lite-angular';
+import { ReclockinComponent } from '../reclockin/reclockin.component';
 
 interface Message {
   sender: 'user' | 'assistant';
@@ -28,7 +30,7 @@ interface Message {
   imports: [RouterOutlet, RouterLink, RouterLinkActive, FormsModule, RouterOutlet, CommonModule, FormsModule, MatDatepickerModule, MatFormFieldModule,
     MatInputModule,
     MatNativeDateModule,
-    MatButtonModule, MatCalendar, CalendarModule, HttpClientModule, MatTabsModule, MatIconModule,ClockComponent,WaterdropComponent,],
+    MatButtonModule, MatCalendar, CalendarModule, HttpClientModule, MatTabsModule, MatIconModule,ClockComponent,WaterdropComponent,DayPilotModule],
   providers: [
     { provide: MAT_DATE_LOCALE, useValue: 'zh-TW' }
   ],
@@ -37,15 +39,94 @@ interface Message {
 })
 export class SchedulingComponent implements OnInit{
 
-  viewMode: 'dashboard' | 'schedule' = 'dashboard';
+  shifts = [
+    { name: "Amir Al Azimi", date: "2025/03/04", time: "15:00 - 20:00", role: "外送員", type: "晚班" },
+    { name: "Moira Andrews", date: "2025/03/06", time: "13:00 - 20:00", role: "外送員", type: "早班" },
+    { name: "Emily Simchenko", date: "2025/03/07", time: "10:00 - 18:00", role: "內場", type: "日班" },
+    { name: "Amir Al Azimi", date: "2025/03/04", time: "15:00 - 20:00", role: "外送員", type: "晚班" },
+    { name: "Moira Andrews", date: "2025/03/06", time: "13:00 - 20:00", role: "外送員", type: "早班" },
+    { name: "Emily Simchenko", date: "2025/03/07", time: "10:00 - 18:00", role: "內場", type: "日班" },
+  ];
+  
 
-showSchedule() {
-  this.viewMode = 'schedule';
-}
 
-showDashboard() {
-  this.viewMode = 'dashboard';
-}
+  currentMonthIndex = 0;
+  months = ["January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"];
+  
+  get currentMonthName() {
+    return this.months[this.currentMonthIndex];
+  }
+  
+  avgCheckIn = "9:16";
+  avgCheckOut = "5:10";
+  avgWorkHr = "8:10";
+  
+  workLogs = [
+    { date: 'Wed, 01 Jan, 2025', checkIn: '9:11', checkOut: '5:01', hours: '8:10 hr' },
+    { date: 'Thu, 02 Jan, 2025', checkIn: '9:12', checkOut: '5:00', hours: '8:08 hr' },
+    { date: 'Fri, 03 Jan, 2025', checkIn: '9:10', checkOut: '5:02', hours: '8:12 hr' },
+    { date: 'Sat, 04 Jan, 2025', checkIn: '9:13', checkOut: '5:01', hours: '8:09 hr' },
+    { date: 'Wed, 01 Jan, 2025', checkIn: '9:11', checkOut: '5:01', hours: '8:10 hr' },
+    { date: 'Thu, 02 Jan, 2025', checkIn: '9:12', checkOut: '5:00', hours: '8:08 hr' },
+    { date: 'Fri, 03 Jan, 2025', checkIn: '9:10', checkOut: '5:02', hours: '8:12 hr' },
+    { date: 'Sat, 04 Jan, 2025', checkIn: '9:13', checkOut: '5:01', hours: '8:09 hr' },
+  ];
+  
+  prevMonth() {
+    if (this.currentMonthIndex > 0) {
+      this.currentMonthIndex--;
+    }
+  }
+  
+  nextMonth() {
+    if (this.currentMonthIndex < this.months.length - 1) {
+      this.currentMonthIndex++;
+    }
+  }
+  
+  
+
+  events: DayPilot.EventData[] = [
+    { id: '1', start: '2025-09-19T09:00:00', end: '2025-09-19T11:00:00', text: '早班' },
+    { id: '2', start: '2025-09-19T13:00:00', end: '2025-09-19T17:00:00', text: '午班' }
+  ];
+
+  config: DayPilot.SchedulerConfig = {
+    startDate: '2025-09-19',
+    days: 1,
+    scale: 'Hour',
+    cellWidth: 70,
+    resources: [
+      { name: '員工A', id: 'A' },
+      { name: '員工B', id: 'B' }
+    ]
+  };
+
+  viewMode: 'dashboard' | 'schedule'| 'leave' = 'dashboard'; 
+
+  showSchedule() {
+    this.viewMode = 'schedule';   // 進入班表
+  }
+  
+  goHome() {
+    this.viewMode = 'dashboard';  // 回首頁
+  }
+
+  showLeave() {
+    this.viewMode = 'leave';
+  }
+
+  punchIn(): void {
+    this.dialog.open(ReclockinComponent, {
+      panelClass: 'punch-dialog-panel', // 讓 600×600/無滾動 生效
+  width: '600px',
+  height: '650px',
+  maxWidth: 'none',
+  autoFocus: false,
+  restoreFocus: false,
+    });
+  }
 
   ngOnInit(): void {
     
@@ -126,10 +207,14 @@ showDashboard() {
 
   openFeedbackDialog() {
     const dialogRef = this.dialog.open(FeedbackDialogComponent, {
-      width: '650px',
-      height: '610px',
-      maxHeight: '100vh',
-      maxWidth: '100vw'
+      autoFocus: false,
+      restoreFocus: false,
+      // 讓寬高完全由內容決定（移除預設 80vw 與 maxHeight 限制）
+      width: undefined,
+      height: undefined,
+      maxWidth: 'none',
+      maxHeight: 'none',
+      panelClass: 'punch-dialog-panel' // 自訂外殼樣式（下面 SCSS 有）
     });
 
     dialogRef.afterClosed().subscribe(result => {
