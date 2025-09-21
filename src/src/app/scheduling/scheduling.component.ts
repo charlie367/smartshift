@@ -108,7 +108,7 @@ export class SchedulingComponent implements OnInit {
     ],
   };
 
-  // 原本有 'leave' 但未用到（改成僅兩種）
+
   viewMode: 'dashboard' | 'schedule' = 'dashboard';
 
   selectedDate: Date | null = null;
