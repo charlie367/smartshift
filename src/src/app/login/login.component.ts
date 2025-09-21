@@ -7,6 +7,8 @@ import { CommonModule } from '@angular/common';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import * as THREE from 'three';
 import GLOBE from 'vanta/dist/vanta.globe.min';
+import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 
 
 type Label = string | ((v: Record<string, any>) => string);
@@ -30,7 +32,7 @@ interface Step {
 })
 export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
 
-  constructor(private http: HttpClient,private router:Router,private el: ElementRef) {}
+  constructor(private http: HttpClient,private router:Router,private el: ElementRef, private dialog: MatDialog   ) {}
 //動態背景
   private vantaEffect: any;
 //在檢視初始化之後，畫面渲染完成後的操作
@@ -242,7 +244,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
   reset() {
     this.form = {  employeeId: '', newPassword: '', loginPassword: '' };
     this.needsChangePassword = false;
-    this.idLocked = false;     // ← 加這行
+    this.idLocked = false;   
     this.index = 0;
     this.completed = false;
     this.show = true;
@@ -284,7 +286,9 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
         const isPwdMismatch = code === 400 && message === "Password Mismatch!!";
       
         if (isNotFound) {
-          alert("查無此職員");
+          this.dialog.open(ErrorDialogComponent, {
+            data: { message: "查無此職員" },
+          });
           this.reset();
           return;
         }
@@ -307,7 +311,11 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
       },
       error: (err) => {
         console.log('[login probe error]', err);
-        alert(err?.error?.message || '伺服器錯誤');
+
+        this.dialog.open(ErrorDialogComponent, {
+          data: { message: err?.error?.message || '伺服器錯誤' },
+          width: '280px'
+        });
         this.reset();
       }
     });
@@ -355,18 +363,14 @@ onComplete() {
         return;
       }
     
-      // 3) 查無此職員
-      if (code === 404 && message === "Not Found") {
-        this.completed = false;
-        alert("查無此職員");
-        this.reset();
-        return;
-      }
     
       // 4) 密碼不正確
       if (code === 400 && message === "Password Mismatch!!") {
         this.completed = false;
-        alert("密碼不正確");
+        this.dialog.open(ErrorDialogComponent, {
+          data: { message: "密碼不正確" },
+          width: '280px' 
+        });
         this.form.loginPassword = "";
         this.focusInput();
         return;
@@ -378,9 +382,12 @@ onComplete() {
       this.reset();
     },    
     error: (err) => {
-      console.error('登入失敗', err);
-      this.completed = false;
-      alert(err?.error?.message || '伺服器錯誤');
+      console.log('[login probe error]', err);
+  
+      this.dialog.open(ErrorDialogComponent, {
+        data: { message: err?.error?.message || '伺服器錯誤' },
+        width: '280px'
+      });
       this.reset();
     }
   });

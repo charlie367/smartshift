@@ -1,7 +1,14 @@
 :root {
     --level: 60; /* 預設水位百分比 */
   }
+
+
   
+  #logo {
+
+    width: 250px;   /* ← 水滴寬度 */
+    height: 150px;  /* ← 水滴高度 */
+  }
   .st0 {
     fill: none;
     stroke: #000000;

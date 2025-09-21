@@ -1,242 +1,233 @@
-
-
-<div class="top-tag">
-  <img src="shift.png" class="tag-icon" alt="logo" />
-  <div class="logo-text">SmartSHIFT</div>
+<div class="top-tag">   
+  
+   <div class="menu-item1" (click)="openAnnouncementDialog()">
+  <mat-icon>notifications</mat-icon>
+  <label ></label>
+</div>
 </div>
 
 <div class="sidebar">
 
-  <div class="menu-item" (click)="logout()">
-    <mat-icon>logout</mat-icon>
-    <label >登出</label>
+    <div class="logo-text"> <img src="shift.png" class="tag-icon" alt="logo" />SmartSHIFT</div>
+
+  <div class="menu-item" *ngIf="viewMode === 'schedule'" (click)="goHome()">
+    <mat-icon>home</mat-icon>
+    <label>回首頁</label>
   </div>
-  
+
+  <div class="menu-item"  (click)="punchIn()">
+    <mat-icon>schedule</mat-icon>
+    <label>打卡</label>
+  </div>
+
   <div class="menu-item" (click)="openFeedbackDialog()">
     <mat-icon>speaker_notes</mat-icon>
     <label >問題意見</label>
   </div>
 
-  <div class="menu-item">
+  <div class="menu-item" (click)="showSchedule()">
     <mat-icon>next_week</mat-icon>
     <label>班表總覽
     </label>
   </div>
- <div class="menu-item" (click)="openAnnouncementDialog()">
-  <mat-icon>notifications</mat-icon>
-  <label >公告管理</label>
-</div>
+
   <div class="menu-item" routerLink="/leave" style="cursor: pointer;">
     <mat-icon>text_snippet</mat-icon>
     <label>請假狀況</label>
   </div>
-</div>
-
-<div class="chat-box">
-    <div *ngFor="let msg of messages" [ngClass]="msg.sender">
-      <ng-container *ngIf="msg.sender === 'assistant'">
-        <img src="customer.png" alt="助理" class="assistant-avatar">
-      </ng-container>
-      {{ msg.text }}
+  <div class="logout-section">
+    <hr class="divider" />
+    <div class="menu-item logout" *ngIf="viewMode === 'dashboard'" (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      <label>登出</label>
+    </div>
+    <div class="menu-item" *ngIf="viewMode === 'schedule'" (click)="goHome()">
+      <mat-icon>home</mat-icon>
+      <label>回首頁</label>
     </div>
   </div>
-  <main class="calendar-container">
-    <p class="title">選取預約時段</p>
-    <!-- 左邊日曆 -->
-    <div class="left-calendar">
-      <mat-calendar
-        [selected]="selectedDate"
-        (selectedChange)="onDateSelected($event)">
-      </mat-calendar>
+  
+  
+</div>
+<div *ngIf="viewMode === 'dashboard'">
+
+  <div class="dashboard-row">
+    <!-- 左欄：chat + calendar 疊放 -->
+    <div class="left-col">
+
+      <div class="chat-box">
+        <div *ngFor="let msg of messages" [ngClass]="msg.sender">
+          <ng-container *ngIf="msg.sender === 'assistant'">
+            <img src="customer.png" alt="助理" class="assistant-avatar">
+          </ng-container>
+          {{ msg.text }}
+        </div>
+      </div>
+
+      <main class="calendar-container">
+        <p class="title">選取預約時段</p>
+
+        <div class="left-calendar">
+          <mat-calendar
+            [selected]="selectedDate"
+            (selectedChange)="onDateSelected($event)">
+          </mat-calendar>
+        </div>
+
+        <br>
+
+        <div class="right-week">
+          <div class="week-header">
+            <button mat-icon-button (click)="prevWeek()">&#8592;</button>
+            <div class="week-label">
+              {{ weekDays[0] | date:'MM/dd' }} - {{ weekDays[6] | date:'MM/dd' }}
+            </div>
+            <button mat-icon-button (click)="nextWeek()">&#8594;</button>
+          </div>
+
+          <div class="week-grid">
+            <div class="week-day" *ngFor="let d of weekDays">
+              <div class="day-title">
+                週{{ d | date:'E' }} <br>
+                {{ d | date:'MM/dd' }}
+              </div>
+              <div class="day-slots">
+                <ng-container *ngIf="d.getDay() === 3; else noSlots">
+                  <button *ngFor="let t of timeSlots" mat-stroked-button class="buttontime">{{ t }}</button>
+                </ng-container>
+                <ng-template #noSlots>—</ng-template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
 
     </div>
-  
-  <br>
-    <!-- 右邊週時間表 -->
-    <div class="right-week">
-      <!-- 上方週切換 -->
-      <div class="week-header">
-        <button mat-icon-button (click)="prevWeek()">&#8592;</button>
-        <div class="week-label">
-          {{ weekDays[0] | date:'MM/dd' }} - {{ weekDays[6] | date:'MM/dd' }}
-        </div>
-        <button mat-icon-button (click)="nextWeek()">&#8594;</button>
-      </div>
-  
-      <!-- 時間表 -->
-      <div class="week-grid">
-        <div class="week-day" *ngFor="let d of weekDays">
-          <div class="day-title">
-            週{{ d | date:'E' }} <br>
-            {{ d | date:'MM/dd' }}
-          </div>
-          <div class="day-slots">
-            <ng-container *ngIf="d.getDay() === 3; else noSlots">
-              <button *ngFor="let t of timeSlots" mat-stroked-button class="buttontime">{{ t }}</button>
-            </ng-container>
-            <ng-template #noSlots>—</ng-template>
-          </div>
-        </div>
-      </div>
-    </div>
-   
-  </main>
-  <app-clock class="side-clock"></app-clock>
-  <app-water-drop [level]="80"class="drop"></app-water-drop>
-  <div class="salary-text">薪水: 30000</div>
 
-
-  <br>
-  <mat-tab-group class="custom-tab-group" [preserveContent]="true" animationDuration="0ms">
-    <mat-tab label="上班時間">
-       <div class="job-list">
-    
-      <!-- 第一個卡片 -->
-      <div class="job-wrapper">
-        <div class="job-card">
-          <div class="job-header">
-            
-            <span class="title">同步科技</span>
-            <span class="subtitle">中目黑店</span>
-          </div>
-          <div class="job-time">狗恆</div>
-          <div class="job-time">15:00 - 20:00</div>
-          <div class="job-info">
-            <div class="info-left">     
-            </div>
-            <div class="info-right">
-              <div class="info-text">
-                <span class="label">職種:</span>
-                <span class="value green">01.外送員</span>
-              </div>
-            </div>
-          </div>
+    <!-- 右欄：兩個空卡片（會貼齊最右邊） -->
+    <aside class="right-aside">
+      <div class="widget-card">
+        <div class="widget-header">時鐘</div>
+        <div class="widget-body clock-body" >
+          <app-clock class="clock-inline"></app-clock>
         </div>
       </div>
-  
-      <!-- 第二個卡片 -->
-      <div class="job-wrapper">
-        <div class="job-card">
-          <div class="job-header">
-            <span class="title">同步科技</span>
-            <span class="subtitle">中目黑店</span>
-          </div>
-          <div class="job-time">狗恆</div>
-          <div class="job-time">13:00 - 20:00</div>
-  
-          <div class="job-info">
-            <div class="info-left">    
-            </div>
-            <div class="info-right">
-              <div class="info-text">
-                <span class="label">職種:</span>
-                <span class="value green">01.外送員</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div> 
-  </mat-tab>
-  
-    <mat-tab label="缺工募集">
-      <div class="job-list">
-    
-        <!-- 第一個卡片 -->
-        <div class="job-wrapper">
-          <div class="job-card">
-            <div class="job-header">
-              <span class="badge">new</span>
-              <span class="title">同步科技</span>
-              <span class="subtitle">中目黑店</span>
-            </div>
-    
-            <div class="job-time">15:00 - 20:00</div>
-    
-            <div class="job-info">
-              <div class="info-left">
-                <div class="info-item">
-                  <!-- 人員 icon -->
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                    fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round"
-                    class="lucide lucide-users-round">
-                    <path d="M18 21a8 8 0 0 0-16 0"/>
-                    <circle cx="10" cy="8" r="5"/>
-                    <path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"/>
-                  </svg>
-                  <span>應徵狀況: 0/2</span>
-                </div>
-                <div class="info-item">
-                  <!-- 時間 icon -->
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                    fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round"
-                    class="lucide lucide-clock">
-                    <path d="M12 6v6l4 2"/>
-                    <circle cx="12" cy="12" r="10"/>
-                  </svg>
-                  <span>截止: 12/17 14:00</span>
-                </div>
-              </div>
-    
-              <div class="info-right">
-                <div class="info-text">
-                  <span class="label">職種:</span>
-                  <span class="value green">01.外送員</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-    
-        <!-- 第二個卡片 -->
-        <div class="job-wrapper">
-          <div class="job-card">
-            <div class="job-header">
-              <span class="title">同步科技</span>
-              <span class="subtitle">東京丸之內店</span>
-            </div>
-    
-            <div class="job-time">13:00 - 20:00</div>
-    
-            <div class="job-info">
-              <div class="info-left">
-                <div class="info-item">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                    fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round"
-                    class="lucide lucide-users-round">
-                    <path d="M18 21a8 8 0 0 0-16 0"/>
-                    <circle cx="10" cy="8" r="5"/>
-                    <path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"/>
-                  </svg>
-                  <span>應徵狀況: 0/1</span>
-                </div>
-                <div class="info-item">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                    fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round"
-                    class="lucide lucide-clock">
-                    <path d="M12 6v6l4 2"/>
-                    <circle cx="12" cy="12" r="10"/>
-                  </svg>
-                  <span>截止: 12/17 12:00</span>
-                </div>
-              </div>
-    
-              <div class="info-right">
-                <div class="info-text">
-                  <span class="label">職種:</span>
-                  <span class="value green">01.外送員</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div> 
-      </div>
-    </mat-tab>
-
-  </mat-tab-group>
       
-  <!-- <router-outlet></router-outlet> -->
+
+    
+      <!-- 卡片 2：薪水 -->
+      <div class="widget-card">
+        <div class="widget-header">
+          <span>本月薪水</span>
+          <span class="salary-value">薪水: 30000</span>
+        </div>
+        <div class="widget-body salary-body">
+          <app-water-drop [level]="80" class="drop"></app-water-drop>
+        </div>
+      </div>
+      
+    </aside>
+    
+  </div>
+
+
+
+
+
+
+<div class="dashboard-layout">
+  <!-- 左邊 出勤紀錄 (完全不改動你的程式碼) -->
+  <div class="month-container">
+    <!-- 月份切換 Header -->
+    <div class="month-header">
+      <button class="arrow" (click)="prevMonth()">&#8592;</button>
+      <div class="month-title">
+        <mat-icon>calendar_today</mat-icon>
+        {{ currentMonthName }}
+      </div>
+      <button class="arrow" (click)="nextMonth()">&#8594;</button>
+    </div>
+
+    <!-- 上方四個統計 -->
+    <div class="stats-row">
+      <div class="stat-card green">
+        <mat-icon>login</mat-icon>
+        <div>
+          <div class="value">{{ avgCheckIn }}</div>
+          <div class="label">AVG Clock In</div>
+        </div>
+      </div>
+
+      <div class="stat-card orange">
+        <mat-icon>logout</mat-icon>
+        <div>
+          <div class="value">{{ avgCheckOut }}</div>
+          <div class="label">AVG Clock Out</div>
+        </div>
+      </div>
+
+      <div class="stat-card purple">
+        <mat-icon>schedule</mat-icon>
+        <div>
+          <div class="value">{{ avgWorkHr }}</div>
+          <div class="label">AVG Working Hr</div>
+        </div>
+      </div>
+
+      <div class="stat-card red">
+        <mat-icon>block</mat-icon>
+        <div>
+          <div class="value">9:16</div>
+          <div class="label">Absent/Leaves</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 出勤紀錄表格 -->
+    <div class="work-log-table-wrapper">
+      <table class="work-log-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Clock In</th>
+            <th>Clock Out</th>
+            <th>Working Hr's</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let record of workLogs">
+            <td>{{ record.date }}</td>
+            <td class="checkin">{{ record.checkIn }}</td>
+            <td class="checkout">{{ record.checkOut }}</td>
+            <td>{{ record.hours }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 右邊 員工表 -->
+ <!-- 外層容器 -->
+<!-- 外層：超過高度就滾動 -->
+<!-- 改成和薪水卡片一樣 -->
+<div class="widget-card employee-card">
+  <div class="widget-header">People at our Company</div>
+  <div class="widget-body">
+    <div class="employee-list">
+      <div class="employee-item" *ngFor="let s of shifts">
+        <div class="info">
+          <div class="name">{{ s.name }}</div>
+          <div class="detail">{{ s.date }} - {{ s.time }}</div>
+          <div class="extra">班別：{{ s.type }}</div>
+        </div>
+        <div class="role">職種：{{ s.role }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+</div> 
+<div *ngIf="viewMode === 'schedule'" class="schedule-wrapper">
+  <daypilot-scheduler [config]="config" [events]="events"></daypilot-scheduler>
+</div>

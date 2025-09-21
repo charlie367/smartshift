@@ -1,21 +1,17 @@
-::ng-deep .mat-calendar-table {
-    width: 138% !important; /* 強制放大整個日曆表 */
-  }
-  
-  ::ng-deep .mat-calendar-controls {
-    width: 145% !important;
-  }
-  ::ng-deep .mat-calendar-body-cell-content {
-    font-size: 13px !important;
-  }
+  /* ===== SmartSHIFT merged SCSS (last-declaration-wins) =====
+    Generated: 2025-09-20
+    Note: 保留你的樣式與行為，僅合併重複 selector，維持「最後出現者優先」。
+  ============================================================= */
 
-  ::ng-deep .mat-calendar-body-today {
-    border: none !important;    /* 移除邊框 */
-    background: transparent !important; /* 移除背景 */
-  }
-  .left-calendar {
-    flex: 0 0 auto;
-  }
+  /* Angular Material calendar overrides */
+  ::ng-deep .mat-calendar-table { width: 138% !important; }
+  ::ng-deep .mat-calendar-controls { width: 145% !important; }
+  ::ng-deep .mat-calendar-body-cell-content { font-size: 13px !important; }
+  ::ng-deep .mat-calendar-body-today { border: none !important; background: transparent !important; }
+
+  /* Calendar + Chat layout */
+  .left-calendar { flex: 0 0 auto; }
+
   .calendar-container {
     display: flex;
     justify-content: center;
@@ -24,32 +20,23 @@
     margin: 0px auto;
     padding: 20px;
     max-width: 900px;
-    margin-left: 355px;
-    background: #fff;        /* 白色底 */
-    border-radius: 8px;      /* 圓角 */
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* 陰影 */
-    flex-wrap: wrap; 
-    border: 1px solid black;        /* 手機排版時可以換行 */
+    margin-left: 240px;
+    margin-top: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    flex-wrap: wrap;
+    border: 1px solid black;
   }
-  
-  .title {
-    width: 100%;             /* 標題佔滿一整行 */
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 20px;     /* 與日曆區隔 */
-    text-align: left;        /* 靠左 */
-  }
-  
-  
-  
-  
+
+  .title { width: 100%; margin: 0; text-align: left; font-size: 14px; font-weight: 600; }
+
   .right-week {
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    
-  
+
     .week-header {
       display: flex;
       justify-content: center;
@@ -58,296 +45,296 @@
       gap: 20px;
       font-weight: bold;
     }
-  
-    .week-grid {
-      display: flex;
-      justify-content: space-around;
-      width: 80%;
-      text-align: center;
-    }
-  
-    .week-day {
-      min-width: 80px;
-  
-      .day-title {
-        font-weight: bold;
-        margin-bottom: 10px;
-      }
-  
-      .day-slots {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin-left: 6px;
-      }
-    }
+    .week-grid { display: flex; justify-content: space-around; width: 80%; text-align: center; }
+    .week-day { min-width: 80px; }
+    .week-day .day-title { font-weight: bold; margin-bottom: 10px; }
+    .week-day .day-slots { display: flex; flex-direction: column; gap: 10px; margin-left: 6px; }
   }
-  .buttontime{
-    height: 20%;
-    width: 20%;
-  }
-  .header-row {
-    display: flex;
-    justify-content: space-between; /* 左邊標題，右邊時區 */
-    align-items: center;
-    padding: 10px 20px;  /* 上下10px，左右20px */
-    background: #f5f5f5;
-    border-radius: 8px 8px 0 0;
-  }
-  
-  .title {
-    font-size: 20px;
-    font-weight: bold;
-    margin: 0; /* 移除原本的 margin */
-  }
-  
+
+  .buttontime { height: 20%; width: 20%; }
+
+  .header-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: #f5f5f5; border-radius: 8px 8px 0 0; }
+
   .chat-box {
-    margin-top: 100px;
+    margin-top: 120px;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 8px;
     max-height: 200px;
     max-width: 920px;
-    margin-left: 355px;
+    margin-left: 240px;
     overflow-y: auto;
     background: #f9f9f9;
     gap: 10px;
   }
-  
-  .user {
-    text-align: right;
-    color: blue;
-    margin: 5px 0;
-  }
-  
-  .assistant {
-    text-align: left;
-    color: green;
-    margin: 5px 0;
-  }
-  
-  .custom-tab-group {
-    width: 940px;  
-    height: auto; 
-    margin-left: 355px;
-    border: 1px solid black;
-    border-radius: 12px;
 
-  }
-  
-  
-  .job-card {
-    width: 100%;
-    background: #f0f1f6;
-    border-radius: 16px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
-    margin-top: 20px;
-  }
-  .job-header {
-    padding: 8px;
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-    gap: 8px;
-    background: #E9ECF4 ;
-  
-  }
-  
-  .job-list{
-    width: 750px;     /* 你要的內容寬 */
-    margin: 0 auto;   /* 置中 */
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  
-  .badge {
-    background: #ff4d4f;
-    color: #fff;
-    font-size: 12px;
-    font-weight: bold;
-    padding: 2px 8px;
-    border-radius: 4px;
-  }
-  
-  .title {
-    font-weight: 600;
-    font-size: 14px;
-  }
-  
-  .subtitle {
-    font-size: 14px;
-    color: #666;
-    width: 100px;
-  }
-  
-  .job-time {
-    font-size: 20px;
-    font-weight: bold;
-    padding: 8px;
-  }
-  
-  
-  .job-info {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px;
-  }
-  
-  .info-left .info-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 6px;
-    font-size: 14px;
-    color: #444;
-  }
-  
-  .info-right {
-    text-align: right;
-    font-size: 14px;
-    margin-bottom: 4px;
-  }
-  
-  .info-text {
-    margin-bottom: 4px;
-  }
-  
-  .label {
-    color: #888;
-  }
-  
-  .value.green {
-    color: #38a169; /* 綠色字 */
-  }
-  /////
+  .user { text-align: right; color: blue; margin: 5px 0; }
+  .assistant { text-align: left; color: green; margin: 5px 0; display: flex; align-items: flex-start; gap: 10px; border-radius: 50%; vertical-align: middle; margin-right: 5px; }
+  .assistant-avatar { width: 75px; height: 75px; flex-shrink: 0; }
+  .assistant-text { background: #f9f9f9; padding: 10px; border-radius: 8px; color: green; line-height: 1.5; max-width: 600px; word-wrap: break-word; }
+
+  .custom-tab-group { width: 940px; height: auto; margin-left: 240px; border: 1px solid black; border-radius: 12px; }
+
+  /* Job card */
+  .job-card { width: 100%; background: #f0f1f6; border-radius: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif; margin-top: 20px; }
+  .job-header { padding: 8px; display: flex; align-items: center; margin-bottom: 8px; gap: 8px; background: #E9ECF4; }
+  .job-list { width: 750px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+  .badge { background: #ff4d4f; color: #fff; font-size: 12px; font-weight: bold; padding: 2px 8px; border-radius: 4px; }
+  .subtitle { font-size: 14px; color: #666; width: 100px; }
+  .job-time { font-size: 20px; font-weight: bold; padding: 8px; }
+  .job-info { display: flex; justify-content: space-between; padding: 8px; }
+  .info-left .info-item { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; font-size: 14px; color: #444; }
+  .info-right { text-align: right; font-size: 14px; margin-bottom: 4px; }
+  .info-text { margin-bottom: 4px; }
+  .label { color: #888; }
+  .value.green { color: #38a169; }
+
+  /* Sidebar & Top bar */
   .sidebar {
-    position: fixed;       /* 固定在螢幕 */
-    top: 0;
-    left: 0;
-    width: 120px;           /* 你可以依需求調整 */
-    height: 100%;          /* 佔滿整個畫面高度 */
-    background-color: #222; /* 背景色可依需求換 */
-    color: white;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-top: 20px;
-    margin-top: 100px;
+    position: fixed;
+    left: 0; top: 0px; bottom: 0;
+    width: 220px; height: auto;
+    background: #fff; color: #444;
+    display: flex; flex-direction: column; align-items: stretch;
+    border-right: 1px solid #e5e7eb;
+    margin-top: 0 !important;
   }
-  
+
   .menu-item {
-    margin: 20px 0;
-    cursor: pointer;
+    width: 140px; margin: 0 20px; padding: 12px 20px;
+    display: flex; align-items: center; justify-content: flex-start; gap: 8px;
+    cursor: pointer; font-size: 15px; color: #444; border-radius: 8px; transition: all 0.2s;
   }
-  
-  .menu-item mat-icon {
-    margin: 0 auto 6px;
-    display: block;
-    font-size: 26px;
-    margin-bottom: 5px;
-    align-items: center;
-  }
-  
-  .menu-item label {
-    font-size: 12px;
-  }
-  ////////////////
+  .menu-item mat-icon { font-size: 20px; color: #666; min-width: 20px; text-align: center; display: inline-flex; align-items: center; line-height: 1; width: auto !important; height: auto !important; margin: 0 !important; }
+  .menu-item:hover { background: #e8f0fe; color: #1976d2; }
+  .menu-item:hover mat-icon { color: #1976d2; }
+  .menu-item.active { background: #e8f0fe; color: #1976d2; font-weight: 600; }
+  .menu-item.active mat-icon { color: #1976d2; }
+  .menu-item label { font-size: 16px; font-weight: 600; }
+
+  .menu-item1 { margin: 20px 0; cursor: pointer; margin-left: auto; }
+  .menu-item1 mat-icon { display: block; font-size: 26px; align-items: center; }
+  .menu-item1 label { font-size: 16px; font-weight: 600; }
+
   .top-tag {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;   /* 讓他橫跨整個畫面 */
-  
-    display: flex;
-    align-items: center;
-
-  
-    padding: 12px 24px;
-    background: rgba(255, 255, 255, 0.6); /* 半透明 */
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  
-    z-index: 1000;
-  
-    /* 加上區隔線 */
-    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
-  }
-  
-  .tag-icon {
-    width: 75px;
-    height: 75px;
+    position: fixed; top: 0; left: 221px;
+    width: calc(100% - 221px);
+    display: flex; align-items: center; justify-content: flex-end;
+    padding: 12px 24px; background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    z-index: 950; border-bottom: 1px solid rgba(0,0,0,0.15);
+    box-sizing: border-box;
   }
 
-  .tag-text {
-    font-size: 18px;
-    font-weight: bold;
-    color: #222;
+  .tag-icon { width: 60px; height: 60px; align-self: center; }
+  .tag-text { font-size: 18px; font-weight: bold; color: #222; text-align: center; }
+
+  .content { margin-top: 80px; }
+
+  .logo-text { font-family: 'Montserrat', sans-serif; font-size: 19px; font-weight: 700; color: black; display: flex; align-items: center; justify-content: center; height: 75px; margin-top: 10px; margin-bottom: 20px; }
+
+  /* Floating clock & salary (global floating versions) */
+  .side-clock { position: fixed; top: -100px; right: -160px; z-index: 100; pointer-events: none; }
+  .drop { position: fixed; top: 350px; right: -115px; z-index: 100; pointer-events: none; }
+  .salary-text { position: fixed; top: 320px; right: 70px; font-weight: bold; color: black; z-index: 100; pointer-events: none; }
+
+  .schedule-wrapper { margin-left: 140px; margin-top: 120px; padding: 20px; }
+
+  .divider { display: block; width: 100%; border: 0; border-top: 1px solid #e5e7eb; margin: 0 0 12px; }
+
+  .logout-section { margin-top: auto; width: 100%; padding: 0; }
+  .sidebar .logout-section { padding-bottom: 0 !important; }
+  .sidebar .logout-section .menu-item.logout { padding: 12px 20px !important; margin: 0 20px 25px !important; border-radius: 8px; color: #e53935; }
+  .sidebar .logout-section .menu-item.logout:hover { background: #fdecea; color: #b71c1c; }
+  .sidebar .logout-section .menu-item.logout:hover mat-icon { color: #b71c1c; }
+  .sidebar .logout-section .menu-item:not(.logout) { padding: 12px 20px !important; margin: 0 20px !important; border-radius: 8px; }
+  .menu-item.logout, .menu-item.logout mat-icon { color: #e53935; }
+  .menu-item.logout:hover { background: #fdecea; color: #b71c1c; }
+  .menu-item.logout:hover mat-icon { color: #b71c1c; }
+
+  /* Month (attendance) card */
+  .month-container {
+    background: #fff; border-radius: 12px; padding: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    max-width: 900px; margin-left: 240px; margin-top: 20px;
+    border: 1px solid black;
   }
+
+  .month-header {
+    display: flex; justify-content: center; align-items: center;
+    font-weight: bold; font-size: 18px; color: #3f51b5; margin-bottom: 16px;
+  }
+  .month-header .arrow { background: none; border: none; font-size: 20px; cursor: pointer; margin: 0 12px; }
+  .month-header .month-title { display: flex; align-items: center; gap: 6px; }
+
+  .stats-row { display: flex; justify-content: space-around; margin-bottom: 16px; }
+  .stats-row .stat-card {
+    display: flex; align-items: center; gap: 8px; padding: 12px; border-radius: 8px; color: #333; background: #f9f9f9; flex: 1; margin: 0 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
+  .stats-row .stat-card .value { font-weight: bold; font-size: 16px; }
+  .stats-row .stat-card .label { font-size: 12px; color: #777; }
+  .stats-row .green mat-icon { color: #4caf50; }
+  .stats-row .orange mat-icon { color: #ff9800; }
+  .stats-row .purple mat-icon { color: #673ab7; }
+  .stats-row .red mat-icon { color: #f44336; }
+
+  .work-log-table-wrapper { max-height: 250px; overflow-y: auto; }
+  .work-log-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .work-log-table th, .work-log-table td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+  .work-log-table th { font-weight: bold; background: #f5f5f5; }
+  .work-log-table .checkin { color: #2196f3; font-weight: bold; }
+  .work-log-table .checkout { color: #4caf50; font-weight: bold; }
+
+  /* Dashboard split (left main + right aside) */
+  .dashboard-layout { display: flex; gap: 20px; align-items: flex-start; margin-bottom: 20px; }
+  .dashboard-layout .month-container { flex: 2; }
+/* 外框交給 widget-card，這裡只保留內部樣式 */
+/* 讓外框和薪水卡片一樣 */
+/* 跟薪水卡片等寬，間距 20px */
+
+
+
+
+/* 清單本身滾動，高度你可調整 */
+.employee-list {
+  padding: 16px;
+  max-height: 400px;   /* 👉 改這裡，想多長就改多少 */
+  overflow-y: auto;    /* 出現垂直滑輪 */
+  box-sizing: border-box;
+  width: 100%;
+}
+.employee-card .widget-body {
+  flex: 1;                    /* 讓內容撐滿 */
+  min-height: 0;              /* 不要被預設高度卡住 */
+  padding: 0;                 /* 保持乾淨 */
+  display: flex;
+  flex-direction: column;
+}
+
+.employee-card {
+  margin-top: 20px;
+  height: 400px;      
+  display: flex;
+  flex-direction: column;
+}
+
+.employee-item{
+  display:flex; justify-content:space-between; align-items:flex-end;
+  gap:12px; padding:12px 0; border-bottom:1px solid #eee;
+}
+.employee-item:last-child{ border-bottom:none; }
+
+.employee-list .name{ font-weight:600; font-size:15px; margin-bottom:4px; }
+.employee-list .detail{ font-size:13px; color:#555; }
+.employee-list .extra{ font-size:12px; color:#888; margin-top:2px; }
+.role{ font-size:13px; color:#4caf50; font-weight:600; white-space:nowrap; margin-left:auto; }
+
+
+
+  .avatar { width: 40px; height: 40px; border-radius: 50%; margin-right: 12px; }
+
+  /* Unified dashboard row (two columns) */
+  .dashboard-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px; /* 左自適應、右固定 */
+    gap: 24px;
+    align-items: start;
+    margin-left: 240px; /* 避開 sidebar */
+    margin-right: 24px;
+    margin-top: 120px !important; /* 以最後出現為準 */
+  }
+
+  .left-col { display: flex; flex-direction: column; gap: 20px; }
+
+  .dashboard-row .chat-box { margin: 0 !important; max-width: none !important; }
+
+  /* 以最後出現為準：calendar 橫跨整列並移除原本外距限制 */
+  .dashboard-row .calendar-container {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin: 0 !important;
+    max-width: none !important;
+    box-sizing: border-box;
+  }
+
+  /* 右側卡片欄 */
+  .right-aside { display: flex; flex-direction: column; gap: 16px; position: relative; z-index: 2; }
+  .widget-card { background: #fff; border-radius: 16px; border: 1px solid #e7e7ee; box-shadow: 0 8px 24px rgba(0,0,0,.08); overflow: hidden; }
+  .widget-header { padding: 14px 16px; font-weight: 700; color: #2f5fd3; border-bottom: 1px solid #edf0f6;display: flex;                 /* ← 改成 flex 排版 */
+    justify-content: space-between;/* ← 左右兩邊 */
+    align-items: center; }
+    .salary-value {
+      color: black;                  /* 右邊數字黑色 */
+      font-weight: normal;           /* 可以比標題淡一點 */
+      font-size: 14px;
+    }
+  .widget-body { padding: 16px; min-height: 160px; }
+
+
+
+
+  @media (max-width: 1200px){ .dashboard-row{ grid-template-columns: 1fr; margin-right: 12px; } }
+
+  /* Employee list (right column card) */
+  .employee-list-wrapper { max-height: 397px; overflow-y: auto; overflow-x: hidden; border: 1px solid #e6e8ef; border-radius: 12px; background: #fff; margin-top:20px;}
+
+  .employee-list h3 { margin: 0 0 12px 0; font-size: 16px; border-bottom: 2px solid #3f51b5; padding-bottom: 6px; }
+  .employee-item { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; padding: 12px 0; border-bottom: 1px solid #eee; }
+  .employee-item:last-child { border-bottom: none; }
+  .info .name { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+  .info .detail { font-size: 13px; color: #555; }
+  .info .extra { font-size: 12px; color: #888; margin-top: 2px; }
+  .role { font-size: 13px; color: #4caf50; font-weight: 600; white-space: nowrap; margin-left: auto; }
+  .right-aside .widget-card:nth-child(2){ margin-top: 16px; }
+
+  /* Schedule list rows */
+  .schedule-item { display: flex; justify-content: space-between; align-items: flex-end; padding: 12px 0; border-bottom: 1px solid #eee; position: relative; }
+  .schedule-item:last-child { border-bottom: none; }
   
-  .content {
-    margin-top: 80px; /* 預留空間，避免內容被固定列擋住 */
+  .right-aside .side-clock,
+  .right-aside .drop,
+  .right-aside .salary-text {
+    position: static !important;
+    top: auto !important;
+    right: auto !important;
+    z-index: auto !important;
+    pointer-events: auto !important;
   }
-  //////////
-  .logo-text {
-    font-family: 'Montserrat', sans-serif; /* 或 Poppins, Arial Black */
-    font-size: 26px;       /* 調整字體大小 */
-    font-weight: 700;      /* 加粗 */
-    color: black;          /* 字體顏色 */
-    display: flex;
-    align-items: center;
+  .clock-body { display:flex; justify-content:center; align-items:center;    padding: 16px; overflow: hidden;  }
+  .clock-wrap { position: relative; width: 100%; height: 100%; }
+  .clock-embed { position: absolute !important; left: 50%; top: 50%; transform: translate(-50%, -50%) !important; width: 220px !important; height: 220px !important; margin: 0 !important; z-index: 1; }
+
+
+  .clock-inline {
+    width: var(--clock-w, 160px);
+    height: var(--clock-h, 160px);
+    display: flex;               /* 讓內部內容置中 */
     justify-content: center;
-    height: 75px;          /* 保持和原本圖片一樣的高度 */
-  }////////////
-  
+    align-items: center;
+    margin: 0 auto;
+  }
 
-  .assistant {
+  .clock-inline canvas,
+  .clock-inline svg,
+  .clock-inline img { width: 100% !important; height: 100% !important; display: block;  margin: auto;    }
+
+  /* 保險：不要讓右欄讀到舊的 .side-clock 样式 */
+  .right-aside .side-clock { display: none !important; }
+
+  /* 僅保留全域漂浮那顆（在 body 直屬的 app-clock） */
+  body > app-clock.side-clock{ position: fixed; top: -100px; right: -160px; z-index: 100; pointer-events: none; }
+  .salary-body {
     display: flex;
-    align-items: flex-start; /* 頭像靠上對齊文字 */
-    gap: 10px;
-    border-radius: 50%;  // 圓形頭像
-    vertical-align: middle;
-    margin-right: 5px;   
-  }
-  
-  .assistant-avatar {
-    width: 75px;
-    height: 75px;
-    flex-shrink: 0; /* 不要被壓縮 */
-  }
-  
-  .assistant-text {
-    background: #f9f9f9;
-    padding: 10px;
-    border-radius: 8px;
-    color: green;
-    line-height: 1.5;
-    max-width: 600px; /* 限制寬度，避免超長 */
-    word-wrap: break-word; /* 文字超過會自動換行 */
-  }////////////////
-
-  .side-clock {
-    position: fixed;
-    top: -100px;
-    right:-160px;
-    z-index: 1000;
+    justify-content: center;  /* 水平置中 */
+    align-items: center;      /* 垂直置中 */
+    padding: 16px;            /* 保持內距 */
   }
 
-  
-  .drop {
-    position: fixed;
-    top: 350px;
-    right: -115px;
-    z-index: 1000;
-  }//////////
-  
-  .salary-text {
-    position: fixed;
-    top: 320px;   /* 調整到水滴下方 */
-    right: 70px;  /* 跟水滴對齊 */
-    font-weight: bold;
-    color: black;
+  .dashboard-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px; /* 左邊自適應，右邊固定 300px */
+    gap: 20px;
+    align-items: start;
+    margin-right: 24px;
+    padding-bottom: 20px; 
   }
-  
-  
