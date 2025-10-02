@@ -1,0 +1,78 @@
+/* 📦 整體容器，垂直排列 Header 和 Main 區塊 */
+.layout-container {
+  display: flex;
+  flex-direction: column; // 垂直排列
+  height: 100vh;          // 滿版高度
+  font-family: 'Noto Sans TC', sans-serif; // 台灣常用字體
+}
+
+/* 📌 頁首區（Header） */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; // 左右對齊
+  background-color: #3f51b5;      // 主色：深藍
+  color: white;                   // 字體顏色
+  padding: 0 24px;                // 左右內距
+  height: 64px;                   // 高度
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); // 陰影
+}
+
+/* 🧩 頁首內的每個功能項（訊息 / 店名 / 登出） */
+.header-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;         // icon 與文字間距
+  font-size: 14px;
+  cursor: pointer;  // 滑鼠變手型
+}
+
+/* 🎨 頁首左側 LOGO 區塊 */
+.BackStageLogo {
+  background-image: url('/assets/logo.png'); // 放置你的 logo 圖片
+  background-size: contain; // 自動縮放以完整顯示圖片
+  background-repeat: no-repeat;
+  width: 120px;
+  height: 40px;
+}
+
+/* 🧱 主內容區容器（Sidebar + Content） */
+.main-container {
+  display: flex;
+  flex: 1;            // 填滿剩餘空間
+  overflow: hidden;   // 防止溢出
+}
+
+/* 📋 側邊選單區塊 */
+.sidebar {
+  width: 120px;                  // 固定寬度
+  background-color: #f5f5f5;     // 淺灰背景
+  border-right: 1px solid #ddd; // 右側邊框
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column; // 垂直排列 menu
+  align-items: center;
+  gap: 24px;              // menu 間距
+}
+
+/* 📌 側邊欄內每個功能項 */
+.sidebar-item {
+  text-align: center;
+  cursor: pointer;       // 滑鼠變手型
+  font-size: 12px;
+  color: #333;           // 深灰色文字
+  transition: color 0.2s; // 漸變效果
+}
+
+/* 🖱️ 側邊欄功能項 hover 效果 */
+.sidebar-item:hover {
+  color: #3f51b5; // 滑鼠移上時變藍色
+}
+
+/* 📄 主內容區塊（右側內容區） */
+.content {
+  flex: 1;                   // 填滿剩餘寬度
+  padding: 24px;             // 內距
+  overflow-y: auto;          // 可垂直滾動
+  background-color: #FBE7C6;
+}

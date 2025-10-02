@@ -1,0 +1,17 @@
+<div class="notice-board">
+
+  <div class="notice-header-bar">
+    <h2 class="notice-title">📢 通知布告欄</h2>
+    <button mat-raised-button color="primary" (click)="showAddDialog()">新增通知</button>
+  </div>
+
+  @for(notify of notifyList; track $index; let index = $index){
+    <div class="notice-item" (click)="showEditDialog(notify.id)">
+      <h3 class="notice-content">{{notify.title}}</h3>
+      <p class="notice-message">{{notify.message}}</p>
+      <label class="notice-link" (click)="routerUrl($event,notify.link_url)">{{notify.link_url}}</label>
+      <span class="notice-date">{{notify.created_date}}</span>
+    </div>
+  }
+
+</div>

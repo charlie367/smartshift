@@ -10,10 +10,10 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 export class ErrorDialogComponent {
   constructor(
     private dialogRef: MatDialogRef<ErrorDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { message: string }
+    @Inject(MAT_DIALOG_DATA) public data: { message: string; autoCloseMs?: number }
   ) { setTimeout(() => {
     this.close();
-  }, 2000);}
+  }, data.autoCloseMs ?? 2000);}
 
   close() {
     this.dialogRef.close();

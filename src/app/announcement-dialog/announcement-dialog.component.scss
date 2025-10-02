@@ -1,5 +1,6 @@
 
 .notice-board {
+  position: relative;
     max-width: 800px;
     margin: 40px auto;
     padding: 24px;
@@ -40,16 +41,16 @@
   /* 單筆通知區塊 */
   .notice-item {
     border-left: 5px solid #3f51b5;
-    background-color: #f5f7ff;
+    background-color:  #e8edff  ;
     padding: 16px 20px;
-    margin-bottom: 20px;
+    margin-top: 20px;
     border-radius: 8px;
     transition: background-color 0.3s;
     cursor: pointer;
   }
   
   .notice-item:hover {
-    background-color: #e8edff;
+    background-color: #3de2e840 ;
   }
   
   /* 通知標題與日期列 */
@@ -74,4 +75,41 @@
     line-height: 1.6;
     margin: 0;
   }
+  ///////
+  .notice-board {
+    position: relative; /* 讓右上角按鈕以此容器為定位基準 */
+  }
+  
+  .dialog-header {
+    position: absolute;
+    top: -20px;
+    right: 0px;
+  }
+  
+  .dialog-header button {
+    border: none;         /* 移除邊框 */
+    outline: none;        /* 移除點擊時的藍色外框 */
+    box-shadow: none;     /* 移除陰影 */
+    background: transparent; /* 背景透明 */
+    cursor: pointer;
+    padding: 0;           /* 移除額外內距 */
+  }
+  
+  .dialog-header .mat-icon {
+    font-size: 48px;  /* 調整大小 (預設 24px) */
+    width: 50px;
+    height: 50px;
+    color: #555;      /* 預設顏色 */
+  }
+  
+  .dialog-header .mat-icon:hover {
+    color: #d32f2f;   /* hover 時變紅色 */
+  }
+  .plain-close {
+    background: transparent; border: none; outline: none; padding: 0; cursor: pointer;
+  }
+  .plain-close mat-icon {
+    font-size: 48px; width: 50px; height: 50px; color: #555;
+  }
+  .plain-close:hover mat-icon { color: #d32f2f; }
   

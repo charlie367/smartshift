@@ -1,0 +1,10 @@
+<button (click)="showOpinon()">返回</button>
+@for(item of opinionList;track $index){
+  <h2>{{item.title}}</h2>
+  <p>{{item.message}}</p>
+  <p>創建日期:{{item.createdDate}}</p>
+}
+<h2>離職風險率與建議</h2>
+@for(item of analyze;track $index){
+  <p>{{item}}</p>
+}

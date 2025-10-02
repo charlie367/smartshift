@@ -1,0 +1,10 @@
+.button-search{
+  color: blue;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.2s;
+
+  &:hover {
+    color: #1e40af; // 深藍色，增加可點擊感
+  }
+}

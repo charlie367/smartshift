@@ -203,3 +203,29 @@ background: #1976d2;
 .confirm-btn:hover {
 background: #125ca1;
 }
+////////
+.dialog-header {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.dialog-header button {
+  border: none;         /* 移除邊框 */
+  outline: none;        /* 移除點擊時的藍色外框 */
+  box-shadow: none;     /* 移除陰影 */
+  background: transparent; /* 背景透明 */
+  cursor: pointer;
+  padding: 0;           /* 移除額外內距 */
+}
+
+.dialog-header .mat-icon {
+  font-size: 48px;  /* 調整大小 (預設 24px) */
+  width: 50px;
+  height: 50px;
+  color: #555;      /* 預設顏色 */
+}
+
+.dialog-header .mat-icon:hover {
+  color: #d32f2f;   /* hover 時變紅色 */
+}

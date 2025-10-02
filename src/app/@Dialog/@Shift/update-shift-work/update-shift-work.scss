@@ -1,0 +1,72 @@
+.work-item {
+  padding: 12px;
+  margin-bottom: 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #fafafa;
+
+  .work-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+
+    .label-title {
+      width: 80px;
+      font-weight: 600;
+    }
+
+    .label-value {
+      flex: 1;
+    }
+
+    input,
+    select {
+      flex: 1;
+      padding: 4px 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+  }
+
+  .work-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+
+    .btn-edit {
+      background-color: #4caf50;
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .btn-cancel {
+      background-color: #f44336;
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .btn-save {
+      background-color: #2196f3;
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .btn-delete {
+      background-color: #ff9800; /* 橘色 */
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  }
+}

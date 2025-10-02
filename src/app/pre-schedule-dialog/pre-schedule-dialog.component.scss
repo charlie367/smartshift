@@ -1,0 +1,424 @@
+/* ------------------------------------
+   全局
+------------------------------------ */
+
+
+
+.all-flex {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: auto;
+    padding: 20px;
+    position: relative; 
+  }
+  
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+/* 跟打卡視窗相同 */
+.dialog-header {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  z-index: 10;
+}
+
+.dialog-header button {
+  border: none;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.dialog-header .mat-icon {
+  font-size: 48px;   /* 放大到一樣尺寸 */
+  width: 50px;
+  height: 50px;
+  color: #555;
+  line-height: 50px;
+}
+
+.dialog-header .mat-icon:hover {
+  color: #d32f2f;
+}
+  
+  .main-title {
+    text-align: center;
+    font-size: 2.5em;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .container {
+    display: flex;
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+    align-items: stretch;
+  }
+  
+  .calendar-wrapper { flex: 0 0 auto; }
+  
+  /* ------------------------------------
+     左側：Calendar 卡片
+  ------------------------------------ */
+  .shell {
+    position: relative;
+    width: 400px;
+    border-radius: 0 0 1em 1em;
+    box-shadow: 0 19px 38px rgba(0, 0, 0, 0.2), 0 15px 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* 與右側面板等高 */
+  .calendar-wrapper .shell {
+    min-height: 553px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .shell header {
+    border-radius: 1em 1em 0 0;
+    color: #fff;
+    padding: 2.3em 1.5em;
+    height: 230px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  .shell header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0px;
+    width: 150px;
+    height: 100%;
+    background-image: url('https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjVwaWhzaWk1cTF3dXBzdGN2ZGZrZHl3NXcxMnpvaDhpcXQwY3N0ciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/5IWUD4e16wgV0qHOY0/giphy.gif');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: 5;
+  }
+  
+  .day {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 6em;
+    font-weight: 600;
+    line-height: 0.9em;
+    color: #ffffff;
+    position: relative;
+    z-index: 2;
+    text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4);
+    letter-spacing: -0.02em;
+  }
+  
+  .month {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 2.7em;
+    line-height: 1em;
+    text-transform: capitalize;
+    position: relative;
+    color: #ffffff;
+    z-index: 2;
+    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
+    margin-top: 0.2em;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+  
+  /* Calendar 表格 */
+  .calender {
+    width: 100%;
+    background: #fff;
+    border-radius: 0 0 1em 1em;
+    box-shadow: 0 2px 1px rgba(0, 0, 0, 0.2), 0 3px 1px #fff;
+    color: #000000;
+    border-collapse: collapse;
+    flex: 1;  /* 讓表格把剩餘高度撐滿 */
+  }
+  
+  .calender thead {
+    color: #e66b6b;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  
+  .calender thead td {
+    padding: 15px 8px;
+    text-align: center;
+    font-size: 12px;
+  }
+  
+  .calender td {
+    width: 46px;
+    height: 46px;
+    text-align: center;
+    font: 600 14px 'Arial', sans-serif;
+    vertical-align: middle;
+    position: relative;
+    padding: 0;   /* 關鍵：避免把圓撐歪 */
+  }
+  
+  .calender tbody td { cursor: pointer; }
+  
+  .current-day {
+    color: #e66b6b !important;
+    font-weight: 900;
+    background: rgba(230, 107, 107, 0.1);
+    border-radius: 50%;
+  }
+  
+  .prev-month,
+  .next-month {
+    color: #cacaca;
+    cursor: not-allowed !important;
+  }
+  
+  /* 綁在 header 下方裝飾的白色柱柱 */
+  .ring-left, .ring-right { position: absolute; top: 205px; }
+  .ring-left { left: 1.5em; }
+  .ring-right { right: 1.5em; }
+  .ring-left::before, .ring-right::before {
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 3px 1px rgba(0, 0, 0, .3), 0 -1px 1px rgba(0, 0, 0, .2);
+    content: "";
+    display: inline-block;
+    margin: 6px;
+    height: 24px;
+    width: 6px;
+  }
+  
+  /* ------------------------------------
+     圓形日期（共用）— 跟粉色那顆完全一樣的外形
+  ------------------------------------ */
+  .calender td .clickable-date,
+  .calender td .clickable-date:hover,
+  .calender td .clickable-date.selected-date {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    line-height: 36px;
+    margin: 0 auto;
+    border-radius: 50%;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+  }
+  
+  /* 粉色：hover（未選中時） */
+  .calender td:not(.prev-month):not(.next-month)
+    .clickable-date:not(.selected-date):hover {
+    background: #da89a2 !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+  }
+  
+  /* 藍色：選中（selected） */
+  .calender .clickable-date.selected-date {
+    background: #4299e1 !important;
+    color: #fff !important;
+    font-weight: 900;
+  }
+  
+  /* ------------------------------------
+     右側：選擇的日期面板
+  ------------------------------------ */
+  .selected-dates-panel {
+    flex: 0 0 400px;
+    background: #fff;
+    border-radius: 1em;
+    padding: 25px;
+    padding-bottom: 80px;
+    box-shadow: 0 19px 38px rgba(0, 0, 0, 0.2), 0 15px 12px rgba(0, 0, 0, 0.2);
+    min-height: 553px;
+    width: 400px;
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .panel-title {
+    font-size: 1.5em;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #e66b6b;
+    padding-bottom: 8px;
+  }
+  
+  .selected-count {
+    background: #e66b6b;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    text-align: center;
+    margin-bottom: 15px;
+    font-weight: 600;
+    font-size: 0.9em;
+  }
+  
+  .selected-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    align-content: start;
+    justify-items: center;
+  }
+  
+  .selected-item {
+    background: #4299e1;
+    color: white;
+    padding: 12px 8px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    height: 60px;
+    width: 100%;
+    max-width: 120px;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+  
+  .selected-item:hover { background: #3182ce; transform: translateY(-1px); }
+  .selected-item .date { font-size: 0.9em; font-weight: 700; }
+  .selected-item .weekday { font-size: 0.75em; opacity: 0.9; }
+  
+  .no-selection {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 40px 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 2px dashed #ddd;
+    font-size: 0.9em;
+    margin-bottom: 20px;
+  }
+  
+  /* 底部兩顆按鈕 */
+  .button-group {
+    display: flex;
+    gap: 15px;
+    position: absolute;
+    bottom: 25px;
+    left: 25px;
+    right: 25px;
+  }
+  .btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 0.95em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .btn-clear {
+    flex: 1;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+  }
+  .btn-clear:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+    background: linear-gradient(135deg, #ff5252 0%, #d63384 100%);
+  }
+  .btn-submit {
+    flex: 1;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+  }
+  .btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+    background: linear-gradient(135deg, #218838 0%, #17a2b8 100%);
+  }
+  .btn:active { transform: translateY(0); }
+  
+  /* 響應式 */
+  @media (max-width: 768px) {
+    .main-title { font-size: 2em; margin-bottom: 20px; }
+    .shell { width: 100%; max-width: 400px; margin: 0 auto; }
+    .button-group { flex-direction: column; }
+  }
+  :host ::ng-deep .dialog-header .mat-mdc-button-persistent-ripple,
+  :host ::ng-deep .dialog-header .mdc-icon-button__ripple {
+    display: none !important;
+  }//////////
+
+
+
+  /* 只針對左側卡片的 header 做定位，避免動到其它地方 */
+.shell > header { position: relative; }
+
+/* 左右切月按鈕：不佔版面（絕對定位），疊在原本標頭上 */
+.shell > header .only-nav {
+  position: absolute;
+  top: 10px;
+  z-index: 5;
+  width: 32px;
+  height: 32px;
+  padding: 0;                  /* 防止 Material 的內距擠版面 */
+  border-radius: 8px;
+  background: rgba(255,255,255,.22);
+  box-shadow: 0 2px 6px rgba(0,0,0,.18);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  line-height: 32px;
+  transition: transform .15s ease, background .15s ease;
+}
+
+.shell > header .only-nav-left  { left: 12px; }
+.shell > header .only-nav-right { right: 12px; }
+
+.shell > header .only-nav:hover  { background: rgba(255,255,255,.32); transform: translateY(-1px); }
+.shell > header .only-nav:active { transform: translateY(0); }
+
+/* 調整 chevron 圖示大小與顏色（只影響這兩顆按鈕） */
+.shell > header .only-nav mat-icon {
+  color: #fff;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+}
+
+/* 你先前的空白格樣式可保留；若沒有就加這行 */
+.empty-date { opacity: .35; pointer-events: none; }
+
+
+  
+
+
+.disabled-date { opacity: .45; cursor: not-allowed; pointer-events: none; }

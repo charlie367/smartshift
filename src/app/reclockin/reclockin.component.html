@@ -1,4 +1,12 @@
 <div class="reclockin-root">
+
+<div class="dialog-header">
+  <button mat-icon-button (click)="closeAndRefresh()">
+    <mat-icon>cancel</mat-icon>
+  </button>
+</div>
+
+
   <div class="attendance-container">
     <!-- 標題 -->
     <div class="header">
@@ -14,16 +22,21 @@
 
     <!-- 按鈕列 -->
     <div class="button-container">
-      <button class="clock-in-btn" (click)="clockIn()" [disabled]="isClockingIn">
-        {{ isClockingIn ? '打卡中...' : '🕐 上班打卡' }}
-      </button>
-      <button class="clock-out-btn" (click)="startClockOut()" [disabled]="isClockingOut">
-        {{ isClockingOut ? '打卡中...' : '🕕 下班打卡' }}
-      </button>
+      <button class="clock-in-btn"
+      (click)="clockIn()"
+      [disabled]="isClockingIn || !!clockInTime || canWorkToday === false">
+{{ isClockingIn ? '打卡中...' : '🕐 上班打卡' }}
+</button>
+
+<button class="clock-out-btn"
+      (click)="startClockOut()"
+      [disabled]="isClockingOut || !!clockOutTime || !clockInTime || canWorkToday === false">
+{{ isClockingOut ? '打卡中...' : '🕕 下班打卡' }}
+</button>
     </div>
 
     <!-- 今日打卡記錄 -->
-    @if (clockInTime || clockOutTime) {
+    @if (clockInTime || clockOutTime) { 
       <div class="attendance-record">
         <h3>今日打卡記錄</h3>
 

@@ -1,0 +1,39 @@
+<div class="clock-form">
+  <h2>補打卡</h2>
+
+  <div class="form-row">
+    <label>員工：</label>
+    <select [(ngModel)]="clock.employeeId">
+      @for(item of employeeList;track $index){
+        <option [value]="item.id">{{item.id}} - {{item.name}}</option>
+      }
+    </select>
+  </div>
+
+  <div class="form-row">
+    <label>打卡日期：</label>
+    <input type="date" [(ngModel)]="clock.workDate" (ngModelChange)="checkFixClock(clock.employeeId)">
+  </div>
+
+  <div class="form-row">
+    <label>上班打卡：</label>
+    <input type="time" [(ngModel)]="clock.clockOn">
+  </div>
+
+  <div class="form-row">
+    <label>下班打卡：</label>
+    <input type="time" [(ngModel)]="clock.clockOff">
+  </div>
+
+  <div class="form-row">
+    <label>是否加倍：</label>
+    <select [(ngModel)]="clock.hasDouble">
+      <option [value]="1">是</option>
+      <option [value]="0">否</option>
+    </select>
+  </div>
+
+  <div class="form-actions">
+    <button (click)="fixClock()">送出</button>
+  </div>
+</div>

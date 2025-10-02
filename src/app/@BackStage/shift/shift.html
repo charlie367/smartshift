@@ -1,0 +1,27 @@
+<div class="toolbar">
+  <div class="toolbar-left">
+    <!-- <button mat-raised-button color="primary" (click)="showShiftTimeWork()">新增時段</button> -->
+    <button mat-raised-button color="primary" (click)="showShiftWork()">新增排班</button>
+    <!-- <button mat-raised-button color="accent" (click)="showPreShiftWork()">開放預排班</button> -->
+  </div>
+
+  <div class="toolbar-right">
+    <button mat-raised-button color="primary"
+            [color]="currentView === 'day' ? 'primary' : undefined"
+            (click)="switchView('day')">
+      天
+    </button>
+    <button mat-raised-button color="primary"
+            [color]="currentView === 'week' ? 'primary' : undefined"
+            (click)="switchView('week')">
+      週
+    </button>
+    <button mat-raised-button color="primary"
+            [color]="currentView === 'month' ? 'primary' : undefined"
+            (click)="switchView('month')">
+      月
+    </button>
+  </div>
+</div>
+
+<daypilot-scheduler [config]="config" [events]="events"></daypilot-scheduler>

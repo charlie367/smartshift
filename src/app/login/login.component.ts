@@ -9,6 +9,7 @@ import * as THREE from 'three';
 import GLOBE from 'vanta/dist/vanta.globe.min';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
+import BIRDS from 'vanta/dist/vanta.birds.min';
 
 
 type Label = string | ((v: Record<string, any>) => string);
@@ -37,19 +38,19 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
   private vantaEffect: any;
 //在檢視初始化之後，畫面渲染完成後的操作
   ngAfterViewInit(): void {
-    this.vantaEffect = GLOBE({
-      el: "#vanta-bg",  // 對應 HTML 的背景容器
-      THREE: THREE, //可以在網頁上畫出 3D 圖形、動畫、模型。
+    this.vantaEffect = BIRDS({
+      el: '#vanta-bg',
+      THREE: THREE,
       mouseControls: true,
       touchControls: true,
-      minHeight: 200.00,
-      minWidth: 200.00,
-      scale: 1.00,
-      scaleMobile: 1.00,
-      backgroundColor: 0x460bae, // 紫色背景
-      color: 0x2e2428,           // 線條深灰色
-      color2: 0xffffff,          // 點白色
-      size: 0.5                  // 球體大小
+      gyroControls: false,
+      minHeight: 200.0,
+      minWidth: 200.0,
+      scale: 1.0,
+      scaleMobile: 1.0,
+
+      color: 0xaaaaaa,
+      backgroundColor: 0xe4d4c8, // 深藍
     });
     this.focusInput();
   }
@@ -60,7 +61,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
 
 
   //key: string → 表示這個物件允許「任何字串」作為屬性名稱。
-  //any → 表示這些屬性的值可以是「任何型別」。  
+  //any → 表示這些屬性的值可以是「任何型別」。
   form: {
     [key: string]: any;
     employeeId: string;
@@ -86,11 +87,11 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
   //getter屬性每當用this.steps這個的時候就會回傳步驟
 
   get step() { return this.steps[this.index]; }
-  
+
   private focusInput() {
     //延遲一段時間再執行某個函式
     setTimeout(() => {
-  
+
       if (this.step.id === 'credentials' && this.passwordInput) {
         //ElementRef 是 Angular 幫你包裝的物件，真正的 DOM 元素存在 .nativeElement 裡。
         //游標自動跳進這個輸入框
@@ -131,7 +132,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
 
 
   get isLast() { return this.index >= this.steps.length - 1; }
-  
+
   statusMsg: string = '正在新增密碼...';
 
   canGoNext(): boolean {
@@ -144,7 +145,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
       }
       return s.id !== 'done';
     }
-  
+
     const val = this.form[s.key];
     if (s.required) {
       if (s.type === 'text' || s.type === 'password') {
@@ -153,28 +154,28 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
     }
     return true;
   }
-  
+
 
   onEnter() {
     //目前有沒有動畫在跑
     if (!this.canGoNext() || this.isAnimating) return;
-  
+
     // Step1：輸入員工編號後，先檢查是否需要改密碼
     if (this.step.id === 'employeeId') {
       this.checkAccountStatus();
       return;
     }
-  
+
     // Step4：在輸入帳密頁，按 Enter 直接登入
     if (this.step.id === 'credentials') {
       this.onComplete();
       return;
     }
-  
+
     if (this.isLast) this.onComplete();
     else this.next();
   }
-  
+
 
   next() {
     if (!this.canGoNext() || this.isAnimating) return;
@@ -197,27 +198,27 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
         const MIN_SPIN_MS = 1000;   // 至少顯示「處理中」1秒
         const HOLD_SUCCESS_MS = 900; // 成功字樣停留多久再切下一步
         const startedAt = Date.now();
-      
+
         this.statusMsg = '正在新增密碼...';
-      
+
         this.http.post('http://localhost:8080/head/changePassword', {
           id: this.form.employeeId,
           newPassword: this.form.newPassword
         }).subscribe({
           next: (res: any) => {
             const code = res.code;
-      
+
             // 計算還要等多久，讓「處理中」至少顯示 MIN_SPIN_MS
             const wait = Math.max(0, MIN_SPIN_MS - (Date.now() - startedAt));
-      
+
             if (code === 200) {
               setTimeout(() => {
                 // 先把文字換成成功
                 this.statusMsg = '密碼新增成功！';
                 this.needsChangePassword = false;
                 //鎖住「員工編號輸入框」
-                this.idLocked = true;          
-                this.form.loginPassword = '';  
+                this.idLocked = true;
+                this.form.loginPassword = '';
                 setTimeout(() => {
                   this.jumpTo('credentials');
                 }, HOLD_SUCCESS_MS);
@@ -228,23 +229,23 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
               }, wait);
             }
           },
-        
+
         });
-      
+
         return; // 這裡 return，避免往下跑其他轉場邏輯
       }
 
-    
+
      // 其餘步驟只是轉場
      this.isAnimating = false;
     }, this.TRANSITION_MS);
   }
-  
+
 
   reset() {
     this.form = {  employeeId: '', newPassword: '', loginPassword: '' };
     this.needsChangePassword = false;
-    this.idLocked = false;   
+    this.idLocked = false;
     this.index = 0;
     this.completed = false;
     this.show = true;
@@ -267,24 +268,24 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
   private checkAccountStatus() {
     const raw = String(this.form.employeeId || '').trim();
     if (!raw) return;
-  
+
     //  如果你的 DB 員編是全大寫才改成 raw.toUpperCase()
     const id = raw; // or: const id = raw.toUpperCase();
     this.isAnimating = true;
-  
+
     // 用 '0000' 當探測密碼
     const payload = { id, password: '0000' };
-  
+
     this.http.post('http://localhost:8080/head/login', payload).subscribe({
       next: (res: any) => {
         const code = Number(res.code ?? 0);
         const message = res.message || "";
-      
+
         // 狀態判斷
         const isNotFound = code === 404 || message === "Not Found";
         const mustChange = code === 400 && message === "Please Change Password";
         const isPwdMismatch = code === 400 && message === "Password Mismatch!!";
-      
+
         if (isNotFound) {
           this.dialog.open(ErrorDialogComponent, {
             data: { message: "查無此職員" },
@@ -292,7 +293,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
           this.reset();
           return;
         }
-      
+
         if (mustChange) {
           this.needsChangePassword = true;
           this.form.newPassword = "";
@@ -320,7 +321,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
       }
     });
   }
-  
+
 
 needsChangePassword: boolean = false;
 
@@ -336,24 +337,27 @@ onComplete() {
     next: (res: any) => {
       const code = Number(res.code ?? 0);
       const message = res.message || "";
-    
+
       // 1) 需要改密碼（DB 仍是 0000）
       if (code === 400 && message === "Please Change Password") {
         this.needsChangePassword = true;
         this.completed = false;
         this.form.newPassword = "";
-        this.idLocked = false; 
+        this.idLocked = false;
         this.index = this.steps.findIndex(s => s.id === "newPassword");
         this.show = true;
         this.focusInput();
         return;
       }
-    
+
       // 2) 登入成功
       if (code === 200 && message === "Success") {
+
+        localStorage.setItem("employeeId", this.form.employeeId);
+
         const HOLD_MS = 900;
         this.jumpTo("done");
-    
+
         setTimeout(() => {
           setTimeout(() => {
             this.show = false;
@@ -362,28 +366,28 @@ onComplete() {
         }, this.TRANSITION_MS);
         return;
       }
-    
-    
+
+
       // 4) 密碼不正確
       if (code === 400 && message === "Password Mismatch!!") {
         this.completed = false;
         this.dialog.open(ErrorDialogComponent, {
           data: { message: "密碼不正確" },
-          width: '280px' 
+          width: '280px'
         });
         this.form.loginPassword = "";
         this.focusInput();
         return;
       }
-    
+
       // 5) 其他錯誤
       this.completed = false;
       alert(message || "登入失敗");
       this.reset();
-    },    
+    },
     error: (err) => {
       console.log('[login probe error]', err);
-  
+
       this.dialog.open(ErrorDialogComponent, {
         data: { message: err?.error?.message || '伺服器錯誤' },
         width: '280px'
@@ -393,6 +397,6 @@ onComplete() {
   });
 }
 
-  
+
 }
-  
+

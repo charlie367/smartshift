@@ -1,0 +1,35 @@
+<h2 class="dialog-title">更新通知</h2>
+
+<form class="notification-form">
+
+  <!-- 通知標題 -->
+  <div class="form-group">
+    <label for="title">通知標題</label>
+    <textarea id="title" name="Title"  rows="4" class="form-control" placeholder="請輸入通知標題" [(ngModel)]="notify.title"></textarea>
+  </div>
+
+  <!-- 通知內容 -->
+  <div class="form-group">
+    <label for="content">通知內容</label>
+    <textarea id="content" name="notifyText"  rows="4" class="form-control" placeholder="請輸入通知內容" [(ngModel)]="notify.message"></textarea>
+  </div>
+
+  <!-- 連結 -->
+  <div class="form-group">
+    <label for="url">連結</label>
+    <input type="text" name="url" id="url" class="form-control" [(ngModel)]="notify.link_url"/>
+  </div>
+
+  <!-- 日期 -->
+  <div class="form-group">
+    <label for="startDate">開始日期</label>
+    <input type="date" name="notifyStartTime" id="startDate" class="form-control" [(ngModel)]="notify.created_date"  [min]="today" />
+  </div>
+
+  <!-- 按鈕 -->
+  <div class="button-group">
+    <button type="submit" class="btn submit" (click)="updateNotify()">儲存</button>
+    <button type="button" class="btn cancel" (click)="onCancel()">取消</button>
+  </div>
+
+</form>

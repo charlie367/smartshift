@@ -1,8 +1,32 @@
 /* You can add global styles to this file, and also import other style files */
 
 html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; background-color: #f9f1f0;}
 
 .mat-mdc-tab-body-wrapper {
     min-height: 420px; /* 依你的內容調整，例如 600~800px */
   }
+
+/* 關掉 surface 的垂直滾動 */
+/* 關掉這個 Dialog 的滾動 */
+.cdk-overlay-pane.no-scroll .mat-mdc-dialog-surface {
+  overflow-y: hidden !important;   /* 垂直不要滾 */
+  overflow-x: hidden !important;   /* 順便把水平也關掉 */
+  max-height: none !important;
+}
+
+/* 如果內容區也在滾，順便解掉 */
+.cdk-overlay-pane.no-scroll .mat-mdc-dialog-content {
+  overflow: visible !important;
+  max-height: none !important;
+  padding: 0 !important;
+}
+
+/* 你的內文有 100vh，放進 Dialog 容易超高 → 只在 Dialog 裡取消 */
+.cdk-overlay-pane.no-scroll .all-flex {
+  min-height: auto !important;
+}
+
+/* 只在 Dialog 開啟時，保險地關掉整頁水平捲軸 */
+body.cdk-global-scrollblock { overflow-x: hidden !important; }
+

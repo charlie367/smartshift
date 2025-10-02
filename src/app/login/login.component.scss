@@ -66,6 +66,7 @@
     text-align: center;
     line-height: 1.25;
     word-break: break-word;
+    color:#7e6959;
   }
 
   .field {
@@ -74,23 +75,24 @@
     min-width: 0;
     height: 44px;
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, .18);
-    background: rgba(255, 255, 255, .08);
-    color: $text-color;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: #ffffffa5;
+    // color: $text-color;
+    color: #3d3d3d;
     padding: 0 14px;
     outline: none;
     font-size: 16px;
-    transition: border-color .2s, background-color .2s;
-
+    transition: border-color 0.2s, background-color 0.2s;
+  
     &:focus {
-      border-color: rgba(255, 255, 255, .6);
-      background: rgba(255, 255, 255, .12);
+      border-color: rgba(255, 255, 255, 0.6);
+      // background: rgba(255, 255, 255, 0.12);
     }
-
+  
     &::placeholder {
-      color: rgba(255, 255, 255, .55);
+      color: rgba(199, 128, 128, 0.55);
     }
-
+  
     &[type="number"] {
       -moz-appearance: textfield;
     }

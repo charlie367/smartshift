@@ -1,0 +1,96 @@
+<div class="layout-container">
+
+  <!-- Header -->
+  <!-- <div class="header">
+    <div class="BackStageLogo"></div>
+
+    <div class="header-item">
+      <mat-icon>chat</mat-icon>
+      <label>訊息</label>
+    </div>
+
+    <div class="header-item">
+      <mat-icon>storefront</mat-icon>
+      <label>{{ storeName }}</label>
+    </div>
+
+    <div class="header-item">
+      <mat-icon>construction</mat-icon>
+      <label>店鋪設定</label>
+    </div>
+
+    <div class="header-item">
+      <mat-icon>logout</mat-icon>
+    </div>
+  </div> -->
+
+  <!-- Main 區塊（Sidebar + Content） -->
+  <div class="main-container">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-item">
+        <mat-icon>home</mat-icon><br />
+        <label>首頁</label>
+      </div>
+
+    <div class="sidebar-item" (click)="toggleIcon('opinion')">
+      <mat-icon>speaker_notes</mat-icon><br />
+      <label>意見收集</label>
+    </div>
+
+    <div class="sidebar-item" (click)="toggleIcon('shift')">
+      <mat-icon>calendar_today</mat-icon><br />
+      <label>班表</label>
+    </div>
+
+    <div class="sidebar-item" (click)="toggleIcon('clock')">
+      <mat-icon>schedule</mat-icon><br />
+      <label>打卡紀錄</label>
+    </div>
+
+    <div class="sidebar-item" (click)="toggleIcon('leave')">
+      <mat-icon>event_busy</mat-icon><br />
+      <label>請假狀況</label>
+    </div>
+
+    <div class="sidebar-item" (click)="toggleIcon('notifications')">
+      <mat-icon>notifications</mat-icon><br />
+      <label>公告管理</label>
+    </div>
+
+    <div class="sidebar-item" (click)="toggleIcon('employee')">
+      <mat-icon>group</mat-icon><br />
+      <label>員工一覽</label>
+    </div>
+    </div>
+
+    <!-- 內容區 -->
+    <div class="content">
+      @if (isBackEmployeeManger) {
+        <app-back-employee-manger></app-back-employee-manger>
+      }
+
+      @if (isBackLeave) {
+        <app-back-leave></app-back-leave>
+      }
+
+      @if (isBackNotifications) {
+        <app-back-notifications></app-back-notifications>
+      }
+
+      @if (isBackOpinions) {
+        <app-back-opinion></app-back-opinion>
+      }
+
+      @if(isBackShift){
+        <app-back-shift></app-back-shift>
+      }
+
+      @if(isBackClock){
+        <app-back-clock></app-back-clock>
+      }
+
+    </div>
+  </div>
+</div>
