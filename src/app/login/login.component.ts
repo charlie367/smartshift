@@ -311,7 +311,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
         }
       },
       error: (err) => {
-        console.log('[login probe error]', err);
+        
 
         this.dialog.open(ErrorDialogComponent, {
           data: { message: err?.error?.message || '伺服器錯誤' },

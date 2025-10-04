@@ -7,16 +7,30 @@
   </div>
 
   <div class="notice-header-bar">
-    <h2 class="notice-title">📢 通知布告欄</h2>
+    <h2 class="notice-title">📢 通知佈告欄</h2>
   </div>
   <div class="extra-line"></div>
 
   <div *ngFor="let notify of notifyList; let i = index"
-       class="notice-item"
-       (click)="showEditDialog(notify)">
-    <div class="notice-header">
-      <span class="notice-date">{{ notify.date }}</span>
-    </div>
-    <p class="notice-content">{{ notify.text }}</p>
-  </div>
+  class="notice-item">
+<div class="notice-header">
+ <span class="notice-date">{{ notify.date }}</span>
+</div>
+
+<!-- 保持 class="notice-content" 不變 -->
+
+<p class="notice-content">{{ notify.message }}</p>
+
+<!-- 如果有連結 -->
+<!-- 如果 notify.link 已經是完整網址，就直接使用；否則自動補上 https:// 讓它變成正確的超連結。 -->
+<!-- 在新分頁開啟連結。 -->
+<a *ngIf="notify.link"
+   [href]="notify.link.startsWith('http') ? notify.link : 'https://' + notify.link"
+   target="_blank"
+   rel="noopener noreferrer">
+  {{ notify.link }}
+</a>
+
+
+
 </div>

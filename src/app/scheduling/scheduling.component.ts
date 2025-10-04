@@ -77,7 +77,6 @@ export class SchedulingComponent implements OnInit {
   avgCheckOut: string = '-';
   avgWorkHr: string = '-';
   absentLeaves: string = '0';
-
   weekSlots: Record<string, WeekSlot[]> = {}
   shifts: any[] = [];
 
@@ -88,6 +87,144 @@ export class SchedulingComponent implements OnInit {
     private employeeService: EmployeeService,
     private cdr: ChangeDetectorRef
   ) {}
+
+
+  openAnnouncementDialog() {
+    this.dialog.open(AnnouncementDialogComponent, {
+      width: '800px',
+      height: '600px',
+    });
+  }
+
+  punchIn(): void {
+    const employeeId = localStorage.getItem('employeeId') || '';
+    const workDate = this.todayLocal();
+
+    // 先詢問後端今天可不可以上班打卡
+    //這是 禁止使用者隨便關閉 Dialog。
+    this.http.post<any>('http://localhost:8080/clock/fix/check', { employeeId, workDate })
+      .subscribe({
+        next: (res) => {
+          const status = res?.status;  
+
+          if (status === 'NO_WORK') {
+            this.dialog.open(ErrorDialogComponent, {
+              width: '280px',
+              // panelClass: 'no-padding-dialog',
+              disableClose: true,
+              data: { message: '今日未排班' }
+            });
+            return;
+          }
+
+          // 可以上班 → 照原本流程打開打卡視窗
+          const today = this.findTodayRecord();
+          const dialogRef = this.dialog.open(ReclockinComponent, {
+            panelClass: 'punch-dialog-panel',
+            width: '600px',
+            height: '650px',
+            maxWidth: 'none',
+            data: today
+              ? { workDate: today.rawDate, clockOn: today.clockOn, clockOff: today.clockOff }
+              : { workDate: this.todayLocal() }
+          });
+
+          // 關閉後刷新
+          dialogRef.afterClosed().subscribe(() => this.loadClockData());
+        },
+        error: () => {
+          // 後端掛了就不擋，或改成彈錯誤也行
+          this.dialog.open(ErrorDialogComponent, {
+            data: { message: '系統忙線中，請稍後重試' }
+          });
+        }
+      });
+  }
+
+  loadClockData() {
+    this.http.get<any>('http://localhost:8080/clock/get_all').subscribe({
+      next: (res) => {
+        if (res.code === 200 && res.clockDateInfoResList) {
+          const loginId = localStorage.getItem('employeeId');
+          const { firstDay, lastDay } = this.currentMonthWindow();
+          const first = new Date(firstDay);
+          const last = new Date(lastDay);
+  
+          const records = res.clockDateInfoResList
+            .filter((r: any) => {
+              if (loginId && r.employeeId !== loginId) return false;
+              const d = new Date(r.workDate);
+              return d >= first && d <= last;   // ← 只留在這個月的
+            })
+            .map((r: any) => ({
+              rawDate: r.workDate,
+              date: new Date(r.workDate).toLocaleDateString('zh-TW', { weekday:'short', year:'numeric', month:'2-digit', day:'2-digit' }),
+              clockOn: r.clockOn || null,
+              clockOff: r.clockOff || null,
+              totalHour: r.totalHour || null,
+              checkIn: r.clockOn || '-',
+              checkOut: r.clockOff || '-',
+              hours: r.totalHour ? `${r.totalHour} hr` : '-'
+            }));
+  
+          this.workLogs = records;
+          records.length > 0 ? this.calcAverages(records) : this.resetAverages();
+        }
+      }
+    });
+  }
+  private resetAverages(): void {
+    this.avgCheckIn = '-';
+    this.avgCheckOut = '-';
+    this.avgWorkHr = '-';
+    this.absentLeaves = '0';
+  }
+
+  //切換下一個月的方法
+  prevMonth() {
+    if (this.currentMonthIndex > 0) {
+      this.currentMonthIndex--;
+      this.loadClockData();   // ← 加這行
+    }
+  }
+  //切換上一個月的方法
+  nextMonth() {
+    if (this.currentMonthIndex < this.months.length - 1) {
+      this.currentMonthIndex++;
+      this.loadClockData();   // ← 加這行
+    }
+  }
+
+  //抓當日月份
+  currentMonthIndex = new Date().getMonth();
+
+  
+  private currentMonthWindow() {
+    const today = new Date();
+    const y = today.getFullYear();             // 先抓今年
+    const m = this.currentMonthIndex;          // 用 currentMonthIndex 來決定月份 (0=一月)
+  
+    const first = new Date(y, m, 1);           // 當月 1 號
+    const last  = new Date(y, m + 1, 0);       // 當月最後一天
+    const days = last.getDate();
+  
+    return { 
+      firstDay: this.formatDateLocal(first), 
+      lastDay: this.formatDateLocal(last),     // 加這個，之後過濾會用到
+      days 
+    };
+  }
+  
+
+  private findTodayRecord() {
+    const today = this.todayLocal();
+    return this.workLogs.find(r => r.rawDate === today) ?? null;
+  }
+
+  private todayLocal(): string {
+    const n = new Date(), p = (x:number)=>x.toString().padStart(2,'0');
+    return `${n.getFullYear()}-${p(n.getMonth()+1)}-${p(n.getDate())}`;
+  }
 
   close() {
     const employeeId = localStorage.getItem('employeeId');
@@ -195,7 +332,7 @@ loadWeekSlotsForCurrentWeek(): void {
 
 
 
-currentMonthIndex = new Date().getMonth();
+
 months = [
   '一月', '二月', '三月', '四月', '五月', '六月',
   '七月', '八月', '九月', '十月', '十一月', '十二月'
@@ -210,19 +347,7 @@ months = [
   workLogs: any[] = [];
 
 
-  prevMonth() {
-    if (this.currentMonthIndex > 0) {
-      this.currentMonthIndex--;
-      this.loadClockData();   // ← 加這行
-    }
-  }
-  
-  nextMonth() {
-    if (this.currentMonthIndex < this.months.length - 1) {
-      this.currentMonthIndex++;
-      this.loadClockData();   // ← 加這行
-    }
-  }
+
   events: DayPilot.EventData[] = [];
 
   
@@ -339,52 +464,9 @@ shiftTag(s: WeekSlot): 'morning' | 'afternoon' | 'night' {
   }
   
 
-  loadClockData() {
-    this.http.get<any>('http://localhost:8080/clock/get_all').subscribe({
-      next: (res) => {
-        if (res.code === 200 && res.clockDateInfoResList) {
-          const loginId = localStorage.getItem('employeeId');
-          const { firstDay, lastDay } = this.currentMonthWindow();
-          const first = new Date(firstDay);
-          const last = new Date(lastDay);
   
-          const records = res.clockDateInfoResList
-            .filter((r: any) => {
-              if (loginId && r.employeeId !== loginId) return false;
-              const d = new Date(r.workDate);
-              return d >= first && d <= last;   // ← 只留在這個月的
-            })
-            .map((r: any) => ({
-              rawDate: r.workDate,
-              date: new Date(r.workDate).toLocaleDateString('zh-TW', { weekday:'short', year:'numeric', month:'2-digit', day:'2-digit' }),
-              clockOn: r.clockOn || null,
-              clockOff: r.clockOff || null,
-              totalHour: r.totalHour || null,
-              checkIn: r.clockOn || '-',
-              checkOut: r.clockOff || '-',
-              hours: r.totalHour ? `${r.totalHour} hr` : '-'
-            }));
-  
-          this.workLogs = records;
-          records.length > 0 ? this.calcAverages(records) : this.resetAverages();
-        }
-      }
-    });
-  }
-  private resetAverages(): void {
-    this.avgCheckIn = '-';
-    this.avgCheckOut = '-';
-    this.avgWorkHr = '-';
-    this.absentLeaves = '0';
-  }
-private todayLocal(): string {
-  const n = new Date(), p = (x:number)=>x.toString().padStart(2,'0');
-  return `${n.getFullYear()}-${p(n.getMonth()+1)}-${p(n.getDate())}`;
-}
-private findTodayRecord() {
-  const today = this.todayLocal();
-  return this.workLogs.find(r => r.rawDate === today) ?? null;
-}
+
+
 
   calcAverages(records: any[]) {
     if (!records.length) return;
@@ -472,22 +554,7 @@ private findTodayRecord() {
     return `${y}-${m}-${day}`;
   }
   
-  private currentMonthWindow() {
-    const today = new Date();
-    const y = today.getFullYear();             // 先抓今年
-    const m = this.currentMonthIndex;          // 用 currentMonthIndex 來決定月份 (0=一月)
-  
-    const first = new Date(y, m, 1);           // 當月 1 號
-    const last  = new Date(y, m + 1, 0);       // 當月最後一天
-    const days = Math.round((+last - +first) / 86400000) + 1;
-  
-    return { 
-      firstDay: this.formatDateLocal(first), 
-      lastDay: this.formatDateLocal(last),     // 加這個，之後過濾會用到
-      days 
-    };
-  }
-  
+
   
   loadPreSchedule() {
     const employeeId = localStorage.getItem('employeeId');
@@ -612,52 +679,6 @@ private dayTickTimer: any;
   goHome() {
     this.viewMode = 'dashboard';
   }
-  punchIn(): void {
-    const employeeId = localStorage.getItem('employeeId') || '';
-    const workDate = this.todayLocal();
-
-    // 先詢問後端今天可不可以上班打卡
-    this.http.post<any>('http://localhost:8080/clock/fix/check', { employeeId, workDate })
-      .subscribe({
-        next: (res) => {
-          const status = res?.status;  // NO_WORK / MISS_TWO / MISS_OFF / MISS_ON / IS_OK
-
-          // 不可上班 → 直接跳你的錯誤 Dialog（固定文字：今日未排班）
-          if (status === 'NO_WORK') {
-            this.dialog.open(ErrorDialogComponent, {
-              width: '280px',
-              panelClass: 'no-padding-dialog',
-              disableClose: true,
-              data: { message: '今日未排班' }
-            });
-            return;
-          }
-
-          // 可以上班 → 照原本流程打開打卡視窗
-          const today = this.findTodayRecord();
-          const dialogRef = this.dialog.open(ReclockinComponent, {
-            panelClass: 'punch-dialog-panel',
-            width: '600px',
-            height: '650px',
-            maxWidth: 'none',
-            autoFocus: false,
-            restoreFocus: false,
-            data: today
-              ? { workDate: today.rawDate, clockOn: today.clockOn, clockOff: today.clockOff }
-              : { workDate: this.todayLocal() }
-          });
-
-          // 關閉後刷新
-          dialogRef.afterClosed().subscribe(() => this.loadClockData());
-        },
-        error: () => {
-          // 後端掛了就不擋，或改成彈錯誤也行
-          this.dialog.open(ErrorDialogComponent, {
-            data: { message: '系統忙線中，請稍後重試' }
-          });
-        }
-      });
-  }
 
   // todayLocal() 與 findTodayRecord() 你已經有，保留即可
 
@@ -744,12 +765,6 @@ private dayTickTimer: any;
     });
   }
 
-  openAnnouncementDialog() {
-    this.dialog.open(AnnouncementDialogComponent, {
-      width: '800px',
-      height: '600px',
-    });
-  }
 
   logout() {
     localStorage.clear();
