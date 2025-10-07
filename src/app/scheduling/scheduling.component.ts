@@ -77,6 +77,7 @@ export class SchedulingComponent implements OnInit {
   avgCheckOut: string = '-';
   avgWorkHr: string = '-';
   absentLeaves: string = '0';
+
   weekSlots: Record<string, WeekSlot[]> = {}
   shifts: any[] = [];
 
@@ -101,7 +102,6 @@ export class SchedulingComponent implements OnInit {
     const workDate = this.todayLocal();
 
     // 先詢問後端今天可不可以上班打卡
-    //這是 禁止使用者隨便關閉 Dialog。
     this.http.post<any>('http://localhost:8080/clock/fix/check', { employeeId, workDate })
       .subscribe({
         next: (res) => {
@@ -110,7 +110,7 @@ export class SchedulingComponent implements OnInit {
           if (status === 'NO_WORK') {
             this.dialog.open(ErrorDialogComponent, {
               width: '280px',
-              // panelClass: 'no-padding-dialog',
+              //這是 禁止使用者隨便關閉 Dialog。
               disableClose: true,
               data: { message: '今日未排班' }
             });
@@ -120,10 +120,8 @@ export class SchedulingComponent implements OnInit {
           // 可以上班 → 照原本流程打開打卡視窗
           const today = this.findTodayRecord();
           const dialogRef = this.dialog.open(ReclockinComponent, {
-            panelClass: 'punch-dialog-panel',
             width: '600px',
             height: '650px',
-            maxWidth: 'none',
             data: today
               ? { workDate: today.rawDate, clockOn: today.clockOn, clockOff: today.clockOff }
               : { workDate: this.todayLocal() }
@@ -140,7 +138,7 @@ export class SchedulingComponent implements OnInit {
         }
       });
   }
-
+//抓所有的員工上下班的打卡資料
   loadClockData() {
     this.http.get<any>('http://localhost:8080/clock/get_all').subscribe({
       next: (res) => {
@@ -149,36 +147,130 @@ export class SchedulingComponent implements OnInit {
           const { firstDay, lastDay } = this.currentMonthWindow();
           const first = new Date(firstDay);
           const last = new Date(lastDay);
-  
+         
           const records = res.clockDateInfoResList
+           //陣列過濾方法
             .filter((r: any) => {
-              if (loginId && r.employeeId !== loginId) return false;
+              if (r.employeeId !== loginId) return false;
               const d = new Date(r.workDate);
               return d >= first && d <= last;   // ← 只留在這個月的
             })
             .map((r: any) => ({
               rawDate: r.workDate,
+              //台灣地區格式的日期字串，
               date: new Date(r.workDate).toLocaleDateString('zh-TW', { weekday:'short', year:'numeric', month:'2-digit', day:'2-digit' }),
               clockOn: r.clockOn || null,
               clockOff: r.clockOff || null,
               totalHour: r.totalHour || null,
               checkIn: r.clockOn || '-',
               checkOut: r.clockOff || '-',
-              hours: r.totalHour ? `${r.totalHour} hr` : '-'
+              hours: r.totalHour ? r.totalHour+"hr" : '-'
             }));
+
+        
   
           this.workLogs = records;
-          records.length > 0 ? this.calcAverages(records) : this.resetAverages();
+
+          if (records.length > 0) {
+            this.calcAverages(records);
+          } else {
+            this.resetAverages();
+          }
+          
         }
       }
     });
   }
+
+  private findTodayRecord() {
+    const today = this.todayLocal();
+    return this.workLogs.find(r => r.rawDate === today) ?? null;
+  }
+  
+  workLogs: any[] = [];
+  
+    private todayLocal(): string {
+      const n = new Date(), p = (x:number)=>x.toString().padStart(2,'0');
+      return n.getFullYear() + "-" + p(n.getMonth() + 1) + "-" + p(n.getDate());
+      ;
+    }
+
+
+  calcAverages(records: any[]) {
+ if (records.length === 0) return;
+
+    // 過濾有上班卡的
+    const validClockIns = records.filter(r => r.clockOn);
+    const validClockOuts = records.filter(r => r.clockOff);
+    const validWorking = records.filter(r => r.totalHour);
+
+    // 平均上班時間
+    if (validClockIns.length) {
+      const avgInMinutes = Math.floor(
+        validClockIns.map(r => this.timeToMinutes(r.clockOn)).reduce((a, b) => a + b, 0) / validClockIns.length
+      );
+      this.avgCheckIn = this.minutesToTime(avgInMinutes);
+    } else {
+      this.avgCheckIn = '-';
+    }
+
+    // 平均下班時間
+    if (validClockOuts.length) {
+      //數字 無條件捨去（往下取整數）
+      const avgOutMinutes = Math.floor(
+        validClockOuts.map(r => this.timeToMinutes(r.clockOff)).reduce((a, b) => a + b, 0) / validClockOuts.length
+      );
+      this.avgCheckOut = this.minutesToTime(avgOutMinutes);
+    } else {
+      this.avgCheckOut = '-';
+    }
+
+    // 平均工時
+    if (validWorking.length) {
+      const avgHr = (
+        validWorking.map(r => r.totalHour ).reduce((a, b) => a + b, 0) / validWorking.length
+        //四捨五入到小數點後 1 位
+      ).toFixed(1);
+      this.avgWorkHr = avgHr + " hr";
+    } else {
+      this.avgWorkHr = '-';
+    }
+
+    // 缺勤/請假 (只要 clockOn 和 clockOff 都沒打)
+    const absentCount = records.filter(r => !r.clockOn && !r.clockOff).length;
+    this.absentLeaves = absentCount+"天";
+  }
+
+//把分鐘換算成小時+分鐘
+  private minutesToTime(mins: number): string {
+    const h = Math.floor(mins / 60).toString().padStart(2, '0');
+    const m = (mins % 60).toString().padStart(2, '0');
+    return h + ":" + m;
+  }
+//把小時換成分鐘
+  private timeToMinutes(time: string): number {
+    if (!time) return 0;
+    //split(':') 的作用就是 把字串按照 : 這個符號切開，變成一個陣列。
+    const [h, m] = time.split(':').map(Number);
+    return h * 60 + m ;
+  }
+
+//全部歸零
   private resetAverages(): void {
     this.avgCheckIn = '-';
     this.avgCheckOut = '-';
     this.avgWorkHr = '-';
     this.absentLeaves = '0';
   }
+
+time: any[] = [];
+
+
+
+  months = [
+    '一月', '二月', '三月', '四月', '五月', '六月',
+    '七月', '八月', '九月', '十月', '十一月', '十二月'
+  ];
 
   //切換下一個月的方法
   prevMonth() {
@@ -198,7 +290,7 @@ export class SchedulingComponent implements OnInit {
   //抓當日月份
   currentMonthIndex = new Date().getMonth();
 
-  
+  //取出當日月份的第一天和最後一天還有這個月總共的天數
   private currentMonthWindow() {
     const today = new Date();
     const y = today.getFullYear();             // 先抓今年
@@ -215,16 +307,14 @@ export class SchedulingComponent implements OnInit {
     };
   }
   
-
-  private findTodayRecord() {
-    const today = this.todayLocal();
-    return this.workLogs.find(r => r.rawDate === today) ?? null;
+  //從數字轉成字串讓後端可以接收
+  private formatDateLocal(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return y + "-" + m + "-" + day;
   }
 
-  private todayLocal(): string {
-    const n = new Date(), p = (x:number)=>x.toString().padStart(2,'0');
-    return `${n.getFullYear()}-${p(n.getMonth()+1)}-${p(n.getDate())}`;
-  }
 
   close() {
     const employeeId = localStorage.getItem('employeeId');
@@ -329,22 +419,13 @@ loadWeekSlotsForCurrentWeek(): void {
 }
 
 
-
-
-
-
-months = [
-  '一月', '二月', '三月', '四月', '五月', '六月',
-  '七月', '八月', '九月', '十月', '十一月', '十二月'
-];
-
   get currentMonthName() {
     return this.months[this.currentMonthIndex];
   }
 
 
 
-  workLogs: any[] = [];
+
 
 
 
@@ -464,64 +545,7 @@ shiftTag(s: WeekSlot): 'morning' | 'afternoon' | 'night' {
   }
   
 
-  
 
-
-
-  calcAverages(records: any[]) {
-    if (!records.length) return;
-
-    // 過濾有上班卡的
-    const validClockIns = records.filter(r => r.clockOn);
-    const validClockOuts = records.filter(r => r.clockOff);
-    const validWorking = records.filter(r => r.totalHour);
-
-    // 平均上班時間
-    if (validClockIns.length) {
-      const avgInMinutes = Math.floor(
-        validClockIns.map(r => this.timeToMinutes(r.clockOn)).reduce((a, b) => a + b, 0) / validClockIns.length
-      );
-      this.avgCheckIn = this.minutesToTime(avgInMinutes);
-    } else {
-      this.avgCheckIn = '-';
-    }
-
-    // 平均下班時間
-    if (validClockOuts.length) {
-      const avgOutMinutes = Math.floor(
-        validClockOuts.map(r => this.timeToMinutes(r.clockOff)).reduce((a, b) => a + b, 0) / validClockOuts.length
-      );
-      this.avgCheckOut = this.minutesToTime(avgOutMinutes);
-    } else {
-      this.avgCheckOut = '-';
-    }
-
-    // 平均工時
-    if (validWorking.length) {
-      const avgHr = (
-        validWorking.map(r => r.totalHour || 0).reduce((a, b) => a + b, 0) / validWorking.length
-      ).toFixed(2);
-      this.avgWorkHr = `${avgHr} hr`;
-    } else {
-      this.avgWorkHr = '-';
-    }
-
-    // 缺勤/請假 (只要 clockOn 和 clockOff 都沒打)
-    const absentCount = records.filter(r => !r.clockOn && !r.clockOff).length;
-    this.absentLeaves = `${absentCount}`;
-  }
-
-  private timeToMinutes(time: string): number {
-    if (!time) return 0;
-    const [h, m, s] = time.split(':').map(Number);
-    return h * 60 + m + (s >= 30 ? 1 : 0); // 秒數 >=30 就進位
-  }
-
-  private minutesToTime(mins: number): string {
-    const h = Math.floor(mins / 60).toString().padStart(2, '0');
-    const m = (mins % 60).toString().padStart(2, '0');
-    return `${h}:${m}`;
-  }
   showSchedule() {
     this.viewMode = 'schedule';
   
@@ -547,13 +571,7 @@ shiftTag(s: WeekSlot): 'morning' | 'afternoon' | 'night' {
   
   
 
-  private formatDateLocal(d: Date): string {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
-  }
-  
+
 
   
   loadPreSchedule() {
