@@ -322,11 +322,11 @@ time: any[] = [];
       width: '900px',
       height: '700px',
       panelClass: 'no-scroll',
-      maxHeight: 'none',
       maxWidth: '100vw', 
       data: { employeeId } 
     });
   }
+
   dateKey(d: Date): string {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');

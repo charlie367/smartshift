@@ -17,13 +17,14 @@ export class ScheduleService {
   }
 
   updatePreSchedule(req: PreScheduleUpdateReq): Observable<any> {
-    return this.http.post(`${this.apiUrl}/update`, req);
+    return this.http.post(this.apiUrl+"/update", req);
   }
 
 
   getScheduleByEmployeeId(employeeId: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/getScheduleByEmployeeId`, {
-      params: { employeeId }
+    return this.http.get<any>(this.apiUrl + "/getScheduleByEmployeeId", {
+      //params是 HttpClient.get() 這個方法本身允許的「設定選項 (options)」。
+      params: {  employeeId: employeeId }
     });
   }
 }
