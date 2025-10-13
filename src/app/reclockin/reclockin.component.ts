@@ -228,8 +228,8 @@ export class ReclockinComponent implements OnInit, OnDestroy {
     const req = {
       employeeId: employeeId,
       workDate: this.data.workDate,
-      lunchStart: this.restStart ? this.restStart.toTimeString().substring(0, 8) : null,
-      lunchEnd: this.restEnd ? this.restEnd.toTimeString().substring(0, 8) : null,
+      restStart: this.restStart ? this.restStart.toTimeString().substring(0, 8) : null,
+      restEnd: this.restEnd ? this.restEnd.toTimeString().substring(0, 8) : null,
       clockOff: now.toTimeString().substring(0, 8),
       score: this.moodRating
     };

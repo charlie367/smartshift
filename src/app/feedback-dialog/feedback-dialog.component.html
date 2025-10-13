@@ -3,38 +3,32 @@
   <!-- 基本資料 -->
   <div class="userInfo">
     <div class="fillinRow">
-      <label for="employeeId" style="font-weight: bold;">員工編號:</label>
-      <input id="employeeId" class="inputCss"
-             [(ngModel)]="form.employeeId" placeholder="例如 E0001">
+      <label style="font-weight: bold;">員工編號:</label>
+      <input id="employeeId" class="inputCss" [(ngModel)]="form.employeeId" placeholder="例如 E0001">
     </div>
 
     <div class="fillinRow">
-      <label for="title" style="font-weight: bold;">標題:</label>
-      <input id="title" class="inputCss"
-             [(ngModel)]="form.title" placeholder="請輸入標題">
+      <label style="font-weight: bold;">標題:</label>
+      <input id="title" class="inputCss" [(ngModel)]="form.title" placeholder="請輸入標題">
     </div>
   </div>
 
   <!-- 意見回饋 -->
   <div class="feedback">
     <p class="title">訊息內容</p>
-    <textarea class="areaCss"
-              [(ngModel)]="form.message"
-              placeholder="請輸入內容"></textarea>
+    <textarea class="areaCss" [(ngModel)]="form.message" placeholder="請輸入內容"></textarea>
   </div>
 
   <!-- 按鈕 -->
   <div class="btnRow">
     <button id="button-1" class="button" (click)="onClose()">
       取消
-      <img id="arrow-hover" src="https://img.icons8.com/ios-filled/50/ff0000/paper-plane.png"/>
+      <img id="arrow-hover" src="https://img.icons8.com/ios-filled/50/ff0000/paper-plane.png" />
     </button>
 
-    <button id="button-1" class="button"
-            (click)="sendComment()"
-            [disabled]="loading || !formOk()">
+    <button id="button-1" class="button" (click)="sendComment()" [disabled]="loading">
       送出
-      <img id="arrow-hover" src="https://img.icons8.com/ios-filled/50/000000/paper-plane.png"/>
+      <img id="arrow-hover" src="https://img.icons8.com/ios-filled/50/000000/paper-plane.png" />
     </button>
   </div>
 </div>
