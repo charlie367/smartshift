@@ -30,3 +30,12 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; background-
 /* 只在 Dialog 開啟時，保險地關掉整頁水平捲軸 */
 body.cdk-global-scrollblock { overflow-x: hidden !important; }
 
+
+/* 移除 Angular Material 外層白底，只保留你自己寫的 dialog-content */
+.shift-dialog-panel .mat-mdc-dialog-surface {
+  //強制把這個元素的背景色改成透明。
+  background: transparent !important;
+  //把預設的陰影效果強制取消。
+  box-shadow: none !important;
+  padding: 0 !important;
+}

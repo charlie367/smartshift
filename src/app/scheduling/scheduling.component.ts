@@ -69,6 +69,7 @@ interface Message {
 })
 export class SchedulingComponent implements OnInit {
 
+  //是用來生成變數好控制畫面的渲染
   @ViewChild('scheduler', { static: false }) scheduler!: DayPilotSchedulerComponent;
 
   checkingClock = false;
@@ -86,7 +87,6 @@ export class SchedulingComponent implements OnInit {
     private router: Router,
     private dialog: MatDialog,
     private employeeService: EmployeeService,
-    private cdr: ChangeDetectorRef
   ) {}
 
 
@@ -287,33 +287,7 @@ time: any[] = [];
     }
   }
 
-  //抓當日月份
-  currentMonthIndex = new Date().getMonth();
 
-  //取出當日月份的第一天和最後一天還有這個月總共的天數
-  private currentMonthWindow() {
-    const today = new Date();
-    const y = today.getFullYear();             // 先抓今年
-    const m = this.currentMonthIndex;          // 用 currentMonthIndex 來決定月份 (0=一月)
-  
-    const first = new Date(y, m, 1);           // 當月 1 號
-    const last  = new Date(y, m + 1, 0);       // 當月最後一天
-    const days = last.getDate();
-  
-    return { 
-      firstDay: this.formatDateLocal(first), 
-      lastDay: this.formatDateLocal(last),     // 加這個，之後過濾會用到
-      days 
-    };
-  }
-  
-  //從數字轉成字串讓後端可以接收
-  private formatDateLocal(d: Date): string {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return y + "-" + m + "-" + day;
-  }
 
 
   close() {
@@ -423,23 +397,7 @@ loadWeekSlotsForCurrentWeek(): void {
     return this.months[this.currentMonthIndex];
   }
 
-
-
-
-
-
-
   events: DayPilot.EventData[] = [];
-
-  
-  
-  config: DayPilot.SchedulerConfig = {
-    startDate: DayPilot.Date.today(),
-    days: 7,
-    scale: 'Hour',
-    cellWidth: 70,
-    resources: []   // 由程式動態塞「我的班表」
-  };
 
   viewMode: 'dashboard' | 'schedule' = 'dashboard';
 
@@ -544,34 +502,127 @@ shiftTag(s: WeekSlot): 'morning' | 'afternoon' | 'night' {
     return "晚班";
   }
   
+  goHome() {
+    this.viewMode = 'dashboard';
+  }
 
+  logout() {
+    localStorage.clear();
+    this.router.navigate(['/']);
+  }
+
+  config: DayPilot.SchedulerConfig = {
+    startDate: DayPilot.Date.today(),
+    days: 7,
+    scale: 'Hour',
+    cellWidth: 70,
+    resources: []   // 由程式動態塞「我的班表」
+  };
 
   showSchedule() {
     this.viewMode = 'schedule';
   
     const employeeId = localStorage.getItem('employeeId')!;
+    const { firstDay, days } = this.currentMonthWindow();
+
     this.config = {
       ...this.config,
-      resources: [{ id: employeeId, name: '我的班表' }],
+      startDate: firstDay,
+      days: days,
     };
-    console.log('[show] employeeId =', employeeId);
-    console.log('[show] config.resources =', this.config.resources);
-  
-    // 視窗切到「下個月」
-    const { firstDay, days } = this.currentMonthWindow();
-    this.config = { ...this.config, startDate: firstDay, days };
-    console.log('[show] window =', { firstDay, days });
-  
-    // 確保 <daypilot-scheduler> 已經渲染，row 先掛上去
-    this.cdr.detectChanges();
-  
-    // 讀取「已核准」的班表
+    
     this.loadFinalSchedule();
   }
   
+    //抓當日月份
+    currentMonthIndex = new Date().getMonth();
+
+  //取出當日月份的第一天和最後一天還有這個月總共的天數
+  private currentMonthWindow() {
+    const today = new Date();
+    const y = today.getFullYear();           
+    const m = this.currentMonthIndex;          
+  
+    const first = new Date(y, m, 1);       
+    const last  = new Date(y, m + 1, 0);
+    const days = last.getDate();
+  
+    return { 
+      firstDay: this.formatDateLocal(first), 
+      lastDay: this.formatDateLocal(last),     
+      days 
+    };
+  }
   
 
+  //從數字轉成字串讓後端可以接收
+  private formatDateLocal(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return y + "-" + m + "-" + day;
+  }
+  
+  loadFinalSchedule() {
 
+    this.http.get<any>("http://localhost:8080/PreSchedule/getAllSchedule").subscribe({
+      next: (res) => {
+        const listRaw: any[] =  res.preScheduleList ?? [];
+        // 建立所有員工資源
+        const employees = new Map<string, string>();
+
+        for (let i = 0; i < listRaw.length; i++) {
+          const s = listRaw[i]; // 取出第 i 筆資料
+          if (!employees.has(s.employeeId)) {
+            employees.set(s.employeeId, s.employeeName || "");
+          }
+        }
+        // 更新左邊的員工列表
+        this.config = {
+          ...this.config,
+          //Map 的 .entries() 會回傳一個 可迭代物件，裡面每一筆都是 [key, value] 的陣列。
+          resources: Array.from(employees).map(([id, name]) => ({ id, name }))
+        };
+        // 建立 events
+        this.events = listRaw
+        .filter((s: any) => {
+          if (!s.working) return true; // 休假永遠保留
+          return s.startTime && s.endTime && s.startTime !== "00:00:00";
+        })
+        .map((s: any, i: number) => {
+          if (!s.working) {
+            // 休假 → 一整天
+            return {
+              id: i.toString(),
+              text: '休假',
+              start: new DayPilot.Date(s.applyDate + "T00:00:00"),
+              end:   new DayPilot.Date(s.applyDate + "T23:59:59"),
+              resource: s.employeeId,
+              backColor: '#d3d3d3'
+            } as DayPilot.EventData;
+          }
+          // 上班 → 綠色
+          return {
+            id: i.toString(),
+            text: s.startTime + "-" + s.endTime,
+            start: new DayPilot.Date(s.applyDate + "T" + s.startTime),
+            end:   new DayPilot.Date(s.applyDate + "T" + s.endTime),
+            resource: s.employeeId,
+            backColor: '#90ee90'
+          } as DayPilot.EventData;
+        });
+  
+
+        //DayPilot Scheduler 套件提供的一個刷新方法，強制讓排班表重新渲染
+        this.scheduler?.control.update();
+      },
+      error: (err) => {
+        this.events = [];
+        this.scheduler?.control.update();
+      }
+    });
+  }
+  
 
   
   loadPreSchedule() {
@@ -626,83 +677,9 @@ shiftTag(s: WeekSlot): 'morning' | 'afternoon' | 'night' {
       });
   }
   
-  
-  loadFinalSchedule() {
-    const url = `http://localhost:8080/PreSchedule/getAllSchedule`;
-    this.http.get<any>(url).subscribe({
-      next: (res) => {
-        const listRaw: any[] = res?.list ?? res?.preScheduleList ?? [];
-        console.log('[final] all schedule:', listRaw);
-  
-        // 建立所有員工資源
-        const employees = new Map<string, string>();
-        listRaw.forEach(s => {
-          if (!employees.has(s.employeeId)) {
-            employees.set(s.employeeId, s.employeeName || `員工${s.employeeId}`);
-          }
-        });
-  
-        // 更新左邊的員工列表
-        this.config = {
-          ...this.config,
-          resources: Array.from(employees.entries()).map(([id, name]) => ({ id, name }))
-        };
-  
-        // 建立 events
-        this.events = listRaw
-        .filter((s: any) => {
-          if (!s.working) return true; // 休假永遠保留
-          return s.startTime && s.endTime && s.startTime !== "00:00:00" && s.endTime !== "00:00:00";
-        })
-        .map((s: any, i: number) => {
-          if (!s.working) {
-            // 休假 → 一整天
-            return {
-              id: i.toString(),
-              text: '休假',
-              start: new DayPilot.Date(`${s.applyDate}T00:00:00`),
-              end:   new DayPilot.Date(`${s.applyDate}T23:59:59`),
-              resource: s.employeeId,
-              backColor: '#d3d3d3'
-            } as DayPilot.EventData;
-          }
-          // 上班 → 綠色
-          return {
-            id: i.toString(),
-            text: `${s.startTime} - ${s.endTime}`,
-            start: new DayPilot.Date(`${s.applyDate}T${s.startTime}`),
-            end:   new DayPilot.Date(`${s.applyDate}T${s.endTime}`),
-            resource: s.employeeId,
-            backColor: '#90ee90'
-          } as DayPilot.EventData;
-        });
-  
-        // 更新畫面
-        setTimeout(() => this.scheduler?.control.update(), 0);
-      },
-      error: (err) => {
-        console.error('[final] API error:', err);
-        this.events = [];
-        this.scheduler?.control.update();
-      }
-    });
-  }
-  
-  
-
-  
   private lastSeenDate = this.todayLocal();
 private dayTickTimer: any;
 
-  goHome() {
-    this.viewMode = 'dashboard';
-  }
-
-  // todayLocal() 與 findTodayRecord() 你已經有，保留即可
-
-  
-  
-  
 
   // 取得當週週日
   getStartOfWeek(date: Date): Date {
@@ -767,25 +744,13 @@ private dayTickTimer: any;
   openFeedbackDialog() {
     const dialogRef = this.dialog.open(FeedbackDialogComponent, {
       autoFocus: false,
-      restoreFocus: false,
       width: undefined,
       height: undefined,
       maxWidth: 'none',
       maxHeight: 'none',
-      panelClass: 'punch-dialog-panel',
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        console.log('使用者填寫的資料:', result);
-        // 這裡可以送 API 或顯示訊息
-      }
     });
   }
 
 
-  logout() {
-    localStorage.clear();
-    this.router.navigate(['/']);
-  }
+
 }

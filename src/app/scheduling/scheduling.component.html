@@ -37,16 +37,19 @@
   </div>
   <div class="logout-section">
     <hr class="divider" />
-    <div class="menu-item logout" *ngIf="viewMode === 'dashboard'" (click)="logout()">
-      <mat-icon>logout</mat-icon>
-      <label>登出</label>
-    </div>
-    <div class="menu-item logout" *ngIf="viewMode === 'schedule'" (click)="goHome()">
-      <mat-icon>home</mat-icon>
-      <label>回首頁</label>
-    </div>
-  </div>
   
+    @if (viewMode === 'dashboard') {
+      <div class="menu-item logout" (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        <label>登出</label>
+      </div>
+    } @else if (viewMode === 'schedule') {
+      <div class="menu-item logout" (click)="goHome()">
+        <mat-icon>home</mat-icon>
+        <label>回首頁</label>
+      </div>
+    }
+  </div>
   
 </div>
 <div *ngIf="viewMode === 'dashboard'">

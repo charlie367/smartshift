@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { PreScheduleUpdateReq } from '../pre-schedule-dialog/pre-schedule-dialog.component';
+
 
 @Injectable({
   providedIn: 'root'
@@ -16,9 +16,7 @@ export class ScheduleService {
     return this.http.get<any>(`${this.apiUrl}/getAllSchedule`);
   }
 
-  updatePreSchedule(req: PreScheduleUpdateReq): Observable<any> {
-    return this.http.post(this.apiUrl+"/update", req);
-  }
+
 
 
   getScheduleByEmployeeId(employeeId: string): Observable<any> {
