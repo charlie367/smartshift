@@ -1,13 +1,13 @@
 import { Component, ViewChild } from '@angular/core';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { HttpClientService } from '../../@Service/HttpClientService ';
+import { HttpClientService } from '../../@Service/HttpClientService';
 import { MatInputModule } from "@angular/material/input";
 import { MatOption, MatSelectModule } from "@angular/material/select";
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
-import { UpdateClock } from '../../@Dialog/@Clock/update-clock/update-clock';
+import { ViewClock } from '../../@Dialog/@Clock/view-clock/view-clock';
 import { PunchInLate } from '../../@Dialog/@Clock/punch-in-late/punch-in-late';
 
 
@@ -83,10 +83,11 @@ export class BackClock {
 
   //查詢該員工的打卡紀錄
   showTimeRecord(id:number){
-    const dialogRef = this.dialog.open(UpdateClock,{
-      width: '700px',
-      height: '700px',
-      panelClass: 'custom-dialog',
+    const dialogRef = this.dialog.open(ViewClock,{
+      width: '600px',
+      minHeight: '400px',
+      maxHeight: '80vh',
+      panelClass: 'view-clock-dialog',
       data:{
         id:id
       }

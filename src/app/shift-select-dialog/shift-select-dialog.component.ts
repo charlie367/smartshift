@@ -8,7 +8,7 @@ interface ShiftSelectData {
   shift: string;
   shift2: string;
   dayOff: boolean;
-  noPreference: boolean;
+  // noPreference: boolean;
   displayText?: string;
 }
 
@@ -25,7 +25,7 @@ export class ShiftSelectDialogComponent {
   shift2 = '';
   showSecondShift = false;
   dayOff = false;
-  noPreference = false;
+  // noPreference = false;
   dateText = '';
   weekdayNames = ['日', '一', '二', '三', '四', '五', '六'];
 
@@ -44,7 +44,7 @@ export class ShiftSelectDialogComponent {
       this.shift = data.value.shift;
       this.shift2 = data.value.shift2;
       this.dayOff = data.value.dayOff;
-      this.noPreference = data.value.noPreference;
+      // this.noPreference = data.value.noPreference;
       //!!強制轉成布林值
       this.showSecondShift = !!data.value.shift2;
     }
@@ -61,25 +61,25 @@ export class ShiftSelectDialogComponent {
 
   onDayOffChange() {
     if (this.dayOff) {
-      this.noPreference = false;
+      // this.noPreference = false;
       this.shift = '';
       this.shift2 = '';
       this.showSecondShift = false;
     }
   }
 
-  onNoPreferenceChange() {
-    if (this.noPreference) {
-      this.dayOff = false;
-      this.shift = '';
-      this.shift2 = '';
-      this.showSecondShift = false;
-    }
-  }
+  // onNoPreferenceChange() {
+  //   if (this.noPreference) {
+  //     this.dayOff = false;
+  //     this.shift = '';
+  //     this.shift2 = '';
+  //     this.showSecondShift = false;
+  //   }
+  // }
 
   confirm() {
     // 沒選任何東西
-    if (!this.shift && !this.shift2 && !this.dayOff && !this.noPreference) {
+    if (!this.shift && !this.shift2 && !this.dayOff) {
       this.dialog.open(ErrorDialogComponent, {
         width: '300px',
         data: { message: '請至少選擇班別或特殊選項', autoCloseMs: 4000 }
@@ -88,7 +88,7 @@ export class ShiftSelectDialogComponent {
     }
 
     // 選了班別 + (休假/沒意見)
-    if ((this.shift || this.shift2) && (this.dayOff || this.noPreference)) {
+    if ((this.shift || this.shift2) && this.dayOff ){
       this.dialog.open(ErrorDialogComponent, {
         width: '320px',
         data: { message: '不能同時選擇班別和休假/沒意見', autoCloseMs: 4000 }
@@ -108,8 +108,6 @@ export class ShiftSelectDialogComponent {
 
     if (this.dayOff) {
       displayText = '休息';
-    } else if (this.noPreference) {
-      displayText = '沒意見';
     } else {
       const shifts: string[] = [];
       if (this.shift) shifts.push(this.shift);
@@ -122,7 +120,7 @@ export class ShiftSelectDialogComponent {
       shift: this.shift,
       shift2: this.shift2,
       dayOff: this.dayOff,
-      noPreference: this.noPreference,
+      // noPreference: this.noPreference,
       displayText
     });
   }

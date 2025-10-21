@@ -1,9 +1,15 @@
 <div class="top-tag">   
   
-   <div class="menu-item1" (click)="openAnnouncementDialog()">
-  <mat-icon>notifications</mat-icon>
-
-</div>
+  <div class="menu-item1" (click)="openAnnouncementDialog()">
+    <mat-icon
+      matBadge="{{ unreadCount }}"
+      [matBadgeHidden]="unreadCount === 0"
+      matBadgeColor="warn"
+      matBadgePosition="above after">
+      notifications
+    </mat-icon>
+  </div>
+  
 
 </div>
 
@@ -33,7 +39,7 @@
 
   <div class="menu-item" routerLink="/leave" style="cursor: pointer;">
     <mat-icon>text_snippet</mat-icon>
-    <label>請假狀況</label>
+    <label>請假申請</label>
   </div>
   <div class="logout-section">
     <hr class="divider" />
@@ -173,7 +179,7 @@
         <img src="arrow-left.png" alt=""style="width: 24px;" />
       </button>
       <div class="month-title">
-     
+
         {{ currentMonthName }}
       </div>
       <button class="arrow" (click)="nextMonth()">  <img src="arrow-right.png" alt=""style="width: 24px;" /></button>
@@ -250,7 +256,7 @@
 
             <div class="extra">班別：{{ s.type }}</div>
           </div>
-          <div class="role">職種：{{ s.role }}</div>
+          <div class="role">職別：{{ s.role }}</div>
         </div>
       </div>
     </div>

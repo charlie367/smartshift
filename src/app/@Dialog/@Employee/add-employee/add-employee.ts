@@ -3,7 +3,7 @@ import { MAT_DIALOG_DATA, MatDialog, MatDialogActions, MatDialogContent, MatDial
 import { MatInputModule } from "@angular/material/input";
 import { MatSelectModule } from "@angular/material/select";
 import { FormsModule } from '@angular/forms';
-import { HttpClientService } from '../../../@Service/HttpClientService ';
+import { HttpClientService } from '../../../@Service/HttpClientService';
 import { Fail } from '../../fail/fail';
 import { Success } from '../../success/success';
 
@@ -41,7 +41,7 @@ export class AddEmployee {
   addEmployeeList:any={
     id:'',
     name:'',
-    employmentStatus:'',
+    employmentStatus:'在職中',
     phone:'',
     email:'',
     title:'',

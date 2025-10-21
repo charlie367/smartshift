@@ -26,16 +26,8 @@
       <mat-label>職位</mat-label>
       <mat-select (selectionChange)="onStateChange()" [(ngModel)]="searchTitle">
         <mat-option value="">全部</mat-option>
-        @for(item of originalData;track $index){}
-        <mat-option value="執行長">	執行長</mat-option>
-        <mat-option value="總經理">	總經理</mat-option>
-        <mat-option value="技術總監">技術總監</mat-option>
-        <mat-option value="策畫經理">	策畫經理</mat-option>
-        <mat-option value="美術監督">	美術監督</mat-option>
-        <mat-option value="設備經理">	設備經理</mat-option>
-        <mat-option value="程式設計師">	程式設計師</mat-option>
-        <mat-option value="正職員工">	正職員工</mat-option>
-        <mat-option value="兼職員工">	兼職員工</mat-option>
+          <mat-option value="主管">主管</mat-option>
+          <mat-option value="正職員工">正職員工</mat-option>
       </mat-select>
     </mat-form-field>
 
@@ -90,7 +82,7 @@
     <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
   </table>
 
-  <mat-paginator [pageSizeOptions]="[10, 500, 1000]"
+  <mat-paginator [pageSizeOptions]="[20, 50, 100]"
                  showFirstLastButtons
                  aria-label="選擇每頁筆數">
   </mat-paginator>

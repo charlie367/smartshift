@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 
 import { FormsModule } from "@angular/forms";
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { HttpClientService } from '../../../@Service/HttpClientService ';
+import { HttpClientService } from '../../../@Service/HttpClientService';
 import { Fail } from '../../fail/fail';
 import { Success } from '../../success/success';
 

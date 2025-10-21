@@ -75,6 +75,15 @@
   background-color: #357ab8;
 }
 
+.btn.draft {
+  background-color: #ffd54f;
+  color: #333;
+}
+
+.btn.draft:hover {
+  background-color: #ffca28;
+}
+
 /* 取消按鈕 */
 .btn.cancel {
   background-color: #e0e0e0;

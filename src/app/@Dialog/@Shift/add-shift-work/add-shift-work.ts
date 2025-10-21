@@ -4,9 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { MatDialogRef, MatDialogModule, MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSelectModule } from "@angular/material/select";
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { addDays, format, lastDayOfMonth } from 'date-fns';
-import { firstValueFrom } from 'rxjs';
-import { HttpClientService } from '../../../@Service/HttpClientService ';
+import { addDays, endOfWeek, format, isWithinInterval, parseISO, startOfWeek, subDays } from 'date-fns';
+import { HttpClientService } from '../../../@Service/HttpClientService';
 import { Fail } from '../../fail/fail';
 import { Success } from '../../success/success';
 
@@ -39,56 +38,14 @@ export class AddShiftWork {
   update: any = {
     employeeId: '',
     applyDate: '',
-    working: true,
     shiftWorkId: '',
     accept: true
   };
   employeeList: any[] = [];
-  timeList = ["06:00~11:00", "11:00~16:00", "16:00~21:00"]
+  timeList = ["08:00 ~ 12:00", "12:00 ~ 16:00", "16:00 ~ 20:00", "20:00 ~ 00:00"]
   today = format(new Date, 'yyyy-MM-dd');
   tomorrow = format(addDays(this.today, 1), 'yyyy-MM-dd');
 
-  //選定排班人員
-  checkShift() {
-    if(!this.update.employeeId){
-      this.dialog.open(Fail, {width: '150px',data: { message: "員工ID尚未選取"}});
-      return;
-    }
-    if(!this.update.applyDate){
-      this.dialog.open(Fail, {width: '150px',data: { message: "日期尚未選取"}});
-      return;
-    }
-    if(!this.update.shiftWorkId){
-      this.dialog.open(Fail, {width: '150px',data: { message: "時段尚未選取"}});
-      return;
-    }
-    const duplicate = this.shiftList.preSchduleUpdateVo.some(
-      (item: any) => item.employeeId === this.update.employeeId && item.applyDate === this.update.applyDate
-    );
-    if(duplicate){
-      this.dialog.open(Fail, {width: '150px', data: { message: "該員工此日期已選過排班" }});
-      return;
-    }
-    this.shiftList.preSchduleUpdateVo.push({ ...this.update })
-    this.update = {
-      employeeId: '',
-      applyDate: '',
-      working: true,
-      shiftWorkId: '',
-      accept: true
-    };
-  }
-
-  //取消已選排班人員
-  checkCancel() {
-    this.update = {
-      employeeId: '',
-      applyDate: '',
-      working: true,
-      shiftWorkId: '',
-      accept: true
-    };
-  }
 
   //移除一筆待定班表
   removeShift(index: number) {
@@ -96,59 +53,146 @@ export class AddShiftWork {
   }
 
   //送出排班並新增
-  async addShift() {
+  addShift() {
     if (this.shiftList.preSchduleUpdateVo.length === 0) {
-      this.dialog.open(Fail, { width: '150px', data: { message: "尚未有任何排班" } });
+      this.dialog.open(Fail, { width: '150px', data: { message: "尚未有任何排班" }});
       return;
     }
 
-    const errors: string[] = [];
-
-    for (let item of this.shiftList.preSchduleUpdateVo) {
-      //抓可排班日期
-      const work: any = await firstValueFrom(
-        this.http.getApi(`http://localhost:8080/PreSchedule/getStaffCanWorkDay?employeeId=${item.employeeId}`)
-      );
-
-      //抓已排班資料
-      const res: any = await firstValueFrom(
-        this.http.getApi(`http://localhost:8080/PreSchedule/getAcceptScheduleByEmployeeId?employeeId=${item.employeeId}`)
-      );
-
-      //檢查是否那天有給班
-      const canWorkDay = Array.isArray(work.applyDate) && work.applyDate.some((day: any) => day === item.applyDate);
-
-      //檢查是否那天已有排班
-      const exist = Array.isArray(res.preScheduleList) && res.preScheduleList.some((s: any) => s.applyDate === item.applyDate);
-
-      if (exist) {
-        errors.push(`${item.employeeId} ${item.applyDate} 該日期已排班`);
-      } else if (!canWorkDay) {
-        errors.push(`${item.employeeId} ${item.applyDate} 該日期尚未給班`);
+    this.http.postApi(`http://localhost:8080/PreSchedule/addSchedule`,this.shiftList).subscribe((res:any)=>{
+      if(res.code == 200){
+        this.dialog.open(Success,{width:'150px'})
+        this.dialogRef.close(true)
+      }else{
+        this.dialog.open(Fail,{width:'150px',data:{message:res.message}})
       }
-    }
+    })
 
-    if (errors.length > 0) {
-      this.dialog.open(Fail, { width: '150px', data: { message: errors.join('\n') } });
-      return;
-    }
-
-    //都沒有錯更新預排班
-    const postRes: any = await firstValueFrom(
-      this.http.postApi(`http://localhost:8080/PreSchedule/update`, this.shiftList)
-    );
-
-    if (postRes.code === 200) {
-      this.dialog.open(Success, { width: '150px' });
-      this.dialogRef.close(true);
-    } else {
-      this.dialog.open(Fail, { width: '150px', data: { message: postRes.message } });
-    }
   }
 
   //取消
   Oncancel() {
     this.dialogRef.close();
+  }
+
+  validShift(){
+
+    this.http.getApi(`http://localhost:8080/PreSchedule/prettySchedule`).subscribe((res:any)=>{
+
+      const duplicate = this.shiftList.preSchduleUpdateVo.some((item:any,index:number)=>
+        item.applyDate == this.update.applyDate && item.shiftWorkId == this.update.shiftWorkId
+      )
+
+      if(duplicate){
+        this.dialog.open(Fail,{width:'150px',data:{message:`${this.update.employeeId} 該員工新增班別{${this.update.shiftWorkId}}重複`}})
+        this.dataTidy(false);
+        return;
+      }
+
+      const employee = res.employeeList.find(
+        (item:any) => item.employeeId == this.update.employeeId
+      )
+
+      if(!employee){
+        this.dataTidy(true);
+      }
+
+      const targetDate = new Date(this.update.applyDate);
+      const weekStart = startOfWeek(targetDate, { weekStartsOn: 1 });
+      const weekEnd = endOfWeek(targetDate, { weekStartsOn: 1 })
+
+      const weekDays = employee.date.filter((d: any) => {
+        const apply = parseISO(d.applyDate);
+        const inWeek = isWithinInterval(apply, { start: weekStart, end: weekEnd });
+        const hasValidShift = d.shiftDetailList.some((shiftId: any) => shiftId.shiftWorkId != 0);
+        return inWeek && hasValidShift;
+      });
+
+      const totalHours = weekDays.reduce((sum: number, day: any) => {
+        return sum + (day.shiftDetailList?.length || 0) * 4;
+      }, 0);
+
+      const selectDay = employee.date.find(
+        (date: any) => date.applyDate === this.update.applyDate
+      );
+
+      const holiday = selectDay.shiftDetailList.some((shift:any)=>
+        shift.shiftWorkId == 0
+      );
+
+      if(!selectDay){
+        this.dataTidy(true)
+      }
+
+      const duplicateShift = selectDay.shiftDetailList.some((item:any)=>
+        item.shiftWorkId == this.update.shiftWorkId
+      )
+
+      const twoShiftWork = !!(selectDay && selectDay.shiftDetailList && selectDay.shiftDetailList.length >= 2);
+
+      if(holiday){
+        this.dialog.open(Fail,{width:'150px',data:{message:`${this.update.employeeId} 該員工當天休假`}});
+        this.dataTidy(false);
+        return;
+      }
+
+      if(duplicateShift){
+        this.dialog.open(Fail,{width:'150px',data:{message:`${this.update.employeeId} 該員工當天班別{${this.update.shiftWorkId}}重複`}});
+        this.dataTidy(false);
+        return;
+      }
+
+      if(totalHours >= 40){
+        this.dialog.open(Fail, {width: '150px',data: { message: `${this.update.employeeId} 該員工這周工時已超過`}});
+        this.dataTidy(false);
+        return;
+      }
+
+      const targetDateObj = parseISO(this.update.applyDate);
+      const startDate = subDays(targetDateObj, 4);
+      const endDate = targetDateObj;
+
+      const prevDays = employee.date.filter((d: any) => {
+        const apply = parseISO(d.applyDate);
+        const inInterval = isWithinInterval(apply, { start: startDate, end: endDate });
+        const hasValidShift = d.shiftDetailList.some((shiftId: any) => shiftId.shiftWorkId != 0);
+        return inInterval && hasValidShift;
+      });
+
+      if(prevDays.length >= 5){
+        this.dialog.open(Fail, {width: '150px',data: { message: `${this.update.employeeId} 該員工已達連續5天上班日`}});
+        this.dataTidy(false);
+        return;
+      }
+
+      if(twoShiftWork){
+        this.dialog.open(Fail, {width: '150px',data: { message: `${this.update.employeeId} 該員工該天已有兩個班`}});
+        this.dataTidy(false);
+        return;
+      }
+
+      this.dataTidy(true);
+
+    })
+  }
+
+  dataTidy(check:boolean){
+    if(check){
+      this.shiftList.preSchduleUpdateVo.push({ ...this.update })
+      this.update = {
+        employeeId: '',
+        applyDate: '',
+        shiftWorkId: '',
+        accept: true
+      };
+    }else{
+      this.update = {
+        employeeId: '',
+        applyDate: '',
+        shiftWorkId: '',
+        accept: true
+      };
+    }
   }
 
 }

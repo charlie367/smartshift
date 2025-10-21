@@ -1,86 +1,101 @@
-/* 整體表單排版 */
+/* ===== Dialog 整體樣式 ===== */
 .notification-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 20px;
-  max-width: 500px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #fff;
-  border-radius: 10px;
+  gap: 18px;
+  padding: 28px;
+  background: linear-gradient(to bottom right, #ffffff, #f8f9fb);
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
+  width: 100%;
+  max-width: 520px;
+  margin: auto;
 }
 
-/* 標題樣式 */
+/* 標題 */
 .dialog-title {
-  margin-bottom: 10px;
-  font-size: 1.5rem;
-  color: #333;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #3a4b9f;
   text-align: center;
+  margin-bottom: 16px;
 }
 
-/* 每個欄位容器 */
+/* ===== 表單欄位 ===== */
 .form-group {
   display: flex;
   flex-direction: column;
 }
 
-/* 標籤樣式 */
 .form-group label {
+  font-weight: 600;
+  color: #37474f;
   margin-bottom: 6px;
-  font-weight: bold;
-  color: #444;
 }
 
-/* 輸入框和 textarea 樣式 */
 .form-control {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  padding: 10px 12px;
+  border: 1px solid #d0d4db;
+  border-radius: 8px;
   font-size: 1rem;
-  transition: border-color 0.3s;
+  resize: none;
+  transition: all 0.2s ease;
+  background-color: #fff;
 }
 
-/* 聚焦效果 */
 .form-control:focus {
+  border-color: #5b7bfa;
+  box-shadow: 0 0 6px rgba(91, 123, 250, 0.3);
   outline: none;
-  border-color: #4a90e2;
-  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
 }
 
-/* 按鈕群組排版 */
+/* ===== 按鈕群組 ===== */
 .button-group {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 10px;
+  margin-top: 14px;
 }
 
-/* 通用按鈕樣式 */
+/* 通用按鈕基礎樣式 */
 .btn {
-  padding: 10px 20px;
-  font-size: 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.3s;
   border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  letter-spacing: 0.5px;
 }
 
-/* 儲存按鈕 */
-.btn.submit {
-  background-color: #4a90e2;
+/* 主按鈕（發布） */
+.btn-primary {
+  background-color: #5b7bfa;
   color: white;
 }
+.btn-primary:hover {
+  background-color: #4a68e5;
+  box-shadow: 0 4px 10px rgba(74, 104, 229, 0.3);
+}
 
-.btn.submit:hover {
-  background-color: #357ab8;
+/* 次要按鈕（暫存） */
+.btn-secondary {
+  background-color: #ffd85b;
+  color: #333;
+}
+.btn-secondary:hover {
+  background-color: #ffcc33;
+  box-shadow: 0 4px 10px rgba(255, 204, 51, 0.3);
 }
 
 /* 取消按鈕 */
-.btn.cancel {
+.btn-cancel {
   background-color: #e0e0e0;
   color: #333;
 }
-
-.btn.cancel:hover {
-  background-color: #c2c2c2;
+.btn-cancel:hover {
+  background-color: #c6c6c6;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }

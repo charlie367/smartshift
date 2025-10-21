@@ -108,8 +108,48 @@
 /* 成功提示 */
 .success-icon{font-size:64px;line-height:1;display:block;margin-bottom:12px}
 .modal-title{font-size:24px;font-weight:800;margin:6px 0 14px}
-.modal-content{color:#6b7280;font-weight:600;line-height:1.9;letter-spacing:.5px;margin-bottom:18px}
-.modal-content b{color:#111827}
+/* ✅ 打卡成功彈窗優化 */
+.modal-content {
+  text-align: center;
+  font-weight: bold;
+  line-height: 1.4;
+}
+
+.modal-content p {
+  margin: 4px 0; /* 縮小上下距 */
+  font-size: 15px;
+  font-weight: bold;
+  color: #444;
+}
+
+.modal-content p:first-child {
+  margin-top: 6px;
+}
+
+.modal-content p:last-child {
+  margin-bottom: 6px;
+}
+
+.modal-content div {
+  margin: 4px 0; /* 星星與文字間縮小距離 */
+}
+
+.modal-content b {
+  color: #000;
+}
+
+.success-icon {
+  font-weight: bold;
+  font-size: 56px;
+  margin-bottom: 8px; /* 上方圖示與標題更靠近 */
+}
+
+.modal-title {
+  font-weight: bold;
+  font-size: 20px;
+  margin-bottom: 8px; /* 標題下方距離縮短 */
+}
+
 .close-btn,.cancel-btn,.confirm-btn{border:0;border-radius:999px;padding:10px 22px;font-weight:800;cursor:pointer}
 .close-btn,.cancel-btn{background:#9aa3ae;color:#fff}
 .confirm-btn{background:#1976d2;color:#fff}

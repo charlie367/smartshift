@@ -26,7 +26,7 @@ export class AnnouncementDialogComponent {
 
   // UI 會用到的公告清單（已轉成單一日期）
   notifyList: Notice[] = [];
-  
+  readIds: number[] = []; 
 
   constructor(
     private http: HttpClient,
@@ -36,6 +36,7 @@ export class AnnouncementDialogComponent {
 
   ngOnInit(): void {
     this.fetchNotices();
+    this.markAsRead(); 
   }
 
   /** 從後端抓資料 */
@@ -58,7 +59,15 @@ export class AnnouncementDialogComponent {
         }
       });
   }
-  
+
+  private markAsRead() {
+    this.http.get<any>('http://localhost:8080/notify/searchAll').subscribe({
+      next: (res) => {
+        const ids = (res?.notifyList ?? []).map((n: any) => n.id);
+        localStorage.setItem('readNotices', JSON.stringify(ids));
+      }
+    });
+  }
   /** 後端資料 → 前端 Notice（單一日期） */
   private mapToNotice = (item: any): Notice => {
     return {

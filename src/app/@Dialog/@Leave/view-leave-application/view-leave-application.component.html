@@ -1,0 +1,28 @@
+@for(item of leaveInfoList;track $index){
+  <div class="leave-info">
+    <div class="info-row">
+      <span class="info-label">請假日期：</span>
+      <span class="info-value">
+        {{item.leaveDate}}
+      </span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">請假時段：</span>
+      <span class="info-value">
+        {{ item.startTime }} ~ {{ item.endTime }}
+      </span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">總時數：</span>
+      <span class="info-value">
+        {{ item.leaveHours }} 小時
+      </span>
+    </div>
+  </div>
+}
+@if(checkProve){
+  <div>
+    <h3>請假證明</h3>
+    <img [src]="leaveData.prove">
+  </div>
+}

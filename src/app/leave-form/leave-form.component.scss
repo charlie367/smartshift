@@ -1,191 +1,188 @@
-html, body {
-  height: 100%;
-  margin: 0;  /* 移除預設邊距 */
-}
-
 .leave-wrapper {
   display: flex;
-  justify-content: center;   /* 水平置中 */
-  align-items: flex-start;   /* 改成靠上對齊 */
-    background:#c8e6f7;
-    padding: 40px;
-    min-height: 100vh;  /* 撐滿 body */
-  }
-  
+  justify-content: center;
+  padding: 30px;
+  background-color:#fff8f7;
+  min-height: 100vh;   
   .form-container {
-    width: 100%;
-    max-width: 1000px;
+    width: 90%;
+    max-width: 900px;
     background: #fff;
-    padding: 40px;
+    padding: 30px;
     border-radius: 16px;
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
-    margin-top: 0px;
-  }
-  
-  h1 {
-    margin-bottom: 25px;
-    color: #2d3748;
-    font-size: 28px;
-    font-weight: 700;
-    text-align: center;
-    border-bottom: 2px solid #999;
-    padding-bottom: 15px;
-  }
-  
-  h3,
-  label {
-    font-size: 16px;
-    font-weight: 600;
-    color: #374151;
-    margin-bottom: 8px;
-  }
-  
-  // ========== 共用欄位樣式 ==========
-  .row-1,
-  .time-segment-row {
-    display: flex;
-    gap: 100px;
-    margin-bottom: 25px;
- 
-  
-    .input-group {
-      
-      display: flex;
-      flex-direction: column;
-    }
-  }
-  
-  .botton{
-    display: flex;
-    align-items: center;   /* 垂直置中 */
-    justify-content: center; /* 水平置中 */
-    margin-top: 30px;
-  }
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
-  .form-control,
-  select {
-    width: 200px;
-    height: 45px;
-    padding: 0 14px;
-    box-sizing: border-box;
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 15px;
-    transition: all 0.3s;
-    background: #fff;
-  
-    &:focus {
-      border-color: #3b82f6;
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #2b4c7e;
     }
-  }
-  
-  // ========== 上傳檔案 ==========
-  .upload-section {
-    margin-bottom: 30px;
-  
-    .preview-box {
-      margin-top: 10px;
-      display: flex;
-      flex-wrap: wrap;
+
+    .row-1 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
       gap: 20px;
-  
-      .preview-item {
+      margin-bottom: 20px;
+
+      .input-group {
         display: flex;
         flex-direction: column;
-        align-items: center;
-  
-        img {
-          max-width: 220px;
-          border-radius: 12px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-          margin-bottom: 10px;
+        h3 {
+          margin-bottom: 8px;
+          color: #333;
+        }
+        .form-control {
+          padding: 8px;
+          border-radius: 6px;
+          border: 1px solid #ccc;
         }
       }
     }
-  }
-  
-  // ========== 請假時間段 ==========
-  .period-section {
-    margin-bottom: 30px;
-  
-    .section-header {
+
+    .upload-section {
+      margin: 20px 0;
+      h3 {
+        margin-bottom: 10px;
+      }
+      .upload-box {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 2px dashed #aaa;
+        border-radius: 10px;
+        padding: 20px;
+        background: #fafafa;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background: #f0f0f0;
+        }
+
+        .folder-icon {
+          font-size: 40px;
+        }
+        .upload-text {
+          color: #777;
+          margin-left: 10px;
+        }
+        .preview-in-box {
+          position: relative;
+          img {
+            width: 150px;
+            height: auto;
+            border-radius: 8px;
+          }
+          .btn-remove-inbox {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            border: none;
+            background: red;
+            color: white;
+            font-size: 18px;
+            border-radius: 50%;
+            cursor: pointer;
+          }
+        }
+      }
+    }
+
+    .period-section {
+      margin-top: 30px;
+
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        h3 {
+          color: #2b4c7e;
+        }
+      }
+
+      .period-header {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 80px;
+        font-weight: bold;
+        color: #555;
+        margin: 10px 0;
+      }
+
+      .time-segment-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 80px;
+        gap: 10px;
+        margin-bottom: 10px;
+
+        .form-control {
+          padding: 6px;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+        }
+
+        .btn-danger {
+          background-color: #e74c3c;
+          color: #fff;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          &:hover {
+            background-color: #c0392b;
+          }
+        }
+      }
+    }
+
+    .submit-row {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-    }
-  
-    .time-segment-row {
-      padding: 15px;
-      border: 2px solid #e5e7eb;
-      border-radius: 12px;
-      background: #f9fafb;
-    }
-  }
-  
-  // ========== 送出按鈕 ==========
-  .submit-row {
-    display: flex;
-    justify-content: flex-end;  // 靠右對齊
-    gap: 20px;                  // 兩個按鈕間距
-    margin-top: 30px;
-  }
-  
-  // ========== 按鈕 ==========
-  .btn {
-    padding: 8px 14px;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.3s;
+      justify-content: flex-end; /* ⬅ 按鈕靠右 */
+      gap: 15px;                 /* 按鈕間距 */
+      margin-top: 20px;
     
-  
-    &-primary {
-      background: #3b82f6;
-      color: #fff;
-  
-      &:hover {
-        background: #2563eb;
+      .btn {
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 8px 18px;
+        cursor: pointer;
+        transition: 0.2s ease-in-out;
+      }
+    
+      .btn-cancel {
+        background-color: #c9c9c9;
+        color: #333;
+        &:hover {
+          background-color: #b5b5b5;
+        }
+      }
+    
+      .btn-submit {
+        background-color: #21467a;
+        color: #fff;
+        &:hover {
+          background-color: #1a3861;
+        }
       }
     }
-  
-    &-add {
-      background: #10b981;
-      color: #fff;
-  
-      &:hover {
-        background: #059669;
-      }
-    }
-  
-    &-danger {
-      background: #ef4444;
-      color: #fff;
-  
-      &:hover {
-        background: #dc2626;
-      }
-    }
-  
-    &-warning {
-      background: #f59e0b;
-      color: #fff;
-  
-      &:hover {
-        background: #d97706;
-      }
-    }
+    
+    
   }
+
+}
+.period-box {
+  border: 1.5px solid #dcdcdc;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 15px;
+  background-color: #fdfdfd;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease-in-out;
+
   
-  // ========== RWD 響應式 ==========
-  @media (max-width: 768px) {
-    .row-1,
-    .time-segment-row {
-      flex-direction: column;
-    }
+
+
+  &:hover {
+    background-color: #f7faff;
+    border-color: #a0b6d9;
   }
-  
+}

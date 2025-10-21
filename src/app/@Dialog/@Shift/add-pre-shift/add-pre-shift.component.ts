@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { Component } from '@angular/core';
-import { HttpClientService } from '../../../@Service/HttpClientService ';
+import { HttpClientService } from '../../../@Service/HttpClientService';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
 import { Success } from '../../success/success';

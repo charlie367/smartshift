@@ -2,103 +2,68 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-  gap: 12px;
+  background: linear-gradient(90deg, #f9fafb 0%, #f3f4f6 100%);
+  padding: 12px 24px;
+  border-bottom: 1px solid #ddd;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 
   .toolbar-left {
+    flex: 1;
+  }
+
+  .toolbar-center {
+    flex: 1;
     display: flex;
-    gap: 12px;
+    justify-content: center;
+    align-items: center;
+
+    .nav-icon {
+      font-size: 28px;
+      color: #555;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        color: #1976d2;
+        transform: scale(1.15);
+      }
+    }
+
+    .month-label {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+      margin: 0 16px;
+      letter-spacing: 1px;
+    }
   }
 
   .toolbar-right {
+    flex: 1;
     display: flex;
-    gap: 8px;
-
-    button {
-      min-width: 60px;
-      font-weight: 500;
-      border-radius: 20px; // 圓角更柔和
-    }
-  }
-}
-/* 行頭 (員工/資源) */
-::ng-deep .clickable-resource {
-  display: inline-block;
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
-  text-decoration: none;
-  padding: 6px 8px;
-  border-radius: 6px;
-  transition: background 0.2s ease;
-
-  &:hover {
-    background: #f0f0f0;
-    color: #1976d2;
-    cursor: pointer;
+    justify-content: flex-end;
   }
 }
 
-/* ============ Scheduler 整體 ============ */
-::ng-deep .daypilot-scheduler {
-  font-family: 'Microsoft JhengHei', sans-serif;
-  font-weight: bold;
-  font-size: 13px;
-  background: #fafafa;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  overflow: hidden;
-
-  .calendar_default_corner {
-    background: #f5f5f5;
-    border-right: 1px solid #ddd;
-  }
-
-  .calendar_default_rowheader {
-    background: #f9f9f9;
-    border-right: 1px solid #ddd;
-  }
-
-  .calendar_default_timeheader_group {
-    background: #e3f2fd;
-    font-weight: 600;
-    font-size: 13px;
-    border-bottom: 1px solid #ccc;
-  }
-
-  .calendar_default_timeheader_cell {
-    background: #f1f8ff;
-    border-bottom: 1px solid #eee;
-  }
-
-  .calendar_default_cell {
-    background: #fff;
-    border-bottom: 1px solid #f0f0f0;
-    border-right: 1px solid #f0f0f0;
-  }
-
-  .calendar_default_cell:hover {
-    background: #e3f2fd;
-    transition: background 0.2s ease;
-  }
-}
-
-
-
-/* ============ 事件 (班表) ============ */
+/* 共同外觀 */
 ::ng-deep .shift-event {
-  font-family: "PingFang TC", "Heiti TC", "Helvetica Neue", sans-serif;
-  background: linear-gradient(135deg, #42a5f5, #1e88e5);
-  color: #333;
-  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
   font-weight: 500;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  overflow: hidden;
+}
 
-  &:hover {
-    transform: scale(1.03);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  }
+::ng-deep.shift-box {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
 }

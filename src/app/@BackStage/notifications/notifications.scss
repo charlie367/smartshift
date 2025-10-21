@@ -1,20 +1,20 @@
 /* 整體容器 */
 .notice-board {
-  max-width: 800px;
+  max-width: 860px;
   margin: 40px auto;
-  padding: 24px;
+  padding: 28px;
   background-color: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  font-family: 'Segoe UI', sans-serif;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', 'Noto Sans TC', sans-serif;
 }
 
-/* 標題與新增按鈕區域 */
+/* 標題與按鈕列 */
 .notice-header-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   border-bottom: 2px solid #e0e0e0;
   padding-bottom: 12px;
 }
@@ -26,47 +26,96 @@
   margin: 0;
 }
 
-/* 單筆通知區塊 */
+/* 搜尋區塊 */
+.notice-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.date-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-filter label {
+  font-weight: 500;
+  color: #333;
+}
+
+.date-filter input[type="date"] {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 14px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.date-filter input[type="date"]:focus {
+  outline: none;
+  border-color: #3f51b5;
+  box-shadow: 0 0 4px rgba(63, 81, 181, 0.3);
+}
+
+/* 日期錯誤提示 */
+.date-error {
+  color: #d32f2f;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* 單筆通知卡片 */
 .notice-item {
   border-left: 5px solid #3f51b5;
   background-color: #f5f7ff;
-  padding: 16px 20px 28px; /* 預留空間給右下角日期 */
+  padding: 16px 20px 28px;
   margin-bottom: 20px;
   border-radius: 8px;
-  transition: background-color 0.3s;
+  transition: background-color 0.25s ease;
   cursor: pointer;
-  position: relative; /* 讓日期能固定在右下角 */
+  position: relative;
 }
+
 .notice-item:hover {
   background-color: #e8edff;
 }
 
-/* 通知標題 */
-.notice-content {
-  font-size: 18px;
-  font-weight: bold;
-  color: #333;
-  margin: 0 0 8px;
+/* 標題與勾勾圖示同行 */
+.notice-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-/* 訊息文字 */
+.publish-icon {
+  color: #4caf50;
+  font-size: 22px;
+  margin-left: 8px;
+}
+
+.notice-content {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
 .notice-message {
-  font-size: 16px;
+  font-size: 15px;
   color: #444;
-  margin: 0 0 6px;
+  margin: 6px 0;
   line-height: 1.6;
 }
 
-/* 連結 */
 .notice-link {
-  font-size: 15px;
+  font-size: 14px;
   color: #1e88e5;
   text-decoration: underline;
-  display: inline-block;
-  margin-bottom: 12px;
+  cursor: pointer;
 }
 
-/* 日期固定在右下角 */
 .notice-date {
   font-size: 13px;
   color: #777;
@@ -74,3 +123,15 @@
   bottom: 8px;
   right: 12px;
 }
+
+/* 已發布的通知 */
+.notice-item.published {
+  cursor: default;
+  background-color: #f2f5f9;
+  border-left-color: #4caf50;
+}
+
+.notice-item.published:hover {
+  background-color: #f2f5f9;
+}
+

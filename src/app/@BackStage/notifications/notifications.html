@@ -1,17 +1,52 @@
 <div class="notice-board">
 
+  <!-- 標題列 -->
   <div class="notice-header-bar">
-    <h2 class="notice-title">📢 通知布告欄</h2>
+    <h2 class="notice-title">📢 通知佈告欄</h2>
     <button mat-raised-button color="primary" (click)="showAddDialog()">新增通知</button>
   </div>
 
-  @for(notify of notifyList; track $index; let index = $index){
-    <div class="notice-item" (click)="showEditDialog(notify.id)">
-      <h3 class="notice-content">{{notify.title}}</h3>
-      <p class="notice-message">{{notify.message}}</p>
-      <label class="notice-link" (click)="routerUrl($event,notify.link_url)">{{notify.link_url}}</label>
-      <span class="notice-date">{{notify.created_date}}</span>
+  <!-- 搜尋列 -->
+  <div class="notice-filter-bar">
+    <div class="date-filter">
+      <label>開始日期：</label>
+      <input type="date" (change)="searchDate()" [(ngModel)]="filterStartDate">
     </div>
+
+    <div class="date-filter">
+      <label>結束日期：</label>
+      <input type="date" (change)="searchDate()" [(ngModel)]="filterEndDate">
+    </div>
+
+    @if(isDateError){
+      <div class="date-error">
+        開始日期不能大於結束日期
+      </div>
+    }
+  </div>
+
+  <!-- 通知清單 -->
+  @for(notify of notifyList; track $index; let index = $index){
+    @if(!notify.publish){
+      <div class="notice-item clickable" (click)="showEditDialog(notify.id)">
+        <div class="notice-header">
+          <label class="notice-content">{{notify.title}}</label>
+        </div>
+        <p class="notice-message">{{notify.message}}</p>
+        <label class="notice-link" (click)="routerUrl($event,notify.linkUrl)">{{notify.linkUrl}}</label>
+        <span class="notice-date">{{notify.createdDate}}</span>
+      </div>
+    }@else {
+      <div class="notice-item published">
+        <div class="notice-header">
+          <label class="notice-content">{{notify.title}}</label>
+          <mat-icon class="publish-icon">check_circle</mat-icon>
+        </div>
+        <p class="notice-message">{{notify.message}}</p>
+        <label class="notice-link" (click)="routerUrl($event,notify.linkUrl)">{{notify.linkUrl}}</label>
+        <span class="notice-date">{{notify.createdDate}}</span>
+      </div>
+    }
   }
 
 </div>

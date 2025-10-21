@@ -17,18 +17,19 @@
   <!-- 連結 -->
   <div class="form-group">
     <label for="url">連結</label>
-    <input type="text" name="url" id="url" class="form-control" [(ngModel)]="notify.link_url"/>
+    <input type="text" name="url" id="url" class="form-control" [(ngModel)]="notify.linkUrl"/>
   </div>
 
   <!-- 日期 -->
   <div class="form-group">
     <label for="startDate">開始日期</label>
-    <input type="date" name="notifyStartTime" id="startDate" class="form-control" [(ngModel)]="notify.created_date"  [min]="today" />
+    <input type="date" name="notifyStartTime" id="startDate" class="form-control" [(ngModel)]="notify.createdDate"  [min]="today" />
   </div>
 
   <!-- 按鈕 -->
   <div class="button-group">
-    <button type="submit" class="btn submit" (click)="updateNotify()">儲存</button>
+    <button type="submit" class="btn submit" (click)="updateNotify()">發布</button>
+    <button type="button" class="btn draft" (click)="saveNotify()">暫存</button>
     <button type="button" class="btn cancel" (click)="onCancel()">取消</button>
   </div>
 

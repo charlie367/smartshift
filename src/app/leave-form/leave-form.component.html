@@ -1,87 +1,158 @@
 <div class="leave-wrapper">
-    <div class="form-container">
-      <h1>員工請假系統</h1>
+  <div class="form-container">
+    <h1>員工請假申請</h1>
 
-      <!-- 上方三欄 -->
-      <div class="row-1">
-        <div class="input-group">
-          <h3>假別</h3>
-          <select class="form-control" [(ngModel)]="leave.leaveType">
-            <option value="">請選擇假別</option>
-            <option value="事假">事假</option>
-            <option value="婚假">婚假</option>
-            <option value="病假">病假</option>
-            <option value="產假">產假</option>
-            <option value="生理假">生理假</option>
-            <option value="公假">公假</option>
-            <option value="特休">特休</option>
-            <option value="其他">其他</option>
-          </select>
-        </div>
-
-        <div class="input-group">
-          <h3>請假事由</h3>
-          <input class="form-control" [(ngModel)]="leave.leaveDescription" required />
-        </div>
-
-        <div class="input-group">
-          <h3>請假時數</h3>
-          <input type="number" class="form-control" [(ngModel)]="leave.totalHours" required />
-        </div>
+    <!-- 上方四欄 -->
+    <div class="row-1">
+      <div class="input-group">
+        <h3>假別</h3>
+        <select class="form-control" [(ngModel)]="leave.leaveType">
+          <option value="">請選擇假別</option>
+          <option value="事假">事假</option>
+          <option value="婚假">婚假</option>
+          <option value="病假">病假</option>
+          <option value="產假">產假</option>
+          <option value="生理假">生理假</option>
+          <option value="公假">公假</option>
+          <option value="特休">特休</option>
+          <option value="其他">其他</option>
+        </select>
       </div>
 
-      <!-- 上傳檔案 -->
-   <div class="upload-section">
-  <h3>上傳請假證明</h3>
-  <!-- 移除 multiple，只能傳一張 -->
-  <input type="file" (change)="onFileSelected($event)" accept="image/*" />
+      <div class="input-group">
+        <h3>請假事由</h3>
+        <input class="form-control" [(ngModel)]="leave.leaveDescription" placeholder="請輸入請假事由" />
+      </div>
 
-  @if(previewUrl) {
-    <div class="preview-box">
-      <p>預覽：</p>
-      <div class="preview-item">
-        <img [src]="previewUrl" />
-        <button type="button" class="btn btn-danger" (click)="removeFile()">取消</button>
+      <div class="input-group">
+        <h3>請假時數</h3>
+        <input disabled="" type="number" class="form-control" [(ngModel)]="leave.totalHours" />
+      </div>
+
+      <div class="input-group">
+        <h3>是否請整天</h3>
+        <select class="form-control" [(ngModel)]="leave.isWholeDay" (change)="onDayTypeChange()">
+          <option value="">請選擇</option>
+          <option value="整天">整天</option>
+          <option value="非整天">非整天</option>
+        </select>
       </div>
     </div>
-  }
-</div>
 
-      <!-- 請假時間段 -->
-      <div class="period-section">
+    <!-- 上傳請假證明 -->
+    <div class="upload-section">
+      <h3>上傳請假證明</h3>
+      <div class="upload-box">
+        <label class="upload-label">
+          <div *ngIf="previewUrl; else uploadEmpty">
+            <div class="preview-in-box">
+              <img [src]="previewUrl" alt="預覽圖片" />
+              <button type="button" class="btn-remove-inbox" (click)="removeFile(); $event.preventDefault()">×</button>
+            </div>
+          </div>
+          <ng-template #uploadEmpty>
+            <div class="folder-icon">📁</div>
+            <span class="upload-text">點擊上傳檔案</span>
+          </ng-template>
+          <input type="file" (change)="onFileSelected($event)" accept="image/*" style="display: none;" />
+        </label>
+      </div>
+    </div>
+
+    <!-- 請假區段 -->
+    <div class="period-section" *ngIf="leave.isWholeDay">
+      
+      <!-- 整天 -->
+      <!-- 整天 -->
+<!-- 整天 -->
+<!-- 整天 -->
+<ng-container *ngIf="leave.isWholeDay === '整天'">
+  <div class="section-header">
+    <h3>請假日期與班別</h3>
+    <button class="btn btn-add" (click)="addWholeDay()">＋ 新增天數</button>
+  </div>
+
+  <!-- 標題列 -->
+  <div class="period-header">
+    <label>請假日期</label>
+    <label>第一班別</label>
+    <label>第二班別</label>
+    <div></div>
+  </div>
+
+  <!-- 資料列 -->
+  <div class="period-box" *ngFor="let day of wholeDays; let i = index">
+    <div class="time-segment-row">
+      <!-- 請假日期 -->
+      <input
+        type="date"
+        class="form-control"
+        [(ngModel)]="day.leaveDate"
+        (change)="onDateSelected(day)"
+      />
+
+      <!-- 第一班別 -->
+      <input
+        type="text"
+        class="form-control"
+        [value]="day.shift1 || '自動帶入中...'"
+        readonly
+      />
+
+      <!-- 第二班別 -->
+      <input
+        type="text"
+        class="form-control"
+        [value]="day.shift2 || '自動帶入中...'"
+        readonly
+      />
+
+      <!-- 刪除 -->
+      <button class="btn btn-danger" (click)="deleteWholeDay(i)">刪除</button>
+    </div>
+  </div>
+</ng-container>
+
+
+
+
+      <!-- 非整天 -->
+      <ng-container *ngIf="leave.isWholeDay === '非整天'">
         <div class="section-header">
           <h3>請假時間段</h3>
           <button class="btn btn-add" (click)="addPeriod()">＋ 新增時間段</button>
         </div>
 
-        @for(item of period; track $index) {
+        <div class="period-header">
+          <label>請假日期</label>
+          <label>開始時間</label>
+          <label>結束時間</label>
+          <div></div>
+        </div>
+
+        <div class="period-box" *ngFor="let item of period; let i = index">
           <div class="time-segment-row">
-            <div class="input-group">
-              <label>請假日期</label>
-              <input type="date" class="form-control" [(ngModel)]="item.leave" />
-            </div>
+            <input type="date" class="form-control" [(ngModel)]="item.leave" />
+    <select class="form-control" [(ngModel)]="item.startTime" (change)="updateTotalHours()">
+  <option value="">選擇時間</option>
+  <option *ngFor="let hour of hourOptions" [value]="hour">{{ hour }}</option>
+</select>
 
-            <div class="input-group">
-              <label>開始時間</label>
-              <input type="time" class="form-control" [(ngModel)]="item.startTime" />
-            </div>
+<select class="form-control" [(ngModel)]="item.endTime" (change)="updateTotalHours()">
+  <option value="">選擇時間</option>
+  <option *ngFor="let hour of hourOptions" [value]="hour">{{ hour }}</option>
+</select>
 
-            <div class="input-group">
-              <label>結束時間</label>
-              <input type="time" class="form-control" [(ngModel)]="item.endTime" />
-            </div>
-
-            <div class="botton">
-              <button class="btn btn-danger" (click)="deletePeriod($index)">刪除</button>
-            </div>
+            <button class="btn btn-danger" (click)="deletePeriod(i)">刪除</button>
           </div>
-        }
-      </div>
+        </div>
+      </ng-container>
+    </div>
 
-      <!-- 送出 -->
-      <div class="submit-row">
-         <button class="btn btn-primary" (click)="sendJSON1()">取消申請</button>
-        <button class="btn btn-primary" (click)="sendJSON()">送出申請</button>
-      </div>
+    <!-- 送出按鈕 -->
+    <div class="submit-row">
+      <button class="btn btn-cancel" (click)="sendJSON1()">取消申請</button>
+      <button class="btn btn-submit" (click)="sendJSON()">送出申請</button>
     </div>
   </div>
+</div>

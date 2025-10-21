@@ -1,3 +1,9 @@
+<div class="header">
+  <mat-icon class="nav-icon" (click)="preMonth()">chevron_left</mat-icon>
+  <span class="month-label">{{ currentMonthLabel }}</span>
+  <mat-icon class="nav-icon" (click)="nextMonth()">chevron_right</mat-icon>
+</div>
+
 <div class="mat-elevation-z8">
   <table mat-table [dataSource]="dataSource">
 

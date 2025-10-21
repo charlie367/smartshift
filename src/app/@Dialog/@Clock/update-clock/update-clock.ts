@@ -1,7 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
-import { HttpClientService } from '../../../@Service/HttpClientService ';
+import { HttpClientService } from '../../../@Service/HttpClientService';
 
 @Component({
   selector: 'app-update-clock',

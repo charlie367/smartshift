@@ -1,41 +1,37 @@
 <h2>更新班表</h2>
 
-@for(item of shiftList; track $index){
-  <div class="work-item">
-    @if(!item.isEdit){
+<div class="work-item">
+  @for (shift of shiftList; track $index; let i = $index) {
+    @if (!shift.isEdit) {
       <div class="work-row">
         <label class="label-title">上班日期：</label>
-        <label class="label-value">{{item.applyDate}}</label>
+        <label class="label-value">{{ shift.applyDate }}</label>
       </div>
       <div class="work-row">
         <label class="label-title">上班時段：</label>
-        <label class="label-value">{{item.startTime}} ~ {{item.endTime}}</label>
+        <label class="label-value">{{ shift.startTime }} ~ {{ shift.endTime }}</label>
       </div>
       <div class="work-actions">
-        <button class="btn-edit" (click)="changeType($index)">編輯</button>
-        <button class="btn-delete" (click)="cancelShift($index)">取消班別</button>
+        <button class="btn-edit" (click)="changeType(i)">編輯</button>
+        <button class="btn-delete" (click)="cancelShift(i)">取消班別</button>
       </div>
-
-    }@else{
+    } @else {
       <div class="work-row">
         <label class="label-title">上班日期：</label>
-        <input type="date" [(ngModel)]="item.applyDate" [min]="tomorrow" [max]="limit">
+        <input type="date" [(ngModel)]="shift.applyDate" [min]="tomorrow" [max]="limit">
       </div>
       <div class="work-row">
         <label class="label-title">上班時段：</label>
-        <select [(ngModel)]="item.shiftWorkId">
+        <select [(ngModel)]="shift.shiftWorkId">
           @for (item of timeList; track $index) {
-            <option [value]="$index+1">{{item}}</option>
+            <option [value]="$index+1">{{ item }}</option>
           }
         </select>
       </div>
       <div class="work-actions">
-        <button class="btn-save" (click)="updateItem($index)">儲存</button>
-        <button class="btn-cancel" (click)="changeType($index)">取消</button>
+        <button class="btn-save" (click)="updateItem(i)">儲存</button>
+        <button class="btn-cancel" (click)="changeType(i)">取消</button>
       </div>
     }
-  </div>
-}
-
-
-
+  }
+</div>

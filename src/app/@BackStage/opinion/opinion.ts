@@ -1,14 +1,13 @@
 import { Component, ViewChild} from '@angular/core';
-import { HttpClientService } from '../../@Service/HttpClientService ';
+import { HttpClientService } from '../../@Service/HttpClientService';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
-
+import { SearchOpinionComponent } from "../../@Dialog/@Opinion/search-opinion/search-opinion.component";
 import { MatDialog } from '@angular/material/dialog';
-import { SearchOpinionComponent } from '../../@Dialog/@Opinion/search-opinion/search-opinion.component';
 
 
 @Component({
@@ -19,8 +18,7 @@ import { SearchOpinionComponent } from '../../@Dialog/@Opinion/search-opinion/se
     MatInputModule,
     MatSelectModule,
     MatTableModule,
-    MatPaginatorModule,
-    SearchOpinionComponent
+    MatPaginatorModule
 ],
   templateUrl: './opinion.html',
   styleUrl: './opinion.scss'
@@ -48,13 +46,14 @@ export class BackOpinion {
   }
 
   showSearchOpinion(id:number){
-    this.dialog.open(SearchOpinionComponent,{
-      width:'700px',
-      height:'500px',
-      data:{
-        id:id
-      }
-    })
+    this.dialog.open(SearchOpinionComponent, {
+      width: '80vw',
+      height: '80vh',
+      maxWidth: '1000px',
+      maxHeight: '750px',
+      panelClass: 'custom-dialog',
+      data: { id: id }
+    });
   }
 
 }

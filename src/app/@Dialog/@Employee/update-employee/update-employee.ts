@@ -3,7 +3,7 @@ import { MatInputModule } from "@angular/material/input";
 import { MAT_DIALOG_DATA, MatDialog, MatDialogContent, MatDialogModule, MatDialogRef } from "@angular/material/dialog";
 import { MatSelectModule } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
-import { HttpClientService } from '../../../@Service/HttpClientService ';
+import { HttpClientService } from '../../../@Service/HttpClientService';
 import { Fail } from '../../fail/fail';
 import { Success } from '../../success/success';
 

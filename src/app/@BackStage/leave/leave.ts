@@ -1,7 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { HttpClientService } from '../../@Service/HttpClientService ';
+import { HttpClientService } from '../../@Service/HttpClientService';
 import { MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { Fail } from '../../@Dialog/fail/fail';
@@ -78,8 +78,8 @@ export class BackLeave {
   //看時間
   showLeaveTime(id:number,prove:string){
     const dialogRef = this.dialog.open(ViewLeaveTimeComponent,{
-      width:'3000px',
-      height:'3000px',
+      width:'300px',
+      height:'300px',
       panelClass: 'custom-dialog',
       data:{
         id:id,

@@ -1,6 +1,6 @@
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Component, Inject } from '@angular/core';
-import { HttpClientService } from '../../../@Service/HttpClientService ';
+import { HttpClientService } from '../../../@Service/HttpClientService';
 
 @Component({
   selector: 'app-view-leave-time',
@@ -18,6 +18,9 @@ export class ViewLeaveTimeComponent {
 
   //初始化
   ngOnInit(): void {
+    if(!this.leaveData.prove.includes("null")){
+      this.checkProve = true
+    }
     this.http.getApi(`http://localhost:8080/leave/getLeaveByleaveId?leaveId=${this.leaveData.id}`).subscribe((res:any)=>{
       this.leaveInfoList = res;
     })
@@ -25,4 +28,5 @@ export class ViewLeaveTimeComponent {
 
   //全域變數
   leaveInfoList:any[]=[];
+  checkProve = false;
 }
