@@ -1,45 +1,47 @@
 <div class="page">
-    <div class="container">
-  
-      <!-- Header -->
-      <div class="card header">
-  
-        <!-- 標題列 -->
-    <!-- 頂部：標題 + 返回 -->
-<div class="page-head">
-  <div class="head-left">
-    <span class="material-symbols-rounded">calendar_month</span>
-    <div>
-      <div class="head-title">請假申請管理</div>
-      <div class="head-sub">查看和管理員工請假申請</div>
-    </div>
-  </div>
+  <div class="container">
 
-  <!-- 直接回 /leave -->
-  <button class="btn-back" routerLink="/leave" type="button">
-    <span class="material-symbols-rounded">arrow_back</span>
-    返回
-  </button>
-</div>
+    <!-- 同色大框：把標題/返回、月份 Bar、KPI、Tabs 都裝一起 -->
+    <div class="card header lr-wrap">
 
-<!-- 漸層月份 Bar（左右鍵在同一條上） -->
-<div class="month-rail">
-  <button class="rail-nav left" (click)="changeMonth(-1)" aria-label="上一月">
-    <span class="material-symbols-rounded">chevron_left</span>
-  </button>
+      <!-- 標題 + 返回 -->
+      <div class="lr-wrap__head">
+        <div class="page-head">
+          <div class="head-left">
+            <span class="material-symbols-rounded">calendar_month</span>
+            <div>
+              <div class="head-title">請假申請查看</div>
+            
+            </div>
+          </div>
 
-  <div class="rail-label">
-    <span class="material-symbols-rounded">calendar_month</span>
-    {{ monthDisplay() }}
-  </div>
+          <button class="btn-back" routerLink="/leave" type="button">
+            <span class="material-symbols-rounded">arrow_back</span>
+            返回
+          </button>
+        </div>
+      </div>
 
-  <button class="rail-nav right" (click)="changeMonth(1)" aria-label="下一月">
-    <span class="material-symbols-rounded">chevron_right</span>
-  </button>
-</div>
+      <!-- 月份 Bar（左右鍵同一條上） -->
+      <div class="lr-wrap__rail">
+        <div class="month-rail">
+          <button class="rail-nav left" (click)="changeMonth(-1)" aria-label="上一月">
+            <span class="material-symbols-rounded">chevron_left</span>
+          </button>
 
-  
-        <!-- 第二排：2x2 KPI（Google Icons） -->
+          <div class="rail-label">
+            <span class="material-symbols-rounded">calendar_month</span>
+            {{ monthDisplay() }}
+          </div>
+
+          <button class="rail-nav right" (click)="changeMonth(1)" aria-label="下一月">
+            <span class="material-symbols-rounded">chevron_right</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI + Tabs -->
+      <div class="lr-wrap__body">
         <div class="kpi-grid">
           <div class="kpi kpi-blue">
             <div class="kpi-icon"><span class="material-symbols-rounded">description</span></div>
@@ -48,7 +50,7 @@
               <div class="kpi-num">{{ kpi().list }}</div>
             </div>
           </div>
-  
+
           <div class="kpi kpi-yellow">
             <div class="kpi-icon"><span class="material-symbols-rounded">schedule</span></div>
             <div class="kpi-meta">
@@ -56,7 +58,7 @@
               <div class="kpi-num kpi-yellow-txt">{{ kpi().pending }}</div>
             </div>
           </div>
-  
+
           <div class="kpi kpi-green">
             <div class="kpi-icon"><span class="material-symbols-rounded">check_circle</span></div>
             <div class="kpi-meta">
@@ -64,7 +66,7 @@
               <div class="kpi-num kpi-green-txt">{{ kpi().approved }}</div>
             </div>
           </div>
-  
+
           <div class="kpi kpi-red">
             <div class="kpi-icon"><span class="material-symbols-rounded">cancel</span></div>
             <div class="kpi-meta">
@@ -73,11 +75,7 @@
             </div>
           </div>
         </div>
-  
-        <!-- 搜尋列：KPI 下 / Tabs 上（置中、加長） -->
-       
-  
-        <!-- 第三排：篩選 Tabs -->
+
         <div class="tabbar">
           <button class="tab" [class.active]="filterStatus() === 'all'" (click)="filterStatus.set('all')">全部</button>
           <button class="tab" [class.active]="filterStatus() === 'pending'" (click)="filterStatus.set('pending')">待審核</button>
@@ -85,129 +83,132 @@
           <button class="tab" [class.active]="filterStatus() === 'rejected'" (click)="filterStatus.set('rejected')">已駁回</button>
         </div>
       </div>
-  
-      <!-- 錯誤/載入 -->
-      <div *ngIf="errorMsg()" class="error">{{ errorMsg() }}</div>
-      <div *ngIf="loading()" class="loading">載入中...</div>
-  
-      <!-- Table -->
-      <div class="card table-card" *ngIf="!loading()">
-        <div class="table-wrap">
-          <table>
-            <thead>
-            <tr>
-              <th>員工編號</th>
-              <th>員工姓名</th>
-              <th>請假類型</th>
-              <th>請假事由</th>
-              <th>申請日期</th>
-              <th>狀態</th>
-              <!-- <th>操作</th> -->
-            </tr>
-            </thead>
-  
-            <tbody>
-            <tr *ngIf="filteredRows().length === 0">
-              <td colspan="7" class="empty">
-                <div class="empty-ic">📄</div>
-                <div>查無資料</div>
-              </td>
-            </tr>
-  
-            <tr *ngFor="let r of filteredRows(); trackBy: trackById" class="row">
-              <td><span class="mono">{{ r.employeeId }}</span></td>
-              <td>
-                <div class="emp">
-                  <div class="avatar">{{ r.name?.charAt(0) || '?' }}</div>
-                  <span class="name">{{ r.name }}</span>
-                </div>
-              </td>
-              <td><span class="{{ typeClass(r.leaveType) }}">{{ r.leaveType }}</span></td>
-              <td><span class="reason" [title]="r.leaveDescription || ''">{{ r.leaveDescription || '-' }}</span></td>
-              <td><span class="muted">{{ tableApplyDate(r.leaveId) }}</span></td>
-              <td><div class="{{ statusClass(r.status) }}">{{ statusLabel(r.status) }}</div></td>
-              <!-- <td><button class="link" (click)="openDetails(r)">查看詳情</button></td> -->
-            </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-  
-      <!-- 詳情浮層 -->
-      <div class="overlay" *ngIf="selectedRow()" (click)="closeDetails()">
-        <div class="dialog" (click)="$event.stopPropagation()">
-          <div class="dialog-head">
-            <div class="head-left">
-              <div class="title">請假申請詳情</div>
-              <div class="sub">#{{ selectedRow()!.leaveId }}</div>
-            </div>
-            <button class="icon-btn white" (click)="closeDetails()">✕</button>
-          </div>
-  
-          <div class="dialog-body">
-            <div class="badge-row">
-              <div class="{{ statusClass(selectedRow()!.status) }}">{{ statusLabel(selectedRow()!.status) }}</div>
-            </div>
-  
-            <div class="info-card">
-              <h3>員工資訊</h3>
-              <div class="info-grid">
-                <div>
-                  <div class="label">員工編號</div>
-                  <div class="value mono">{{ selectedRow()!.employeeId }}</div>
-                </div>
-                <div>
-                  <div class="label">員工姓名</div>
-                  <div class="value">{{ selectedRow()!.name }}</div>
-                </div>
-              </div>
-            </div>
-  
-            <div class="info-list">
-              <div class="info-item">
-                <div class="dot dot-blue"></div>
-                <div class="content">
-                  <div class="label">請假類型</div>
-                  <div class="value">
-                    <span class="{{ typeClass(selectedRow()!.leaveType) }}">{{ selectedRow()!.leaveType }}</span>
-                  </div>
-                </div>
-              </div>
-  
-              <div class="info-item">
-                <div class="dot dot-purple"></div>
-                <div class="content">
-                  <div class="label">請假事由</div>
-                  <div class="value">{{ selectedRow()!.leaveDescription || '-' }}</div>
-                </div>
-              </div>
-  
-              <div class="info-item">
-                <div class="dot dot-green"></div>
-                <div class="content">
-                  <div class="label">請假期間</div>
-                  <div class="value">{{ periodText(selectedDetails()) }}</div>
-                </div>
-              </div>
-  
-              <div class="info-item" *ngIf="selectedRow()!.leaveProve">
-                <div class="dot dot-green"></div>
-                <div class="content">
-                  <div class="label">請假憑證</div>
-                  <div class="value">
-                    <img [src]="selectedRow()?.leaveProve" alt="憑證" class="prove"/>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-  
-          <div class="dialog-foot">
-            <button class="btn" (click)="closeDetails()">關閉</button>
-          </div>
-        </div>
-      </div>
-  
     </div>
+
+    <!-- 錯誤/載入 -->
+    <div *ngIf="errorMsg()" class="error">{{ errorMsg() }}</div>
+    <div *ngIf="loading()" class="loading">載入中...</div>
+
+    <!-- 表格 -->
+    <div class="card table-card" *ngIf="!loading()">
+      <div class="table-wrap">
+        <table>
+          <thead>
+          <tr>
+            <th>員工編號</th>
+            <th>員工姓名</th>
+            <th>請假類型</th>
+            <th>請假時間</th>
+            <th>申請日期</th>
+            <th>狀態</th>
+             <!-- <th>操作</th> -->
+          </tr>
+          </thead>
+
+          <tbody>
+          <tr *ngIf="filteredRows().length === 0">
+            <td colspan="7" class="empty">
+              <div class="empty-ic">📄</div>
+              <div>查無資料</div>
+            </td>
+          </tr>
+
+          <tr *ngFor="let r of filteredRows(); trackBy: trackById" class="row">
+            <td><span class="mono">{{ r.employeeId }}</span></td>
+            <td>
+              <div class="emp">
+                <div class="avatar">{{ r.name?.charAt(0) || '?' }}</div>
+                <span class="name">{{ r.name }}</span>
+              </div>
+            </td>
+            <td><span class="{{ typeClass(r.leaveType) }}">{{ r.leaveType }}</span></td>
+            <!-- <td><span class="reason" [title]="r.leaveDescription || ''">{{ r.leaveDescription || '-' }}</span></td> -->
+            <td>
+              <span class="period">{{ tablePeriod(r) }}</span>
+            </td>
+            <td><span class="muted">{{ tableApplyDate(r.leaveId) }}</span></td>
+            <td><div class="{{ statusClass(r.status) }}">{{ statusLabel(r.status) }}</div></td>
+               <!-- <td><button class="link" (click)="openDetails(r)">查看詳情</button></td>  -->
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 詳情浮層 -->
+    <div class="overlay" *ngIf="selectedRow()" (click)="closeDetails()">
+      <div class="dialog" (click)="$event.stopPropagation()">
+        <div class="dialog-head">
+          <div class="head-left">
+            <div class="title">請假申請詳情</div>
+            <div class="sub">#{{ selectedRow()!.leaveId }}</div>
+          </div>
+          <button class="icon-btn white" (click)="closeDetails()">✕</button>
+        </div>
+
+        <div class="dialog-body">
+          <div class="badge-row">
+            <div class="{{ statusClass(selectedRow()!.status) }}">{{ statusLabel(selectedRow()!.status) }}</div>
+          </div>
+
+          <div class="info-card">
+            <h3>員工資訊</h3>
+            <div class="info-grid">
+              <div>
+                <div class="label">員工編號</div>
+                <div class="value mono">{{ selectedRow()!.employeeId }}</div>
+              </div>
+              <div>
+                <div class="label">員工姓名</div>
+                <div class="value">{{ selectedRow()!.name }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-list">
+            <div class="info-item">
+              <div class="dot dot-blue"></div>
+              <div class="content">
+                <div class="label">請假類型</div>
+                <div class="value">
+                  <span class="{{ typeClass(selectedRow()!.leaveType) }}">{{ selectedRow()!.leaveType }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <div class="dot dot-purple"></div>
+              <div class="content">
+                <div class="label">請假事由</div>
+                <div class="value">{{ selectedRow()!.leaveDescription || '-' }}</div>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <div class="dot dot-green"></div>
+              <div class="content">
+                <div class="label">請假期間</div>
+                <div class="value">{{ periodText(selectedDetails()) }}</div>
+              </div>
+            </div>
+
+            <div class="info-item" *ngIf="selectedRow()!.leaveProve">
+              <div class="dot dot-green"></div>
+              <div class="content">
+                <div class="label">請假憑證</div>
+                <div class="value">
+                  <img [src]="selectedRow()?.leaveProve" alt="憑證" class="prove"/>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dialog-foot">
+          <button class="btn" (click)="closeDetails()">關閉</button>
+        </div>
+      </div>
+    </div>
+
   </div>
-  
+</div>

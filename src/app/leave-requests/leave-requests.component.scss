@@ -1,6 +1,4 @@
-/* ===== 你的原本樣式（原封不動保留） ===== */
-
-/* Material Symbols（基礎設定；大小顏色你可在各處覆蓋） */
+/* ================== 基礎：Material Symbols ================== */
 .material-symbols-rounded{
   font-family: 'Material Symbols Rounded';
   font-weight: normal;
@@ -14,13 +12,13 @@
   font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
 }
 
-/* 背景與容器 */
+/* ================== 背景與容器 ================== */
 .page { min-height: 100vh; background: linear-gradient(135deg,#f8fafc,#eef4ff,#eef2ff); padding: 24px; }
 .container { max-width: 1120px; margin: 0 auto; }
 .card { background:#fff; border-radius:16px; box-shadow: 0 8px 24px rgba(0,0,0,.08); padding: 24px; }
-.header { margin-bottom: 24px; }
+.header { margin-bottom: 12px; }
 
-/* 標題置中 */
+/* ================== 舊版：標題置中（保留） ================== */
 .title-block{
   margin-bottom: 12px;
   display:flex; flex-direction:column; align-items:center;
@@ -28,7 +26,7 @@
 }
 .title-block h1{ margin:0; font-size:24px; font-weight:800; color:#1f2937; }
 
-/* 月份列置中 */
+/* ================== 舊版：月份列（保留） ================== */
 .header-row{ display:flex; align-items:center; justify-content:center; gap:16px; margin-bottom:16px; }
 .month-row { display:flex; align-items:center; gap:12px; }
 .icon-btn { border:0; background:transparent; width:36px; height:36px; border-radius:10px; cursor:pointer; color:#374151; }
@@ -37,12 +35,13 @@
 .month-badge { display:flex; align-items:center; justify-content:center; gap:8px; padding:10px 16px; border-radius:12px; color:#fff; background: linear-gradient(90deg,#3b82f6,#6366f1); font-weight:700; min-width:160px; }
 .month-badge .cal{ opacity:.95; display:inline-flex; }
 
+/* 舊版：較大的箭頭按鈕（保留） */
 .icon-btn.nav-btn{
   width: 40px;
   height: 40px;
   border-radius: 14px;
   border: 1px solid #e5e7eb;
-  font-size:28px;   
+  font-size:28px;
   background: #fff;
   box-shadow: 0 6px 18px rgba(0,0,0,.08);
   display: inline-flex;
@@ -59,24 +58,28 @@
   font-variation-settings:'FILL' 0,'wght' 600,'GRAD' 0,'opsz' 24;
 }
 
-/* KPI */
+/* ================== KPI ================== */
 .kpi-grid{ display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:16px; margin-bottom:16px; }
 .kpi{ display:flex; align-items:center; gap:12px; padding:16px; border-radius:12px; border:1px solid; }
 .kpi .kpi-icon{ width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; }
 .kpi .kpi-label{ font-size:12px; color:#6b7280; }
 .kpi .kpi-num{ font-size:22px; font-weight:800; color:#111827; }
-.kpi-blue{ background: #eef5ff; border-color: #d7e6ff; }     .kpi-blue  .kpi-icon{ background:#dbeafe;  color:#2563eb; }
-.kpi-yellow{ background:#fffbeb; border-color:#fde68a; }  .kpi-yellow .kpi-icon{ background:#fef3c7; color:#d97706; }
-.kpi-green{ background:#ecfdf5; border-color:#bbf7d0; }   .kpi-green .kpi-icon{ background:#dcfce7; color:#16a34a; }
-.kpi-red{ background:#fef2f2; border-color:#fecaca; }     .kpi-red   .kpi-icon{ background:#fee2e2; color:#dc2626; }
-.kpi-yellow-txt{ color:#d97706; } .kpi-green-txt{ color:#16a34a; } .kpi-red-txt{ color:#dc2626; }
 
-/* Tabs */
+.kpi-blue{   background:#eef5ff; border-color:#d7e6ff; } .kpi-blue   .kpi-icon{ background:#dbeafe; color:#2563eb; }
+.kpi-yellow{ background:#fffbeb; border-color:#fde68a; } .kpi-yellow .kpi-icon{ background:#fef3c7; color:#d97706; }
+.kpi-green{  background:#ecfdf5; border-color:#bbf7d0; } .kpi-green  .kpi-icon{ background:#dcfce7; color:#16a34a; }
+.kpi-red{    background:#fef2f2; border-color:#fecaca; } .kpi-red    .kpi-icon{ background:#fee2e2; color:#dc2626; }
+
+.kpi-yellow-txt{ color:#d97706; }
+.kpi-green-txt{  color:#16a34a; }
+.kpi-red-txt{    color:#dc2626; }
+
+/* ================== Tabs ================== */
 .tabbar{ display:grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap:12px; }
 .tab{ padding:12px 0; border:0; border-radius:12px; background:#f3f4f6; color:#374151; font-weight:700; cursor:pointer; }
 .tab.active{ background:#3b82f6; color:#fff; box-shadow:0 8px 20px rgba(59,130,246,.25); }
 
-/* 表格 */
+/* ================== 表格 ================== */
 .table-card{ overflow:hidden; }
 .table-wrap{ overflow-x:auto; }
 table{ width:100%; border-collapse:separate; border-spacing:0; }
@@ -88,20 +91,25 @@ tbody td{ padding:14px 24px; border-top:1px solid #f3f4f6; }
 .emp{ display:flex; align-items:center; gap:10px; }
 .avatar{ width:32px; height:32px; border-radius:999px; background:linear-gradient(135deg,#60a5fa,#6366f1); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; }
 .name{ color:#1f2937; font-weight:600; }
-.reason{ color:#4b5563; display:inline-block; max-width:420px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-/* 標籤/膠囊 */
+
+/* ================== 標籤/膠囊 ================== */
 .pill{ display:inline-block; padding:4px 10px; color:#fff; border-radius:999px; font-size:12px; font-weight:700; }
-.pill--blue{ background:#3b82f6; } .pill--purple{ background:#8b5cf6; } .pill--emerald{ background:#10b981; }
-.pill--pink{ background:#ec4899; } .pill--gray{ background:#6b7280; }
+.pill--blue{    background:#3b82f6; } 
+.pill--purple{  background:#8b5cf6; } 
+.pill--emerald{ background:#10b981; }
+.pill--pink{    background:#ec4899; } 
+.pill--gray{    background:#6b7280; }
+
 .chip{ display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:6px 10px; border-radius:10px; border:1px solid; font-weight:700; }
-.chip--green{ background:#ecfdf5; border-color:#bbf7d0; color:#16a34a; }
+.chip--green{  background:#ecfdf5; border-color:#bbf7d0; color:#16a34a; }
 .chip--yellow{ background:#fffbeb; border-color:#fde68a; color:#d97706; }
-.chip--red{ background:#fef2f2; border-color:#fecaca; color:#dc2626; }
+.chip--red{    background:#fef2f2; border-color:#fecaca; color:#dc2626; }
+
 .link{ border:0; background:transparent; color:#2563eb; font-weight:700; cursor:pointer; }
 .link:hover{ text-decoration:underline; }
 
-/* 詳情浮層 */
+/* ================== 詳情浮層 ================== */
 .overlay{ position:fixed; inset:0; background:rgba(0,0,0,.45); backdrop-filter: blur(2px); display:flex; align-items:center; justify-content:center; padding:16px; z-index:1000; }
 .dialog{ width:100%; max-width:800px; max-height:90vh; overflow:auto; border-radius:16px; background:#fff; box-shadow:0 20px 60px rgba(0,0,0,.25); }
 .dialog-head{ position:sticky; top:0; display:flex; align-items:center; justify-content:space-between; padding:16px 20px; color:#fff; background: linear-gradient(90deg,#3b82f6,#6366f1); border-top-left-radius:16px; border-top-right-radius:16px; }
@@ -118,85 +126,133 @@ tbody td{ padding:14px 24px; border-top:1px solid #f3f4f6; }
 .info-list{ display:grid; gap:10px; }
 .info-item{ display:flex; gap:10px; align-items:flex-start; background:#f9fafb; padding:12px; border-radius:10px; }
 .dot{ width:8px; height:8px; border-radius:999px; margin-top:6px; }
-.dot-blue{ background:#3b82f6; } .dot-purple{ background:#8b5cf6; } .dot-green{ background:#10b981; }
+.dot-blue{   background:#3b82f6; }
+.dot-purple{ background:#8b5cf6; }
+.dot-green{  background:#10b981; }
 .prove{ max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #e5e7eb; }
 .dialog-foot{ padding:16px 20px; border-top:1px solid #f3f4f6; display:flex; justify-content:flex-end; }
 .btn{ padding:10px 16px; border-radius:12px; border:1px solid #e5e7eb; background:#fff; cursor:pointer; font-weight:700; }
 .btn:hover{ background:#f9fafb; }
 
-/* 空狀態 & 訊息 */
+/* ================== 空狀態 & 訊息 ================== */
 .empty{ text-align:center; color:#6b7280; padding:40px 0; }
 .empty-ic{ font-size:40px; color:#d1d5db; margin-bottom:8px; }
 .error{ color:#dc2626; margin: 8px 0 16px; }
 .loading{ color:#334155; margin: 8px 0 16px; }
 
-
-/* ===== 新增：lr-* 套件（不覆蓋舊樣式） ===== */
-
+/* =========================================================
+   新增：統一外框 lr-wrap（把標題/返回、月份Bar、KPI、Tabs
+   全部裝在同一個色框裡）
+   ========================================================= */
 :host {
   --lr-primary: #3b82f6;
   --lr-primary-700: #4f46e5;
-  --lr-surface: #fff;
-  --lr-shadow: 0 8px 24px rgba(0, 0, 0, .08);
+  --lr-surface: #ffffff;
 }
 
-/* 標題列 + 返回 */
-.lr-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--lr-surface);
+// .lr-wrap{
+//   background: linear-gradient(180deg,#ffffff 0%, #ecf2ff 100%);
+//   border: 1px solid #d7e6ff;
+//   border-radius: 20px;
+//   box-shadow: 0 18px 40px rgba(79,70,229,.08);
+//   padding: 16px;
+//   display: grid;
+//   gap: 12px;
+// }
+
+
+/* 讓 lr-wrap 內層整片白，外圈保留淡藍漸層邊框 */
+.lr-wrap{
+  border-radius: 20px;
+  border: 1px solid transparent;
+  /* 第一層是白底(padding-box)，第二層是漸層邊框(border-box) */
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(180deg, #f1f5ff 0%, #ecf2ff 100%) border-box;
+  box-shadow: 0 18px 40px rgba(79,70,229,.08);
+  padding: 16px;
+}
+
+/* 內部：標題區（使用 page-head） */
+.lr-wrap__head{
+  background: rgba(255,255,255,.55);
   border-radius: 16px;
-  padding: 16px 20px;
-  box-shadow: var(--lr-shadow);
-  margin-bottom: 12px;
-}
-.lr-head__left { display: flex; align-items: center; gap: 12px; }
-.lr-head__icon { font-size: 28px; color: var(--lr-primary); }
-.lr-head__title { font-size: 20px; font-weight: 800; color: #0f172a; }
-.lr-head__sub { font-size: 12px; color: #64748b; margin-top: 2px; }
-.lr-back {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 10px 14px; border: 0; border-radius: 12px;
-  background: linear-gradient(90deg, var(--lr-primary), var(--lr-primary-700));
-  color: #fff; font-weight: 700; cursor: pointer;
-  box-shadow: 0 8px 24px rgba(59,130,246,.25);
-}
-.lr-back__ic { font-size: 18px; }
-.lr-back:hover { filter: brightness(1.05); }
-.lr-back:focus-visible { outline: 2px solid rgba(59,130,246,.4); outline-offset: 2px; }
+  padding: 12px 0px;
 
-/* 漸層月份 Bar（左右鍵在同一條上） */
-.lr-monthbar {
+}
+
+/* 內部：月份列 */
+.lr-wrap__rail{ margin-top: 6px; }
+
+/* 內部：KPI + Tabs */
+.lr-wrap__body{ margin-top: 8px; }
+
+/* 讓 page-head 在框內外觀更貼合 */
+.lr-wrap .page-head{ background: transparent; box-shadow: none; padding: 0; }
+
+/* ================== 頂部：page-head / 返回 ================== */
+.page-head{
+  display:flex; align-items:center; justify-content:space-between;
+}
+.page-head .head-left{ display:flex; align-items:center; gap:12px; }
+.page-head .head-left .material-symbols-rounded{ font-size:28px; color:var(--lr-primary); }
+.head-title{ font-size:20px; font-weight:800; color:#0f172a; }
+
+.btn-back{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:10px 14px; border:0; border-radius:12px;
+  background: linear-gradient(90deg, var(--lr-primary), var(--lr-primary-700));
+  color:#fff; font-weight:700; cursor:pointer;
+  box-shadow: 0 10px 24px rgba(79,70,229,.25);
+}
+.btn-back .material-symbols-rounded{ font-size:18px; }
+.btn-back:hover{ filter: brightness(1.06); }
+
+/* ================== 月份 Bar（month-rail） ================== */
+.month-rail{
   position: relative;
   height: 56px;
   border-radius: 14px;
-  background: linear-gradient(90deg, #4f8efc, #4f46e5);
+  background: linear-gradient(90deg,#4f8efc,#4f46e5);
   color: #fff;
   display: flex; align-items: center; justify-content: center;
-  margin-top: 12px;
-  box-shadow: 0 10px 30px rgba(79, 70, 229, .25);
+  box-shadow: 0 10px 30px rgba(79,70,229,.18);
 }
-.lr-monthbar__label { display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.3px; }
-.lr-monthbar__icon { font-size: 22px; }
 
-.lr-monthbar__nav {
-  position: absolute; top: 50%; transform: translateY(-50%);
-  width: 40px; height: 40px; border: 0; border-radius: 12px;
+.rail-label{
+  display:flex; align-items:center; gap:10px;
+  font-weight:800; letter-spacing:.3px;
+}
+.rail-label .material-symbols-rounded{ font-size:22px; }
+
+.rail-nav{
+  position:absolute; top:50%; transform:translateY(-50%);
+  width:40px; height:40px; border:0; border-radius:12px;
   background: rgba(255,255,255,.15); color:#fff; cursor:pointer;
   display:flex; align-items:center; justify-content:center;
-  transition: background .15s ease, transform .15s ease, box-shadow .15s ease;
+  transition: background .15s ease, transform .12s ease, box-shadow .15s ease;
 }
-.lr-monthbar__nav--left { left: 8px; }
-.lr-monthbar__nav--right { right: 8px; }
-.lr-monthbar__nav:hover { background: rgba(255,255,255,.25); box-shadow: 0 4px 12px rgba(0,0,0,.12); }
-.lr-monthbar__nav:active { transform: translateY(-50%) scale(.98); }
-.lr-monthbar__nav .material-symbols-rounded { font-size: 22px; }
+.rail-nav.left{  left:8px; }
+.rail-nav.right{ right:8px; }
+.rail-nav:hover{ background: rgba(255,255,255,.25); box-shadow: 0 6px 14px rgba(0,0,0,.12); }
+.rail-nav:active{ transform: translateY(-50%) scale(.98); }
+.rail-nav .material-symbols-rounded{ font-size:22px; }
 
-/* RWD */
-@media (max-width: 640px) {
-  .lr-head { padding: 12px 14px; border-radius: 14px; }
-  .lr-head__title { font-size: 18px; }
-  .lr-monthbar { height: 52px; border-radius: 12px; }
-  .lr-monthbar__nav { width: 36px; height: 36px; }
+/* ================== RWD ================== */
+@media (max-width: 640px){
+  .lr-wrap{ padding:12px; border-radius:16px; }
+  .lr-wrap__head{ border-radius:14px; padding:10px 12px; }
+  .month-rail{ height:52px; border-radius:12px; }
+  .rail-nav{ width:36px; height:36px; }
+  .head-title{ font-size:18px; }
+}
+/* 列表「請假時間」的顯示樣式（和 reason 一樣就好） */
+.period{
+  white-space: pre-line; 
+  color:#4b5563;
+  display:inline-block;
+  max-width:420px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
