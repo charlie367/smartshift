@@ -26,6 +26,7 @@ import { ViewChild } from '@angular/core';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { MatBadgeModule } from '@angular/material/badge';
 import { Testneed1Component } from '../calendar/testneed1.component';
+import { forkJoin, of } from 'rxjs';  
 
 type WeekSlot = {
   startTime: string | null;   // '06:00:00'
@@ -114,27 +115,53 @@ onRangeChange(evt: { start: Date | null; end: Date | null }) {
   }
 }
 
-  openAnnouncementDialog() {
-    const dialogRef = this.dialog.open(AnnouncementDialogComponent, {
-      width: '800px',
-      height: '600px',
-      panelClass: ['no-scroll', 'ann-dialog'],
-    });
+openAnnouncementDialog() {
+  const dialogRef = this.dialog.open(AnnouncementDialogComponent, {
+    width: '800px',
+    height: '600px',
+    panelClass: ['no-scroll', 'ann-dialog'],
+    disableClose: true,             
+  });
+
+  // 不管子層回什麼，關閉後一律「重算徽章」
+  dialogRef.afterClosed().subscribe(() => {
+    this.recountUnread();          // ② 關閉就重算（見下方實作）
+  });
+}
+
+/** 重新計算未讀數（公佈欄 + 個人通知） */
+private recountUnread() {
+  const employeeId = (localStorage.getItem('employeeId') || '').trim();
+
+  // 讀取本地已讀清單
+  const readPublic = new Set<number>(
+    JSON.parse(localStorage.getItem('readNotices') || '[]').map((x: any) => Number(x))
+  );
+  const readPersonal = new Set<number>(
+    JSON.parse(localStorage.getItem(`readPersonalNotices_${employeeId}`) || '[]').map((x: any) => Number(x))
+  );
+
+  // 取最新列表後計算差集
+  forkJoin({
+    pub: this.http.get<any>('http://localhost:8080/notify/searchTrueAll'),
+    per: employeeId
+      ? this.http.get<any>('http://localhost:8080/get/employeeNotify', { params: { employeeId } })
+      : of({}),
+  }).subscribe(({ pub, per }) => {
+    const pubIds = (pub?.notifyList ?? []).map((n: any) => Number(n.id));
+    const perRaw =
+      per?.employeeNotifyList ?? per?.employee_notify_list ?? per?.list ?? per?.data ?? [];
+    const perIds = (perRaw as any[]).map((n: any) => Number(n.id));
+
+    const publicUnread   = pubIds.filter((id: number) => !readPublic.has(id)).length;
+    const personalUnread = perIds.filter((id: number) => !readPersonal.has(id)).length;
+    
+
+    this.unreadCount = publicUnread + personalUnread;
+  });
+}
+
   
-    // 視窗關閉後標記已讀
-    dialogRef.afterClosed().subscribe(() => {
-      this.markAllAsRead();
-    });
-  }
-  markAllAsRead() {
-    this.http.get<any>('http://localhost:8080/notify/searchAll').subscribe({
-      next: (res) => {
-        const ids = (res?.notifyList ?? []).map((n: any) => n.id);
-        localStorage.setItem('readNotices', JSON.stringify(ids));
-        this.unreadCount = 0;
-      }
-    });
-  }
   punchIn(): void {
     const employeeId = (localStorage.getItem('employeeId') || '').toString().trim();
     const workDate = this.todayLocal();
@@ -589,6 +616,7 @@ private debugPopulateStatic(): void {
 
 
   ngOnInit(): void {
+  
     // ① DayPilot 基本設定（含配色）
     this.config = {
       scale: 'Day',
@@ -635,7 +663,7 @@ private debugPopulateStatic(): void {
     this.loadClockData();   
     this.loadEmployees();
     this.loadWeekSlotsForCurrentWeek();
-    this.loadUnreadNotifications();
+    this.recountUnread();
 
 
     this.dayTickTimer = setInterval(() => this.ensureNewDay(), 60_000);
@@ -690,36 +718,6 @@ private debugPopulateStatic(): void {
     return events;
   }
   
-  loadUnreadNotifications() {
-    this.http.get<any>('http://localhost:8080/notify/searchAll').subscribe({
-      next: (res) => {
-        const notifyList = res?.notifyList ?? res?.data ?? res?.list ?? [];
-        console.log('[🔔 通知原始資料]', notifyList);
-  
-        // ✅ 支援 publish: true / 1 / '1'
-        const published = notifyList.filter((n: any) => 
-          n.publish === true || n.publish === 1 || n.publish === '1'
-        );
-  
-        // ✅ 從 localStorage 拿已讀清單
-        const readIds = JSON.parse(localStorage.getItem('readNotices') || '[]');
-  
-        // ✅ 計算未讀清單
-        const unread = published.filter((n: any) => !readIds.includes(n.id));
-  
-        // ✅ 更新紅點
-        this.unreadCount = unread.length;
-  
-        console.log(`[通知] 共 ${notifyList.length} 筆，已發佈 ${published.length} 筆，未讀 ${unread.length} 筆`);
-      },
-      error: (err) => {
-        console.error('載入通知失敗', err);
-        this.unreadCount = 0;
-      }
-    });
-  }
-  
-
   // 篩掉非上班或未核准的資料
 acceptedSlots(list?: WeekSlot[]): WeekSlot[] {
   return (list || []).filter(s => s.isWorking && s.isAccept);

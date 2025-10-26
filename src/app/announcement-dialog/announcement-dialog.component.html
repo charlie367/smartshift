@@ -10,9 +10,21 @@
   </div>
 
   <!-- 分頁切換（新增） -->
-  <div class="tabs">
+  <!-- <div class="tabs">
     <button class="tab-btn" [class.active]="currentTab==='public'" (click)="switchTab('public')">全體通知</button>
     <button class="tab-btn" [class.active]="currentTab==='personal'" (click)="switchTab('personal')">個人通知</button>
+  </div> -->
+
+  <div class="tabs">
+    <button class="tab-btn" [class.active]="currentTab==='public'" (click)="switchTab('public')">
+      全體通知
+      <span class="badge" *ngIf="publicUnread">{{ publicUnread }}</span>
+    </button>
+  
+    <button class="tab-btn" [class.active]="currentTab==='personal'" (click)="switchTab('personal')">
+      個人通知
+      <span class="badge" *ngIf="personalUnread">{{ personalUnread }}</span>
+    </button>
   </div>
 
   <div class="extra-line"></div>
@@ -58,13 +70,13 @@
         [class.read]="isPersonalRead(p.id)"
         (click)="markPersonalAsRead(p.id)"
       >
-        <div class="kv"><span class="k">Title：</span><span class="v">{{ p.title || p.employeeId }}</span></div>
-        <div class="kv"><span class="k">Message：</span><span class="v">{{ p.message }}</span></div>
+        <div class="kv"><span class="k">通知主旨:</span><span class="v">{{ p.title || p.employeeId }}</span></div>
+        <div class="kv"><span class="k">通知內容:</span><span class="v">{{ p.message }}</span></div>
         <div class="kv" *ngIf="p.link">
           <span class="k">Link-url：</span>
           <span class="v"><a [href]="normalizedLink(p.link)" target="_blank" rel="noopener noreferrer">{{ p.link }}</a></span>
         </div>
-        <div class="kv"><span class="k">申請日期：</span><span class="v">{{ p.date }}</span></div>
+        <div class="kv"><span class="k">通知日期：</span><span class="v">{{ p.date }}</span></div>
       </div>
     </ng-container>
 

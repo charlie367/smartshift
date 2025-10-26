@@ -26,6 +26,22 @@ interface PersonalNotice {
   link?: string;
 }
 
+type ApiPersonalItem = {
+  id: number;
+  employeeId: string;
+  title: string;
+  message: string;
+  linkUrl?: string | null;
+  createdDate?: string; // yyyy-MM-dd
+};
+
+type ApiPersonalRes = {
+  code: number;                 // 200 表成功
+  message: string;              // "查詢成功"
+  employeeNotifyList: ApiPersonalItem[];
+};
+
+
 @Component({
   selector: 'app-announcement-dialog',
   standalone: true,
@@ -146,42 +162,38 @@ export class AnnouncementDialogComponent implements OnInit {
   private fetchPersonalNotices(): void {
     const employeeId = (localStorage.getItem('employeeId') || '').trim();
     if (!employeeId) { this.personalList = []; return; }
-
-    this.http.get<any>('http://localhost:8080/get/employeeNotify', { params: { employeeId } })
-      .subscribe({
-        next: (res) => {
-          // 相容各種包裝型式
-          let raw: any[] = [];
-          const maybeArray =
-            res?.employeeNotifyList ?? res?.employee_notify_list ??
-            res?.list ?? res?.data ?? res?.employeeNotifyResList;
-
-          if (Array.isArray(maybeArray)) raw = maybeArray;
-          else if (res && typeof res === 'object') raw = [res?.employeeNotify ?? res?.employee_notify ?? res];
-
-          const normalized = raw.filter(Boolean).map(this.mapToPersonalNotice);
-          this.personalList = normalized.sort((a, b) => b.date.localeCompare(a.date) || (b.id - a.id));
-        },
-        error: (err) => {
-          console.error('載入個人通知失敗:', err);
-          this.personalList = [];
-        }
-      });
+  
+    this.http.get<ApiPersonalRes>('http://localhost:8080/get/employeeNotify', {
+      params: { employeeId }
+    }).subscribe({
+      next: (res) => {
+        const list = Array.isArray(res.employeeNotifyList) ? res.employeeNotifyList : [];
+        this.personalList = list.map(it => ({
+          id: Number(it.id),
+          employeeId: String(it.employeeId || ''),
+          title: String(it.title || ''),
+          message: String(it.message || ''),
+          link: it.linkUrl ? String(it.linkUrl) : '',
+          date: (it.createdDate || '').slice(0, 10),
+        })).sort((a, b) => b.date.localeCompare(a.date) || (b.id - a.id));
+      },
+      error: (err) => {
+        console.error('載入個人通知失敗:', err);
+        this.personalList = [];
+      }
+    });
   }
-
-  private mapToPersonalNotice = (item: any): PersonalNotice => {
-    const employeeId = String(item.employeeId ?? item.employee_id ?? '');
-    const dateRaw: string = item.createdDate ?? item.created_date ?? '';
-    const link: string = item.linkUrl ?? item.link_url ?? '';
-    return {
-      id: Number(item.id ?? 0),
-      employeeId,
-      date: typeof dateRaw === 'string' ? dateRaw.slice(0, 10) : '',
-      title: String(item.title ?? ''),
-      message: String(item.message ?? ''),
-      link: link ? String(link) : ''
-    };
-  };
+  
+// 未讀數（直接算當前畫面資料 vs. localStorage）
+get publicUnread(): number {
+  return this.notifyList.filter(n => !this.isRead(n.id)).length;
+}
+get personalUnread(): number {
+  return this.personalList.filter(n => !this.isPersonalRead(n.id)).length;
+}
+get totalUnread(): number {
+  return this.publicUnread + this.personalUnread;
+}
 
   markPersonalAsRead(id: number): void {
     const employeeId = (localStorage.getItem('employeeId') || '').trim();
@@ -207,12 +219,19 @@ export class AnnouncementDialogComponent implements OnInit {
 
   /** 關閉 Dialog：維持你原本的「全部已讀」＋通知父層重算徽章 */
   close(): void {
-    this.markAllAsRead(); // 公告
+    // 公告：把畫面上有的 id 全寫進已讀
+    const publicIds = this.notifyList.map(n => n.id);
+    localStorage.setItem('readNotices', JSON.stringify(publicIds));
+  
+    // 個人：同理
     const empId = (localStorage.getItem('employeeId') || '').trim();
     if (empId && this.personalList.length) {
-      const ids = this.personalList.map(n => n.id);
-      localStorage.setItem(this.storagePersonal(empId), JSON.stringify(ids));
+      const personalIds = this.personalList.map(n => n.id);
+      localStorage.setItem(`readPersonalNotices_${empId}`, JSON.stringify(personalIds));
     }
-    this.dialogRef.close('markAsRead');
+  
+    this.dialogRef.close(true); // 父層會自己重算，不依賴 payload
   }
+  
+  
 }
