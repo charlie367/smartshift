@@ -1,5 +1,4 @@
 <div class="notice-board">
-  <!-- 右上叉叉（一模一樣） -->
   <div class="dialog-header">
     <button class="plain-close" (click)="close()" aria-label="關閉">
       <mat-icon>cancel</mat-icon>
@@ -9,28 +8,65 @@
   <div class="notice-header-bar">
     <h2 class="notice-title">📢 通知佈告欄</h2>
   </div>
+
+  <!-- 分頁切換（新增） -->
+  <div class="tabs">
+    <button class="tab-btn" [class.active]="currentTab==='public'" (click)="switchTab('public')">全體通知</button>
+    <button class="tab-btn" [class.active]="currentTab==='personal'" (click)="switchTab('personal')">個人通知</button>
+  </div>
+
   <div class="extra-line"></div>
 
-  <div *ngFor="let notify of notifyList; let i = index"
-  class="notice-item">
-<div class="notice-header">
- <span class="notice-date">{{ notify.date }}</span>
-</div>
+  <!-- 內容捲動區（新增） -->
+  <div class="scroll-area">
 
-<!-- 保持 class="notice-content" 不變 -->
+    <!-- 公告分頁 -->
+    <ng-container *ngIf="currentTab==='public'">
+      <div *ngIf="notifyList.length === 0" class="empty-hint">
+        目前沒有可顯示的公告
+      </div>
 
-<p class="notice-content">{{ notify.message }}</p>
+      <div
+        *ngFor="let notify of notifyList; trackBy: trackById"
+        class="notice-item"
+        [class.read]="isRead(notify.id)"
+        (click)="markAsRead(notify.id)"
+      >
+        <div class="notice-header">
+          <!-- 直接顯示字串，避免 date 管線時區偏移 -->
+          <span class="notice-date">{{ notify.date }}</span>
+          <span class="notice-title-inline" *ngIf="notify.title">{{ notify.title }}</span>
+        </div>
 
-<!-- 如果有連結 -->
-<!-- 如果 notify.link 已經是完整網址，就直接使用；否則自動補上 https:// 讓它變成正確的超連結。 -->
-<!-- 在新分頁開啟連結。 -->
-<a *ngIf="notify.link"
-   [href]="notify.link.startsWith('http') ? notify.link : 'https://' + notify.link"
-   target="_blank"
-   rel="noopener noreferrer">
-  {{ notify.link }}
-</a>
+        <p class="notice-content">{{ notify.message }}</p>
 
+        <a *ngIf="notify.link"
+           [href]="normalizedLink(notify.link)"
+           target="_blank" rel="noopener noreferrer">
+          {{ notify.link }}
+        </a>
+      </div>
+    </ng-container>
 
+    <!-- 個人通知分頁（新增） -->
+    <ng-container *ngIf="currentTab==='personal'">
+      <div *ngIf="personalList.length === 0" class="empty-hint">目前沒有個人通知</div>
 
+      <div
+        *ngFor="let p of personalList; trackBy: trackById"
+        class="notice-item personal"
+        [class.read]="isPersonalRead(p.id)"
+        (click)="markPersonalAsRead(p.id)"
+      >
+        <div class="kv"><span class="k">Title：</span><span class="v">{{ p.title || p.employeeId }}</span></div>
+        <div class="kv"><span class="k">Message：</span><span class="v">{{ p.message }}</span></div>
+        <div class="kv" *ngIf="p.link">
+          <span class="k">Link-url：</span>
+          <span class="v"><a [href]="normalizedLink(p.link)" target="_blank" rel="noopener noreferrer">{{ p.link }}</a></span>
+        </div>
+        <div class="kv"><span class="k">申請日期：</span><span class="v">{{ p.date }}</span></div>
+      </div>
+    </ng-container>
+
+  </div>
 </div>

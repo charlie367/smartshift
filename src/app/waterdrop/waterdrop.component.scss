@@ -1,65 +1,30 @@
-:root {
-    --level: 60; /* 預設水位百分比 */
-  }
+:host {
+  display: inline-block;
+  --level: 0;           /* 預設 0%，會被 [style.--level] 覆蓋 */
+}
 
+#logo { width: 250px; height: 150px; }
 
-  
-  #logo {
+.st0 {
+  fill: none;
+  stroke: #000;
+  stroke-width: 4;
+  stroke-miterlimit: 5;
+}
 
-    width: 250px;   /* ← 水滴寬度 */
-    height: 150px;  /* ← 水滴高度 */
-  }
-  .st0 {
-    fill: none;
-    stroke: #000000;
-    stroke-width: 4;
-    stroke-miterlimit: 5;
-  }
-  
-  .st1 {
-    fill: none;
-    stroke: #000000;
-    stroke-width: 3;
-    stroke-miterlimit: 5;
-  }
-  
-  #logo2 {
-    width: 150px !important;
-    height: 150px !important;
-    position: relative;
-    margin-top: -100px;
-  }
-  
-  #banner .fill {
-    transform: translateY(calc(150px * (1 - var(--level, 60) / 100)));
-    transition: transform 5s ease;
-  }
-  
-  #banner #waveShape {
-    animation-name: waveAction;
-    animation-iteration-count: infinite;
-    animation-timing-function: linear;
-    animation-duration: 2.5s;
-    width: 300px;
-    height: 150px;
-    fill: #04ACFF;
-  }
-  
-  @keyframes fillAction {
-    0% {
-      transform: translate(0, 150px);
-    }
-    100% {
-      transform: translate(0, -5px);
-    }
-  }
-  
-  @keyframes waveAction {
-    0% {
-      transform: translate(-150px, 0);
-    }
-    100% {
-      transform: translate(0, 0);
-    }
-  }
-  
+#banner .fill {
+  transform: translateY(calc(150px * (1 - var(--level) / 100)));
+  transition: transform .6s ease;
+}
+
+#waveShape {
+  animation: waveAction 2.5s linear infinite;
+  width: 300px;
+  height: 150px;
+  fill: #04ACFF;
+}
+
+@keyframes waveAction {
+  0%   { transform: translate(-150px, 0); }
+  100% { transform: translate(0, 0); }
+}

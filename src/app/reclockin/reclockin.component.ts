@@ -49,20 +49,21 @@ export class ReclockinComponent implements OnInit, OnDestroy {
   round = 1;
 
   ngOnInit(): void {
-    console.log('🟢 Dialog data:', this.data);
+    console.log(' Dialog data:', this.data);
     if (!this.data.employeeId) {
       this.data.employeeId = localStorage.getItem('employeeId') || '';
-      console.log('⚙️ 自動帶入 employeeId：', this.data.employeeId);
     }
-
     this.tick();
     this.timerId = setInterval(() => this.tick(), 1000);
-
     if (this.data?.shifts) {
       this.mode = this.detectMode(this.data.shifts);
-      console.log(`📘 今日班別模式：${this.mode}`);
     }
 
+    const savedRound = localStorage.getItem('CLOCK_ROUND');
+    if (savedRound) {
+      this.round = parseInt(savedRound, 10);
+    }
+    this.loadTodayClock(); 
     this.updateButtons();
   }
 
@@ -78,25 +79,33 @@ export class ReclockinComponent implements OnInit, OnDestroy {
     this.currentDate = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 星期${week}`;
   }
 
-
   private detectMode(shifts: any[]): 'single' | 'lunch' | 'multi' {
-    if (!shifts || shifts.length === 0) return 'single';
-    if (shifts.length === 1) return 'single';
-    if (shifts.length === 2) {
-      const s1 = shifts[0];
-      const s2 = shifts[1];
-      if (s1.end_time === s2.start_time) {
-        return 'lunch';
-      } else {
-        return 'multi';
-      }
-    }
-    return 'multi';
+    if (!shifts || shifts.length <= 1) return 'single';
+  
+    // 正規化 + 不管順序
+    const list = shifts.map(s => ({
+      start: String(s.start_time ?? s.startTime ?? ''),
+      end:   String(s.end_time   ?? s.endTime   ?? ''),
+      id:    Number(s.shift_work_id ?? s.shiftWorkId ?? 0)
+    }));
+  
+    const a = list[0], b = list[1];
+  
+    // 後端規則：id 相差 1 即連班（1↔2、3↔4）
+    const consecutiveById = a.id > 0 && b.id > 0 && Math.abs(a.id - b.id) === 1;
+  
+    // 保底：時間無縫銜接也視為連班（含跨日 23:59:59 → 00:00:00）
+    const adjacentByTime =
+      (!!a.end && !!b.start && (a.end === b.start)) ||
+      (!!b.end && !!a.start && (b.end === a.start)) ||
+      ((a.end === '23:59:59' && b.start === '00:00:00') ||
+       (b.end === '23:59:59' && a.start === '00:00:00'));
+  
+    return (consecutiveById || adjacentByTime) ? 'lunch' : 'multi';
   }
-
+  
 
   private updateButtons(): void {
-    console.log('🔄 更新按鈕狀態...');
     if (this.mode === 'lunch') this.updateLunchButtons();
     else if (this.mode === 'multi') this.updateMultiButtons();
     else this.updateSingleButtons();
@@ -163,6 +172,7 @@ export class ReclockinComponent implements OnInit, OnDestroy {
         this.clockInTime = null;
         this.clockOutTime = null;
         this.updateMultiButtons();
+        localStorage.setItem('CLOCK_ROUND', '2');
       }
     } else if (this.round === 2) {
       if (!this.clockInTime) {
@@ -182,9 +192,7 @@ export class ReclockinComponent implements OnInit, OnDestroy {
     }
   }
 
-
   leftAction() {
-    console.log(`👈 左鍵觸發 | 模式=${this.mode}`);
     if (this.mode === 'lunch') {
       if (!this.clockInTime) this.clockIn();
       else if (!this.restStart) this.startLunch();
@@ -194,7 +202,6 @@ export class ReclockinComponent implements OnInit, OnDestroy {
   }
 
   rightAction() {
-    console.log(`👉 右鍵觸發 | 模式=${this.mode}`);
     if (this.mode === 'lunch') {
       if (!this.restEnd && this.restStart) this.endLunch();
       else if (!this.clockOutTime && this.restEnd) this.startClockOut();
@@ -203,14 +210,11 @@ export class ReclockinComponent implements OnInit, OnDestroy {
     }
   }
 
-
   clockIn() {
     const now = this.nowClockTime();
     const req = { employeeId: this.data.employeeId, workDate: this.data.workDate, clockOn: now };
-    console.log('⬆️ 上班打卡送出:', req);
 
     if (!req.employeeId) {
-      console.error('❌ 缺少 employeeId，無法打卡');
       return;
     }
 
@@ -224,15 +228,14 @@ export class ReclockinComponent implements OnInit, OnDestroy {
           this.dialog.open(ErrorDialogComponent, { data: { message: res.message } });
         }
       },
-      error: err => console.error('❌ 上班打卡錯誤:', err)
+      error: (err) => 
+      this.dialog.open(ErrorDialogComponent, { data: { message: '上班打卡錯誤' } })
     });
   }
-
 
   startLunch() {
     const now = this.nowClockTime();
     const req = { employeeId: this.data.employeeId, workDate: this.data.workDate, restStart: now };
-    console.log('☕ 午休開始送出:', req);
 
     this.http.postApi('http://localhost:8080/rest/start', req).subscribe({
       next: (res: any) => {
@@ -242,16 +245,15 @@ export class ReclockinComponent implements OnInit, OnDestroy {
           this.updateButtons();
         }
       },
-      error: err => console.error('❌ 午休開始錯誤:', err)
+      error: (err) => 
+      this.dialog.open(ErrorDialogComponent, { data: { message: '上班打卡錯誤' } })
     });
   }
-
 
   endLunch() {
     const now = this.nowClockTime();
     const req = { employeeId: this.data.employeeId, workDate: this.data.workDate, restEnd: now };
     console.log('🍱 午休結束送出:', req);
-
     this.http.postApi('http://localhost:8080/rest/end', req).subscribe({
       next: (res: any) => {
         if (res.code === 200) {
@@ -263,7 +265,6 @@ export class ReclockinComponent implements OnInit, OnDestroy {
       error: err => console.error('❌ 午休結束錯誤:', err)
     });
   }
-
 
   startClockOut() {
     this.showMoodRating = true;
@@ -279,12 +280,6 @@ export class ReclockinComponent implements OnInit, OnDestroy {
     const s = date.getSeconds().toString().padStart(2, '0');
     return `${y}/${m}/${d} ${h}:${mi}:${s}`;
   }
-  
-
-  
-  
-  
-
 
   private nowClockTime(): string {
     const dev = localStorage.getItem('DEV_CLOCK');
@@ -305,62 +300,75 @@ export class ReclockinComponent implements OnInit, OnDestroy {
     this.workDuration = `${h}小時${m}分鐘`;
   }
 
-completeClockOut() {
-  this.showMoodRating = false;
-
-
-  const selectedRating = this.hoveredStar || this.moodRating;
-
-  const now = this.nowClockTime();
-  const req = {
-    employeeId: this.data.employeeId,
-    workDate: this.data.workDate,
-    clockOff: now,
-    score: selectedRating
-  };
-  console.log("⬇️ 下班打卡送出:", req);
-
-  this.http.postApi('http://localhost:8080/clock/off2', req).subscribe({
-    next: (res: any) => {
-      if (res.code === 200) {
-        this.clockOutTime = this.toDate(this.data.workDate, now);
-        this.calcWorkDuration();
-
+  private loadTodayClock(): void {
+    const workDate = (this.data.workDate ?? new Date().toISOString().slice(0, 10));
+    const employeeId = this.data.employeeId;
   
-        this.showSuccess('clockOut', selectedRating);
+    // 方式一：用原生 HttpClient（建議）
+    this.https.get<any>('http://localhost:8080/single/date', {
+      params: { employeeId, workDate }
+    }).subscribe({
+      next: (res) => {
+        if (res.code === 200 && Array.isArray(res.data) && res.data.length) {
+          const latest = res.data[res.data.length - 1];
+          if (latest.clockOn)  this.clockInTime  = new Date(`${latest.workDate}T${latest.clockOn}`);
+          if (latest.clockOff) this.clockOutTime = new Date(`${latest.workDate}T${latest.clockOff}`);
+          this.updateButtons();
+        }
+      },
+      error: (err) => console.error('載入今日打卡狀態錯誤', err)
+    });
+  }
+  
+  
 
-        this.updateButtons();
+  completeClockOut() {
+    this.showMoodRating = false;
+    const selectedRating = this.hoveredStar || this.moodRating;
+    const now = this.nowClockTime();
+    const req = {
+      employeeId: this.data.employeeId,
+      clockOff: now,
+      score: selectedRating
+    };
+  
+    this.http.postApi('http://localhost:8080/clock/off2', req).subscribe({
+      next: (res: any) => {
+        if (res.code === 200) {
+          this.clockOutTime = this.toDate(this.data.workDate, now);
+          this.calcWorkDuration();
+          this.showSuccess('clockOut', selectedRating);
+          this.updateButtons();
+  
+          if (this.mode === 'multi' && this.round === 2) {
+            localStorage.removeItem('CLOCK_ROUND');
+            this.round = 1;
+          }
 
-        setTimeout(() => {
-          this.moodRating = 0;
-          this.hoveredStar = 0;
-        }, 500);
-      } else {
-        this.dialog.open(ErrorDialogComponent, { data: { message: res.message } });
+          // 重置心情星星
+          setTimeout(() => {
+            this.moodRating = 0;
+            this.hoveredStar = 0;
+          }, 500);
+        } else {
+          this.dialog.open(ErrorDialogComponent, { data: { message: res.message } });
+        }
+      },
+      error: (err) => {
+        this.dialog.open(ErrorDialogComponent, { data: { message: '伺服器錯誤' } });
       }
-    },
-    error: () => {
-      this.dialog.open(ErrorDialogComponent, { data: { message: '伺服器錯誤' } });
-    }
-  });
-}
-
-
+    });
+  }
 
 showSuccess(type: 'clockIn' | 'clockOut' | 'restStart' | 'restEnd', score?: number) {
   const now = new Date();
   const timeStr = this.formatDisplayTime(now);
-
   if (type === 'clockOut') {
-
     const rating = typeof score === 'number' ? score : 0;
-    console.log("🎯 顯示星數:", rating);
-
     const moodText = this.getMoodText(rating);
     const stars = Array.from({ length: 5 }, (_, i) =>
       `<span style="font-size:22px; color:${i < rating ? '#FFD700' : '#ccc'};">★</span>`
     ).join('');
-
     this.modalData = {
       icon: '✅',
       title: '下班打卡成功！',
@@ -377,7 +385,6 @@ showSuccess(type: 'clockIn' | 'clockOut' | 'restStart' | 'restEnd', score?: numb
       `
     };
   }
-
   else if (type === 'clockIn') {
     this.modalData = {
       icon: '✅',
@@ -392,7 +399,6 @@ showSuccess(type: 'clockIn' | 'clockOut' | 'restStart' | 'restEnd', score?: numb
       `
     };
   }
-
   else if (type === 'restStart') {
     this.modalData = {
       icon: '☕',
@@ -405,7 +411,6 @@ showSuccess(type: 'clockIn' | 'clockOut' | 'restStart' | 'restEnd', score?: numb
       `
     };
   }
-
   else if (type === 'restEnd') {
     this.modalData = {
       icon: '🍱',
@@ -418,13 +423,9 @@ showSuccess(type: 'clockIn' | 'clockOut' | 'restStart' | 'restEnd', score?: numb
       `
     };
   }
-
   this.showModal = true;
 }
 
-  
-  
-  
   closeModal() { this.showModal = false; }
   closeAndRefresh() { this.dialogRef.close(true); }
   setHoveredStar(s: number) { this.hoveredStar = s; }

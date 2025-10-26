@@ -1,0 +1,83 @@
+<div class="calendar-container">
+
+  <div class="calendar-wrapper">
+    <div class="calendar-card">
+      <!-- 頭部 - 月份切換 -->
+      <div class="calendar-header">
+        <button class="nav-button" (click)="changeMonth(-1)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+           viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+
+        <div class="month-year-display">
+          <div class="month-name">{{ currentMonthName }}</div>
+          <div class="year-name">{{ currentYear }}</div>
+        </div>
+
+        <button class="nav-button" (click)="changeMonth(1)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+           viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+
+      <!-- 時間輸入框 (隱藏但保留在DOM中) -->
+      <div class="time-inputs" style="display: none;">
+        <div class="input-group">
+          <label>開始時間</label>
+          <input
+            type="text"
+            [value]="formatDateFull(selectedRange.start)"
+            readonly
+            placeholder="選擇開始日期"
+          />
+        </div>
+        <div class="input-group">
+          <label>結束時間</label>
+          <input
+            type="text"
+            [value]="formatDateFull(selectedRange.end)"
+            readonly
+            placeholder="選擇結束日期"
+          />
+        </div>
+      </div>
+
+      <!-- 日曆表格 -->
+      <table class="calendar-table">
+        <thead>
+          <tr>
+            @for (day of weekDays; track day) {
+              <td class="weekday-header">{{ day }}</td>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (week of weeks; track $index) {
+            <tr>
+              @for (dateObj of week; track $index) {
+                <td
+                  class="calendar-day"
+                  [class]="getDateClasses(dateObj)"
+
+                  [class.current-month]="dateObj.type === 'current-month'"
+                  [class.clickable]="dateObj.type === 'current-month'"
+                  (click)="handleDateClick(dateObj)"
+                >
+                  {{ dateObj.day }}
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

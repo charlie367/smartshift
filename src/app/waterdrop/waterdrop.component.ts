@@ -1,18 +1,17 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, HostBinding } from '@angular/core';
 
 @Component({
   selector: 'app-water-drop',
   standalone: true,
-  imports: [],
   templateUrl: './waterdrop.component.html',
-  styleUrl: './waterdrop.component.scss'
+  styleUrls: ['./waterdrop.component.scss'],
 })
 export class WaterdropComponent {
- // 之後可以透過這裡控制水位
- @Input() level: number = 60;
+  @Input() level = 60;
 
- setLevel(value: number) {
-   this.level = value;
-   document.documentElement.style.setProperty('--level', this.level.toString());
- }
+  // 把 Input 直接綁成 host 上的 CSS 變數 --level
+  @HostBinding('style.--level')
+  get levelVar() {
+    return `${this.level}`;
+  }
 }

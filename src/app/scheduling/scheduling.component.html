@@ -58,44 +58,54 @@
   </div>
   
 </div>
-<div *ngIf="viewMode === 'dashboard'">
 
-  <div class="dashboard-row">
-
-    <div class="left-col">
-
-       <div class="chat-box">
-        <div *ngFor="let msg of messages" [ngClass]="msg.sender">
-          <ng-container *ngIf="msg.sender === 'assistant'">
-            <img src="kawaii.png" alt="助理" class="assistant-avatar" />
-          </ng-container>
-          <div class="msg">
-            <p style="color: #505050">
-              {{ msg.text }}
-            </p>
-          </div>
-        </div>
-        <div class="chat-box-input-group">
-          <input
-            class="chat-box-input"
-            type="text"
-            placeholder="我有話想說 ..."
-          />
-          <img src="send.png" alt="" width="28px" />
-        </div>
-      </div>
-
+      <div *ngIf="viewMode === 'dashboard'">
+        <div class="dashboard-row">
+           <div class="left-col">
+               <div class="chat-box" #chatBox>
+   
+                 <div *ngFor="let msg of messages; let i = index" class="chat-row" [ngClass]="msg.sender">
+   
+             <!-- 助理頭像 -->
+             <ng-container *ngIf="msg.sender === 'assistant'">
+               <img src="kawaii.png" alt="助理" class="assistant-avatar" />
+             </ng-container>
+             <!-- 對話泡泡 -->
+              <div class="chat-ms">
+             <div class="chat-bubble">
+                    <div class="chat-text">
+                    <h3>{{ msg.text }}</h3>
+                   </div>
+   </div>
+                     <div class="chat-time">
+                     <h5 style="color: gray;  margin-left: 10px;
+                     margin-right: 10px;">{{ msg.time }}</h5>
+                     </div>
+   
+            </div>
+       </div>
+   
+   
+           <!-- 輸入區 -->
+           <div class="chat-box-input-group"> <input class="chat-box-input" type="text" placeholder="我有話想說 ..."
+               [(ngModel)]="userInput" (keyup.enter)="sendMessage()" />
+               <button (click)="sendMessage()" class="chat-button">
+                  <img src="send.png" alt="" width="28px">
+                 </button>
+                </div>
+         </div>
+   
       <main class="calendar-container">
-        <p class="title">選取預約時段</p>
+        <!-- <p class="title">選取預約時段</p> -->
 
         <div class="left-calendar">
-          <mat-calendar
-            [selected]="selectedDate"
-            (selectedChange)="onDateSelected($event)">
-          </mat-calendar>
+          <app-test-need1
+            (dateClick)="onDateSelected($event)"
+            (rangeChange)="onRangeChange($event)">
+          </app-test-need1>
         </div>
+        
 
-        <br>
 
         <div class="right-week">
           <div class="week-header">
@@ -158,11 +168,21 @@
 
       <div class="widget-card">
         <div class="widget-header">
-          <span>本月薪水</span>
-          <span class="salary-value">薪水: 30000</span>
+          <span>本月上班時數</span>
+          <span class="salary-value">本月總時數 {{ monthQuotaHours }} 小時</span>
         </div>
-        <div class="widget-body salary-body">
-          <app-water-drop [level]="80" class="drop"></app-water-drop>
+      
+        <div class="widget-body salary-body" style="display:flex;align-items:center;">
+          <div class="left-stats" style="min-width:120px;text-align:center;">
+            <div class="label">已上時數</div>
+            <div class="value" style="font-size:36px;font-weight:700">{{ workedHours }}</div>
+            <div class="sub">小時</div>
+          </div>
+      
+          <!-- 就用你的水滴樣式 -->
+          <app-water-drop class="drop" [level]="uiLevel"></app-water-drop>
+
+
         </div>
       </div>
       
@@ -180,7 +200,7 @@
       </button>
       <div class="month-title">
 
-        {{ currentMonthName }}
+        {{ currentMonthLabel }}
       </div>
       <button class="arrow" (click)="nextMonth()">  <img src="arrow-right.png" alt=""style="width: 24px;" /></button>
     </div>
@@ -264,9 +284,41 @@
 </div>
 
 </div> 
-<div *ngIf="viewMode === 'schedule'" class="schedule-wrapper">
+<!-- <div *ngIf="viewMode === 'schedule'" class="schedule-wrapper">
   <daypilot-scheduler
     #scheduler
+    [config]="config"
+    [events]="events">
+  </daypilot-scheduler>
+</div> -->
+<!-- <div *ngIf="viewMode === 'schedule'" class="schedule-wrapper">
+  <daypilot-scheduler
+    #scheduler
+    class="scheduler"
+    [config]="config"
+    [events]="events">
+  </daypilot-scheduler>
+</div> -->
+<div *ngIf="viewMode === 'schedule'" class="schedule-wrapper">
+
+  <!-- 月份導覽列：白底＋置中 -->
+  <div class="month-nav">
+    <button class="nav" (click)="prevMonth()" aria-label="上一月">
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+
+    <div class="month-nav-title">{{ currentMonthLabel }}</div>
+
+    <button class="nav" (click)="nextMonth()" aria-label="下一月">
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+
+
+  </div>
+
+  <daypilot-scheduler
+    #scheduler
+    class="scheduler"
     [config]="config"
     [events]="events">
   </daypilot-scheduler>
