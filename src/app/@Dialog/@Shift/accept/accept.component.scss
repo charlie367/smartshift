@@ -1,3 +1,9 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box !important;
+}
+
 .dialog-title {
   text-align: center;       // 標題置中
   font-size: 20px;

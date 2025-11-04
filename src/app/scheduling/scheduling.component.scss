@@ -1035,6 +1035,55 @@ background-color: rgba(0, 123, 255, 0.1);
 
 /* 右邊水滴 */
 .widget-card .salary-body .drop {
-  width: 150px;        /* 想放大縮小自己改 */
+  width: 150px;       
   height: 150px;
+}
+//
+/* 容器改名：backend-entry */
+.backend-entry {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 8px 16px;
+}
+
+/* 膠囊按鈕樣式 */
+.btn-back {
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed;
+  white-space: nowrap;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 10px 16px;
+  border-radius: 9999px;
+  font-weight: 600;
+  letter-spacing: .3px;
+
+  box-shadow: 0 4px 12px rgba(0,0,0,.12);
+  transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+}
+
+.btn-back:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0,0,0,.16);
+  filter: brightness(0.98);
+}
+
+.btn-back:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(0,0,0,.18);
+  filter: brightness(0.96);
+}
+
+.btn-back:focus-visible {
+  outline: 3px solid rgba(25, 118, 210, .35);
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .backend-entry { padding: 6px 12px; }
+  .btn-back { padding: 8px 14px; gap: 6px; }
 }

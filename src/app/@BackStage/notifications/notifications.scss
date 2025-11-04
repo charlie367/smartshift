@@ -1,4 +1,11 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box !important;
+}
+
 /* 整體容器 */
+
 .notice-board {
   max-width: 860px;
   margin: 40px auto;
@@ -6,7 +13,7 @@
   background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
-  font-family: 'Segoe UI', 'Noto Sans TC', sans-serif;
+  font-family: "Segoe UI", "Noto Sans TC", sans-serif;
 }
 
 /* 標題與按鈕列 */
@@ -17,13 +24,30 @@
   margin-bottom: 20px;
   border-bottom: 2px solid #e0e0e0;
   padding-bottom: 12px;
+
+  button {
+    transition: 0.3s;
+    height: 40px;
+    background: #e8928a !important;
+    border: 2px solid #fff;
+    color: #fff;
+  }
 }
 
 .notice-title {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: bold;
   color: #3f51b5;
   margin: 0;
+
+  display: flex;
+  align-items: center;
+  img {
+    width: 36px;
+    height: 36px;
+    margin-right: 8px;
+    transform: rotate(180deg);
+  }
 }
 
 /* 搜尋區塊 */
@@ -71,28 +95,32 @@
 .notice-item {
   border-left: 5px solid #3f51b5;
   background-color: #f5f7ff;
-  padding: 16px 20px 28px;
+  padding: 20px;
   margin-bottom: 20px;
   border-radius: 8px;
   transition: background-color 0.25s ease;
-  cursor: pointer;
+  cursor: pointer !important;
   position: relative;
 }
 
 .notice-item:hover {
-  background-color: #e8edff;
+  background-color: #e8edff !important;
 }
 
 /* 標題與勾勾圖示同行 */
 .notice-header {
   display: flex;
-  justify-content: space-between;
+  // justify-content: space-between;
   align-items: center;
+  margin-bottom: 8px;
 }
 
 .publish-icon {
   color: #4caf50;
-  font-size: 22px;
+  font-size: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin-left: 8px;
 }
 
@@ -104,9 +132,10 @@
 
 .notice-message {
   font-size: 15px;
-  color: #444;
+  color: #555555;
   margin: 6px 0;
   line-height: 1.6;
+  max-height: 160px;
 }
 
 .notice-link {
@@ -116,11 +145,12 @@
   cursor: pointer;
 }
 
-.notice-date {
+.notice-date,
+.notify-meta {
   font-size: 13px;
   color: #777;
   position: absolute;
-  bottom: 8px;
+  top: 8px;
   right: 12px;
 }
 
@@ -135,3 +165,156 @@
   background-color: #f2f5f9;
 }
 
+/* 讓個人通知區與全體通知有一致感但又更柔和 */
+.personal-notice-board {
+  background: linear-gradient(to bottom right, #ffffff, #f9fbff);
+}
+
+/* 個人通知清單 */
+.personal-notice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* 單筆通知 */
+.personal-notice-item {
+  background-color: #f3f6ff;
+  border-left: 5px solid #5b7bfa;
+  border-radius: 8px;
+  padding: 18px 20px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.personal-notice-item:hover {
+  background-color: #eaf0ff;
+  transform: translateY(-2px);
+}
+
+/* 標題與狀態列 */
+.personal-notice-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+/* 員工姓名與通知標題 */
+.personal-notice-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.employee-name {
+  font-weight: 700;
+  color: #3f51b5;
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.notify-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* 通知狀態標籤 */
+.notify-status {
+  background-color: #ffb74d;
+  color: #fff;
+  font-size: 13px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.notify-status.read {
+  background-color: #66bb6a;
+}
+
+/* 通知內容 */
+.notify-message {
+  margin: 8px 0 12px;
+  color: #555;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* 通知連結 */
+.notify-link {
+  color: #1e88e5;
+  text-decoration: underline;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.notify-link:hover {
+  color: #0d47a1;
+}
+
+/* 日期與其他資訊 */
+.notify-meta {
+  text-align: right;
+  color: #777;
+  font-size: 13px;
+}
+
+.no-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+:host ::ng-deep .mat-mdc-tab .mdc-tab-indicator__content--underline {
+  border: 1.5px solid #8eb69b;
+}
+.custom-tab-group {
+  /* 選中底線顏色（active 狀態） */
+  --mdc-tab-indicator-color: #8eb69b !important;
+
+  /* 選中文字顏色 */
+  --mdc-tab-color: #8eb69b;
+
+  /* 未選中文字顏色 */
+  --mdc-tab-color-secondary: #777;
+
+  /* 點擊 ripple 顏色 */
+  --mdc-ripple-color: #8eb69b;
+}
+
+:host
+  ::ng-deep
+  .mat-mdc-tab.mdc-tab--active:hover
+  .mdc-tab-indicator__content--underline {
+  border-color: #8eb69b !important;
+}
+:host
+  :ng-deep
+  .mat-mdc-tab.mdc-tab--active:focus
+  .mdc-tab-indicator__content--underline {
+  border: 0 !important;
+}
+.custom-tab-group {
+  --mat-tab-header-active-focus-indicator-color: #8eb69b;
+  --mat-sys-primary: #8eb69b;
+}
+
+// .backToTop {
+//   position: fixed;
+//   bottom: 16px;
+//   right: 16px;
+//   border-radius: 1000px;
+//   border: 0;
+//   display: inline-block;
+//   width: 40px;
+//   height: 40px;
+//   opacity: 0.7;
+//   cursor: pointer;
+//   transition: transform 0.3s ease;
+//   z-index: 99;
+//   &:hover {
+//     transform: scale(1.2);
+//   }
+// }

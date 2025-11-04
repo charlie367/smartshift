@@ -27,7 +27,7 @@
         @if (isEditMode) {
           <div class="info-item">
             <div class="fl-group">
-              <select class="fl-group-select" id="emp-state" [(ngModel)]="updateEmployeeList.employmentStatus">
+              <select  class="fl-group-select" id="emp-state" [(ngModel)]="updateEmployeeList.employmentStatus">
                 <option value="在職中">在職中</option>
                 <option value="已離職">已離職</option>
               </select>
@@ -90,15 +90,9 @@
         @if (isEditMode) {
           <div class="fl-group">
             <mat-select id="emp-title" class="fl-group-select" [(ngModel)]="updateEmployeeList.title">
-              <mat-option value="執行長"> 執行長</mat-option>
-              <mat-option value="總經理"> 總經理</mat-option>
-              <mat-option value="技術總監">技術總監</mat-option>
-              <mat-option value="策畫經理"> 策畫經理</mat-option>
-              <mat-option value="美術監督"> 美術監督</mat-option>
-              <mat-option value="設備經理"> 設備經理</mat-option>
-              <mat-option value="程式設計師"> 程式設計師</mat-option>
-              <mat-option value="正職員工"> 正職員工</mat-option>
-              <mat-option value="兼職員工"> 兼職員工</mat-option>
+              <mat-option value="主管">主管</mat-option>
+              <mat-option value="正職人員">正職人員</mat-option>
+              <mat-option value="計時人員">計時人員</mat-option>
             </mat-select>
             <label class="fl-group-label" for="emp-title">職位</label>
           </div>

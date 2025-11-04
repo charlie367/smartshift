@@ -15,7 +15,7 @@ export class SalaryComponent {
 
 
   //列表
-  displayedColumns: string[] = ['id','name','title','baseSalary','overtimePay','deduction','insuranceFee','taxDeduction','totalSalary'];
+  displayedColumns: string[] = ['id','name','title','baseSalary','overtimePay','deduction','insuranceFee','totalSalary'];
   dataSource = new MatTableDataSource<any>([]);
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   ngAfterViewInit() {

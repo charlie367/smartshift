@@ -116,13 +116,13 @@ export class AddShiftWork {
         (date: any) => date.applyDate === this.update.applyDate
       );
 
-      const holiday = selectDay.shiftDetailList.some((shift:any)=>
-        shift.shiftWorkId == 0
-      );
-
       if(!selectDay){
         this.dataTidy(true)
       }
+
+      const holiday = selectDay.shiftDetailList.some((shift:any)=>
+        shift.shiftWorkId == 0
+      );
 
       const duplicateShift = selectDay.shiftDetailList.some((item:any)=>
         item.shiftWorkId == this.update.shiftWorkId

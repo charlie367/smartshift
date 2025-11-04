@@ -73,7 +73,7 @@
         <div class="kv"><span class="k">通知主旨:</span><span class="v">{{ p.title || p.employeeId }}</span></div>
         <div class="kv"><span class="k">通知內容:</span><span class="v">{{ p.message }}</span></div>
         <div class="kv" *ngIf="p.link">
-          <span class="k">Link-url：</span>
+          <span class="k">網址：</span>
           <span class="v"><a [href]="normalizedLink(p.link)" target="_blank" rel="noopener noreferrer">{{ p.link }}</a></span>
         </div>
         <div class="kv"><span class="k">通知日期：</span><span class="v">{{ p.date }}</span></div>

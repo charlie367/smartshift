@@ -60,7 +60,7 @@ export class PunchInLate {
 
     this.http
       .getApi(
-        `http://localhost:8080/clock/single/date?employeeId=${this.clock.employeeId}&workDate=${this.clock.workDate}`
+        `http://localhost:8080/single/date?employeeId=${this.clock.employeeId}&workDate=${this.clock.workDate}`
       )
       .subscribe((res: any) => {
         // console.log('當日打卡資訊', res); // 當日打卡資訊
@@ -306,7 +306,7 @@ export class PunchInLate {
 
   submitReqClock() {
     this.http
-      .postApi(`http://localhost:8080/clock/rec/part`, this.clock)
+      .postApi(`http://localhost:8080/rec/part`, this.clock)
       .subscribe((res: any) => {
         console.log(res);
       });
@@ -316,7 +316,7 @@ export class PunchInLate {
   fixClock() {
     if (!this.check) {
       this.http
-        .postApi(`http://localhost:8080/clock/rec/part`, this.clock)
+        .postApi(`http://localhost:8080/rec/part`, this.clock)
         .subscribe((res: any) => {
           if (res.code == 200) {
             this.dialog.open(Success, { width: '150px' });
@@ -350,7 +350,7 @@ export class PunchInLate {
   fixClock2() {
     if (!this.check) {
       this.http
-        .postApi(`http://localhost:8080/clock/rec/all`, this.clock)
+        .postApi(`http://localhost:8080/rec/all`, this.clock)
         .subscribe((res: any) => {
           if (res.code == 200) {
             this.dialog.open(Success, { width: '150px' });

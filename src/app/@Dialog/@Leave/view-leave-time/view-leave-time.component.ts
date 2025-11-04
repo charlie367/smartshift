@@ -21,7 +21,9 @@ export class ViewLeaveTimeComponent {
     if(!this.leaveData.prove.includes("null")){
       this.checkProve = true
     }
-    this.http.getApi(`http://localhost:8080/leave/getLeaveByleaveId?leaveId=${this.leaveData.id}`).subscribe((res:any)=>{
+    // this.http.getApi(`http://localhost:8080/leave/getLeaveByMonth?startDate=${this.leaveData.startDate}&endDate=${this.leaveData.endDate}&employeeId=${this.leaveData.employeeId}&leaveId=${this.leaveData.leaveId}`).subscribe((res:any)=>{
+     this.http.getApi(`http://localhost:8080/leave/getLeaveByLeaveId?leaveId=${this.leaveData.leaveId}`).subscribe((res:any)=>{
+    console.log(res);
       this.leaveInfoList = res;
     })
   }

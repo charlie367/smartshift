@@ -1,14 +1,17 @@
-.success-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
+*,
+*::before,
+*::after {
+  box-sizing: border-box !important;
+}
+:host :ng-deep .success-container {
+  // display: flex;
+  // flex-direction: column;
+  // align-items: center;
+  // justify-content: center;
 
-  .success-text {
-    margin-top: 15px;
-    font-size: 18px;
-    color: green;
-    font-weight: bold;
-    margin-left: 14px;
-  }
+  background-color: #00000000 !important;
+  position: relative;
+}
+
+:host :ng-deep .success-text {
+}

@@ -1,3 +1,9 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box !important;
+}
+
 /* 📦 整體表單容器（包含 form-body） */
 .form-container {
   display: flex;

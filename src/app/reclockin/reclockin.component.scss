@@ -269,3 +269,49 @@ background: #125ca1;
 .dialog-header .mat-icon:hover {
   color: #d32f2f;   /* hover 時變紅色 */
 }
+///
+/* 你原本這段保持不動 */
+/* 讓按鈕永遠是深藍底 + 白字，避免被其他樣式覆蓋 */
+
+
+.dialog-header .makeup-solid-btn {
+  position: absolute; /* 新增 */
+  top: 20px;             /* 新增：你可自行調整 */
+  right: 68px;   
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 6px 14px;
+  height: 32px;
+  border-radius: 12px;
+  border: 1px solid #17365f;
+
+  background: #1f3f73 !important;   /* 強制深藍底 */
+  color: #fff !important;            /* 強制白字 */
+
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,.12);
+  transition: background .15s, border-color .15s, box-shadow .15s, transform .02s;
+}
+
+/* hover/active/焦點狀態 */
+.dialog-header .makeup-solid-btn:hover {
+  background: #224a8f !important;
+  border-color: #1b447c;
+  box-shadow: 0 3px 6px rgba(0,0,0,.16);
+}
+.dialog-header .makeup-solid-btn:active {
+  background: #173b6c !important;
+  transform: translateY(1px);
+}
+/* 取消瀏覽器預設 outline，只保留柔和聚焦圈（避免一進來就看到巨大藍圈） */
+.dialog-header .makeup-solid-btn:focus { outline: none; }
+.dialog-header .makeup-solid-btn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(59,130,246,.28);
+}

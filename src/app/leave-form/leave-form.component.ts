@@ -11,6 +11,8 @@ interface LeavePeriod {
   leave: string;
   startTime: string;
   endTime: string;
+  dayShift?: string; // 顯示用（例如：早班 / 晚班）
+  availableShifts?: { name: string; start: string; end: string }[];
 }
 
 interface WholeDay {
@@ -31,10 +33,19 @@ interface WholeDay {
 export class LeaveFormComponent {
   constructor(private router: Router, private dialog: MatDialog) {}
 
+readonly SHIFT_TIMETABLE = [
+ 
+  { name: '早班', time: '08:00–12:00', dotClass: 'morning' },
+  { name: '中班', time: '12:00–16:00', dotClass: 'afternoon' },
+  { name: '晚班', time: '16:00–20:00', dotClass: 'evening' },
+  { name: '夜班', time: '20:00–00:00', dotClass: 'night' },
+];
+
+
   period: LeavePeriod[] = [];
   wholeDays: WholeDay[] = [];
   previewUrl: string | null = null;
-  isSubmitting = false; // ✅ 防止重複送出
+  isSubmitting = false; 
 
   hourOptions: string[] = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`);
 
@@ -229,13 +240,11 @@ export class LeaveFormComponent {
     }
   
     try {
-      // ================================
-      // 🚩 非整天請假
-      // ================================
+ 
       if (this.leave.isWholeDay === '非整天') {
         const ok1 = await this.validatePartialDayAgainstSchedule();
         if (!ok1) { 
-          // ❌ 若驗證沒過，直接停
+       
           this.isSubmitting = false; 
           return; 
         }
@@ -265,9 +274,7 @@ export class LeaveFormComponent {
         }
       }
   
-      // ================================
-      // 🚩 整天請假
-      // ================================
+
       else {
         const ok2 = await this.validateWholeDayDates();
         if (!ok2) { 
@@ -302,9 +309,7 @@ export class LeaveFormComponent {
       }
   
     } catch (err: any) {
-      // ================================
-      // 🚨 統一錯誤處理
-      // ================================
+  
       let friendly = '伺服器錯誤';
       try {
         const msg = (err?.message ?? '').toString();
@@ -334,9 +339,6 @@ export class LeaveFormComponent {
   }
   
 
-  // ==========================
-// ✅ 非整天請假驗證 (完整覆蓋版)
-// ==========================
 private async validatePartialDayAgainstSchedule(): Promise<boolean> {
   for (const [i, p] of this.period.entries()) {
     if (!p.leave || !p.startTime || !p.endTime) {
@@ -347,7 +349,7 @@ private async validatePartialDayAgainstSchedule(): Promise<boolean> {
     const sMin = this.toMinutes(p.startTime);
     const eMin = this.toMinutes(p.endTime);
 
-    // 🚫 檢查開始時間不可晚於或等於結束時間
+ 
     if (sMin >= eMin) {
       this.openErrorDialog(`第 ${i + 1} 個時間段的開始時間不可晚於或等於結束時間`);
       return false;
@@ -363,20 +365,20 @@ private async validatePartialDayAgainstSchedule(): Promise<boolean> {
         return false;
       }
 
-      // 🧠 修正：只挑出合理班別（開始時間不能大於 20:00 若結束是 00:00）
+  
       const validShifts = myShifts.filter((s: any) => {
         const st = (s.startTime as string).slice(0, 5);
         const et = (s.endTime as string).slice(0, 5);
-        // 避免像 08:00→00:00 的錯誤班別被誤判成整天
+      
         return !(st === '08:00' && et === '00:00');
       });
 
       const isInsideAnyShift = validShifts.some((s: any) => {
         const ss = this.toMinutes((s.startTime as string).slice(0, 5));
         let se = this.toMinutes((s.endTime as string).slice(0, 5));
-        if (se < ss) se += 24 * 60; // 跨夜班別（例如 20:00→04:00）
+        if (se < ss) se += 24 * 60; 
 
-        // 請假時段需完整落在某個班別區間
+     
         return sMin >= ss && eMin <= se;
       });
 
@@ -396,7 +398,7 @@ private async validatePartialDayAgainstSchedule(): Promise<boolean> {
 
 goToViewer() {
   this.router.navigate(['/leave-requests'], {
-    queryParams: { search: this.leave.employeeId || '' } // 把員工編號帶過去當預設搜尋
+    queryParams: { search: this.leave.employeeId || '' }
   });
 }
   private async validateWholeDayDates(): Promise<boolean> {
@@ -421,5 +423,41 @@ goToViewer() {
     return true;
   }
   
-  
+
+async onPartialDateSelected(item: LeavePeriod) {
+  if (!item.leave) { item.dayShift = ''; item.availableShifts = []; return; }
+
+  try {
+    const res = await fetch(
+      `${this.API_BASE}/PreSchedule/getThisDaySchedule?thisDay=${encodeURIComponent(item.leave)}`
+    );
+    const data = await res.json();
+    const my = (data || []).filter((d: any) => d.employeeId === this.leave.employeeId);
+
+    if (!my.length) {
+      item.dayShift = '休假/未排班';
+      item.availableShifts = [];
+      return;
+    }
+
+    const nameMap: Record<number, string> = {
+      1: '早班', 2: '中班', 3: '晚班', 4: '夜班', 0: '休假'
+    };
+
+    item.availableShifts = my.map((s: any) => ({
+      name: nameMap[s.shiftWorkId] ?? '未知',
+      start: String(s.startTime).slice(0, 5),
+      end: String(s.endTime).slice(0, 5),
+    }));
+
+    // 顯示「早班 / 中班」這種文字
+    item.dayShift = (item.availableShifts ?? []).map(s => s.name).join(' / ');
+
+  } catch {
+    item.dayShift = '查詢失敗';
+    item.availableShifts = [];
+    this.openErrorDialog('班別查詢失敗，請稍後再試。');
+  }
+}
+
 }

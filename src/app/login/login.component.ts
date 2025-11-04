@@ -38,21 +38,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
   private vantaEffect: any;
 //在檢視初始化之後，畫面渲染完成後的操作
   ngAfterViewInit(): void {
-    this.vantaEffect = BIRDS({
-      el: '#vanta-bg',
-      THREE: THREE,
-      mouseControls: true,
-      touchControls: true,
-      gyroControls: false,
-      minHeight: 200.0,
-      minWidth: 200.0,
-      scale: 1.0,
-      scaleMobile: 1.0,
-
-      color: 0xaaaaaa,
-      backgroundColor: 0xe4d4c8, // 深藍
-    });
-    this.focusInput();
+   
   }
   //頁面上所有加了 #autoFocusInput 的 <input> 抓 多個元素/子元件（回傳一個集合 QueryList）
   @ViewChildren('autoFocusInput') autoFocusInputs!: QueryList<ElementRef<HTMLInputElement>>;

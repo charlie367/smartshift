@@ -5,16 +5,15 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
   selector: 'app-fail',
   imports: [],
   templateUrl: './fail.html',
-  styleUrl: './fail.scss'
+  styleUrl: './fail.scss',
 })
 export class Fail {
-
   constructor(
     private dialogRef: MatDialogRef<Fail>,
     @Inject(MAT_DIALOG_DATA) public talk: any
   ) {}
 
-  promble!:any
+  promble!: any;
 
   ngOnInit(): void {
     this.promble = this.talk.message;

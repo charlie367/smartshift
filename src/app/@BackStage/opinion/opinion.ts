@@ -47,7 +47,7 @@ export class BackOpinion {
 
   showSearchOpinion(id:number){
     this.dialog.open(SearchOpinionComponent, {
-      width: '80vw',
+      width: '760px',
       height: '80vh',
       maxWidth: '1000px',
       maxHeight: '750px',

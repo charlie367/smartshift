@@ -43,6 +43,13 @@
       </div>
     </div>
 
+<div class="shift-badges">
+  <div class="shift-badge" *ngFor="let b of SHIFT_TIMETABLE">
+    <span class="shift-dot" [ngClass]="b.dotClass"></span>
+    {{ b.name }} {{ b.time }}
+  </div>
+</div>
+
     <!-- 上傳請假證明 -->
     <div class="upload-section">
       <h3>上傳請假證明</h3>
@@ -97,16 +104,23 @@
           <button class="btn btn-add" (click)="addPeriod()">＋ 新增時間段</button>
         </div>
 
-        <div class="period-header">
+        <div class="period-header period-header--with-shift">
           <label>請假日期</label>
+          <label>當日班別</label> 
           <label>開始時間</label>
           <label>結束時間</label>
           <div></div>
         </div>
 
         <div class="period-box" *ngFor="let item of period; let i = index">
-          <div class="time-segment-row">
-            <input type="date" class="form-control" [(ngModel)]="item.leave" />
+          <div class="time-segment-row time-segment-row--with-shift">
+            <input type="date" class="form-control" [(ngModel)]="item.leave"  (change)="onPartialDateSelected(item)" /> 
+
+            <input type="text"
+            class="form-control"
+            [value]="item.dayShift || '（選擇日期後自動帶入）'"
+            readonly />
+
             <select class="form-control" [(ngModel)]="item.startTime" (change)="updateTotalHours()">
               <option value="">選擇時間</option>
               <option *ngFor="let hour of hourOptions" [value]="hour">{{ hour }}</option>

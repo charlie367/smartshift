@@ -1,14 +1,42 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box !important;
+}
+
 h2 {
   text-align: center;
   font-size: 1.4rem;
-  color: #1e3a8a; /* 深藍字體 */
-  margin-bottom: 20px;
+  color: #235347; /* 深藍字體 */
+  margin: 0;
+  padding: 20px 0;
   font-weight: 600;
 }
 
+.update-title {
+  position: relative;
+}
+
+.update-shift-name {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  right: 20px;
+  bottom: 4px;
+  // text-align: center;
+  color: #d7ab58;
+  font-weight: 500;
+  img {
+    margin-right: 6px;
+  }
+  p {
+    margin: 0;
+  }
+}
+
 .work-item {
-  padding: 16px 20px;
-  margin-bottom: 16px;
+  padding: 0px 20px 16px;
+  // margin-bottom: 16px;
   border: 1px solid #d0d7e2;
   border-radius: 12px;
   background: #f9fbff; /* 淡藍底 */
@@ -19,10 +47,23 @@ h2 {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   }
 
+  .work-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    // margin-bottom: 8px;
+    padding: 14px 0;
+    border-bottom: 1px solid #ddd;
+    .work-row-group {
+      & > .work-row:first-of-type {
+        margin-bottom: 8px;
+      }
+    }
+  }
   .work-row {
     display: flex;
     align-items: center;
-    margin-bottom: 10px;
+    // margin-bottom: 10px;
     gap: 10px;
 
     .label-title {
@@ -55,11 +96,20 @@ h2 {
     }
   }
 
+  .active-wrapper {
+    background: #daf1de;
+    border: 2px dotted #aaa;
+    padding: 8px;
+  }
+  .work-row-active {
+    // padding-top: 20px;
+  }
+
   .work-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 12px;
-    justify-content: flex-end;
+    // display: flex;
+    // gap: 10px;
+    // margin-top: 12px;
+    // justify-content: flex-end;
 
     button {
       border: none;
@@ -71,35 +121,53 @@ h2 {
     }
 
     .btn-edit {
-      background-color: #22c55e; /* 綠色 */
+      background-color: #48907e; /* 綠色 */
       color: white;
     }
     .btn-edit:hover {
-      background-color: #16a34a;
+      background-color: #8eb69b;
     }
 
     .btn-save {
-      background-color: #3b82f6; /* 藍色 */
+      background-color: #608cd2; /* 藍色 */
       color: white;
+      margin-right: 8px;
     }
     .btn-save:hover {
-      background-color: #2563eb;
+      background-color: #517bbe;
     }
 
     .btn-delete {
-      background-color: #f59e0b; /* 橙色 */
+      background-color: #e8928a; /* 橙色 */
       color: white;
+      margin-left: 8px;
     }
     .btn-delete:hover {
-      background-color: #d97706;
+      background-color: #d47a71;
     }
 
     .btn-cancel {
-      background-color: #e5e7eb; /* 灰白 */
-      color: #374151;
+      background-color: #e8928a; /* 灰白 */
+      color: #fff;
     }
     .btn-cancel:hover {
-      background-color: #d1d5db;
+      background-color: #d47a71;
     }
+  }
+
+  & > .work-group:last-of-type {
+    border: 0;
+  }
+}
+
+
+.update-wrapper {
+  // padding: 0 8px;
+  .work-item {
+    max-height: 430px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #5d9c88 #f1f5f9;
   }
 }

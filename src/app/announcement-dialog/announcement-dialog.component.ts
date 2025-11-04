@@ -17,6 +17,8 @@ interface Notice {
   isPublish: boolean;
 }
 
+
+
 interface PersonalNotice {
   id: number;
   employeeId: string;
@@ -51,15 +53,10 @@ type ApiPersonalRes = {
 })
 export class AnnouncementDialogComponent implements OnInit {
 
-  /* 分頁（新增） */
   currentTab: Tab = 'public';
-
-  /* 公告 */
   notifyList: Notice[] = [];
   readIds: number[] = [];
-
-  /* 個人通知（新增） */
-  personalList: PersonalNotice[] = [];
+  personalList: PersonalNotice[] = [] ;
   readPersonalIds: number[] = [];
 
   constructor(
@@ -75,80 +72,13 @@ export class AnnouncementDialogComponent implements OnInit {
     this.fetchPersonalNotices();   // 個人
   }
 
-  /* 分頁切換（新增） */
-  switchTab(tab: Tab) { this.currentTab = tab; }
-
-  /** 從 localStorage 載入已讀 ID（統一轉 number，避免 "1" !== 1） */
   private loadReadIds() {
     try {
       const raw = JSON.parse(localStorage.getItem('readNotices') || '[]');
+      //isFinite再把不是有效數字的東西過濾掉（像 NaN、Infinity、-Infinity）。
       this.readIds = Array.isArray(raw) ? raw.map((x: any) => Number(x)).filter((n: any) => Number.isFinite(n)) : [];
     } catch { this.readIds = []; }
   }
-
-  /** 取公告清單（僅顯示已發布） */
-  private fetchNotices(): void {
-    this.http.get<any>('http://localhost:8080/notify/searchTrueAll').subscribe({
-      next: (res) => {
-        const raw = res?.notifyList ?? res?.notifylist ?? [];
-        const normalized = (raw as any[]).map(this.mapToNotice);
-        this.notifyList = normalized
-          .filter(n => n.isPublish)
-          // 用字串比較，避免 new Date() 時區誤差
-          .sort((a, b) => b.date.localeCompare(a.date) || (b.id - a.id));
-      },
-      error: (err) => {
-        console.error('載入公告失敗:', err);
-        this.dialog.open(ErrorDialogComponent, {
-          width: '280px',
-          data: { message: err?.error?.message || '載入公告失敗' }
-        });
-        this.notifyList = [];
-      }
-    });
-  }
-
-  /** 後端 → 前端格式正規化（publish 支援 true/1/'1'） */
-  private mapToNotice = (item: any): Notice => {
-    const pubRaw = item.publish ?? item.is_publish ?? item.isPublish;
-    const isPublish = (pubRaw === true) || (pubRaw === 1) || (pubRaw === '1');
-
-    const dateRaw: string = item.createdDate ?? item.created_date ?? item.date ?? '';
-    const date = (typeof dateRaw === 'string' ? dateRaw.slice(0, 10) : '');
-
-    const link: string = item.linkUrl ?? item.link_url ?? item.link ?? '';
-
-    return {
-      id: Number(item.id),
-      date,
-      title: String(item.title ?? ''),
-      message: String(item.message ?? ''),
-      link: link ? String(link) : '',
-      isPublish
-    };
-  };
-
-  /** 單筆已讀（公告） */
-  markAsRead(id: number): void {
-    if (!this.readIds.includes(id)) {
-      this.readIds = [...this.readIds, id];
-      localStorage.setItem('readNotices', JSON.stringify(this.readIds));
-    }
-  }
-
-  /** 全部已讀（公告） */
-  private markAllAsRead(): void {
-    const ids = this.notifyList.map(n => n.id);
-    localStorage.setItem('readNotices', JSON.stringify(ids));
-  }
-
-  isRead(id: number): boolean {
-    return this.readIds.includes(id);
-  }
-
-  /* -------- 個人通知（整合你朋友後端） -------- */
-
-  private storagePersonal(empId: string) { return `readPersonalNotices_${empId}`; }
 
   private loadPersonalReadIds() {
     const employeeId = (localStorage.getItem('employeeId') || '').trim();
@@ -159,6 +89,46 @@ export class AnnouncementDialogComponent implements OnInit {
     } catch { this.readPersonalIds = []; }
   }
 
+  private fetchNotices(): void {
+    this.http.get<any>('http://localhost:8080/notify/searchTrueAll').subscribe({
+      next: (res) => {
+        const raw: any[] =  res.notifyList ;
+        const normalized = raw.map(this.mapToNotice);
+        this.notifyList = normalized
+          .filter(n => n.isPublish)
+          //從新到舊排序
+          //> 0：表示 x 比 y 大（x 應該排在 y 後面，升序時）
+          //< 0：表示 x 比 y 小
+          //= 0：兩者相等
+          .sort((a, b) => b.date.localeCompare(a.date) || (b.id - a.id));
+      },
+      error: (err) => {
+        this.dialog.open(ErrorDialogComponent, {
+          width: '280px',
+          data: { message: err?.error?.message || '載入公告失敗' }
+        });
+        this.notifyList = [];
+      }
+    });
+  }
+
+
+  private mapToNotice = (item: any): Notice => {
+
+    const isPublish = item.publish;
+    const date: string = item.createdDate.slice(0, 10) ?? '';
+    const link: string = item.linkUrl  ?? '';
+
+    return {
+      id: item.id,
+      date,
+      title: item.title ?? '',
+      message: item.message ?? '',
+      link: link ?? '',
+      isPublish
+    };
+  };
+
   private fetchPersonalNotices(): void {
     const employeeId = (localStorage.getItem('employeeId') || '').trim();
     if (!employeeId) { this.personalList = []; return; }
@@ -167,32 +137,53 @@ export class AnnouncementDialogComponent implements OnInit {
       params: { employeeId }
     }).subscribe({
       next: (res) => {
-        const list = Array.isArray(res.employeeNotifyList) ? res.employeeNotifyList : [];
+        const list = res.employeeNotifyList ?? [];
         this.personalList = list.map(it => ({
-          id: Number(it.id),
-          employeeId: String(it.employeeId || ''),
-          title: String(it.title || ''),
-          message: String(it.message || ''),
-          link: it.linkUrl ? String(it.linkUrl) : '',
-          date: (it.createdDate || '').slice(0, 10),
+          id: it.id,
+          employeeId: it.employeeId ?? '',
+          title: it.title ?? '',
+          message: it.message ?? '',
+          link: it.linkUrl ?? '',
+          date: (it.createdDate ?? '').slice(0, 10),
         })).sort((a, b) => b.date.localeCompare(a.date) || (b.id - a.id));
       },
       error: (err) => {
-        console.error('載入個人通知失敗:', err);
+        this.dialog.open(ErrorDialogComponent, {
+          width: '280px',
+          data: { message: err?.error?.message || '載入公告失敗' }
+        });
         this.personalList = [];
       }
     });
   }
   
-// 未讀數（直接算當前畫面資料 vs. localStorage）
+
 get publicUnread(): number {
   return this.notifyList.filter(n => !this.isRead(n.id)).length;
 }
+
+isRead(id: number): boolean {
+  return this.readIds.includes(id);
+}
+
 get personalUnread(): number {
   return this.personalList.filter(n => !this.isPersonalRead(n.id)).length;
 }
+
+isPersonalRead(id: number): boolean {
+  return this.readPersonalIds.includes(id);
+}
+
 get totalUnread(): number {
   return this.publicUnread + this.personalUnread;
+}
+
+
+markAsRead(id: number): void {
+  if (!this.readIds.includes(id)) {
+    this.readIds = [...this.readIds, id];
+    localStorage.setItem('readNotices', JSON.stringify(this.readIds));
+  }
 }
 
   markPersonalAsRead(id: number): void {
@@ -200,24 +191,26 @@ get totalUnread(): number {
     if (!employeeId) return;
     if (!this.readPersonalIds.includes(id)) {
       this.readPersonalIds = [...this.readPersonalIds, id];
-      localStorage.setItem(this.storagePersonal(employeeId), JSON.stringify(this.readPersonalIds));
+      localStorage.setItem('readPersonalNotices_' + employeeId, JSON.stringify(this.readPersonalIds));
     }
   }
 
-  isPersonalRead(id: number): boolean {
-    return this.readPersonalIds.includes(id);
+  private storagePersonal(empId: string) {
+    return 'readPersonalNotices_' + empId;
   }
 
-  /* -------- 共用 -------- */
+  switchTab(tab: Tab) { this.currentTab = tab; }
+
   trackById = (_: number, n: { id: number }) => n.id;
 
   normalizedLink(link?: string): string {
     if (!link) return '';
-    const s = String(link).trim();
-    return s.toLowerCase().startsWith('http') ? s : `https://${s}`;
+    const s = link.trim();
+    //把字串全部轉成小寫//檢查字串是否以 'http' 開頭
+    return s.toLowerCase().startsWith('http') ? s :'https://' + s;
   }
 
-  /** 關閉 Dialog：維持你原本的「全部已讀」＋通知父層重算徽章 */
+
   close(): void {
     // 公告：把畫面上有的 id 全寫進已讀
     const publicIds = this.notifyList.map(n => n.id);
@@ -227,7 +220,7 @@ get totalUnread(): number {
     const empId = (localStorage.getItem('employeeId') || '').trim();
     if (empId && this.personalList.length) {
       const personalIds = this.personalList.map(n => n.id);
-      localStorage.setItem(`readPersonalNotices_${empId}`, JSON.stringify(personalIds));
+      localStorage.setItem('readPersonalNotices_' + empId, JSON.stringify(personalIds));
     }
   
     this.dialogRef.close(true); // 父層會自己重算，不依賴 payload

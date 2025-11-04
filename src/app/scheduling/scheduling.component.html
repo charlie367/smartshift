@@ -1,5 +1,9 @@
 <div class="top-tag">   
-  
+  @if(check){
+    <div class="backend-entry">
+      <button  class="btn-back" mat-raised-button color="primary" [routerLink]="['/backindex']">前往後臺</button>
+    </div>
+  }
   <div class="menu-item1" (click)="openAnnouncementDialog()">
     <mat-icon
       matBadge="{{ unreadCount }}"
@@ -60,7 +64,7 @@
 </div>
 
       <div *ngIf="viewMode === 'dashboard'">
-        <div class="dashboard-row">
+        <div class="dashboard-row" style="margin-top: 100px !important">
            <div class="left-col">
                <div class="chat-box" #chatBox>
    
@@ -195,22 +199,26 @@
   <div class="month-container">
 
     <div class="month-header">
-      <button class="arrow" (click)="prevMonth()">
-        <img src="arrow-left.png" alt=""style="width: 24px;" />
+      <button class="arrow" (click)="prevDashboardMonth()">
+        <img src="arrow-left.png" alt="" style="width: 24px;" />
       </button>
+    
       <div class="month-title">
-
-        {{ currentMonthLabel }}
+        {{ dashboardMonthLabel }}
       </div>
-      <button class="arrow" (click)="nextMonth()">  <img src="arrow-right.png" alt=""style="width: 24px;" /></button>
+    
+      <button class="arrow" (click)="nextDashboardMonth()">
+        <img src="arrow-right.png" alt="" style="width: 24px;" />
+      </button>
     </div>
+    
 
     <div class="stats-row">
       <div class="stat-card green">
         <mat-icon>login</mat-icon>
         <div>
           <div class="value">{{ avgCheckIn }}</div>
-          <div class="label">平均上班時間</div>
+          <div class="label">平均上班打卡時間</div>
         </div>
       </div>
       
@@ -218,7 +226,7 @@
         <mat-icon>logout</mat-icon>
         <div>
           <div class="value">{{ avgCheckOut }}</div>
-          <div class="label">平均下班時間</div>
+          <div class="label">平均下班打卡時間</div>
         </div>
       </div>
       
@@ -226,7 +234,7 @@
         <mat-icon>schedule</mat-icon>
         <div>
           <div class="value">{{ avgWorkHr }}</div>
-          <div class="label">平均工時</div>
+          <div class="label">上班平均時數</div>
         </div>
       </div>
       
@@ -234,7 +242,7 @@
         <mat-icon>block</mat-icon>
         <div>
           <div class="value">{{ absentLeaves }}</div>
-          <div class="label">缺勤/請假</div>
+          <div class="label">本月請假時數</div>
         </div>
       </div>
 </div>      
@@ -284,21 +292,7 @@
 </div>
 
 </div> 
-<!-- <div *ngIf="viewMode === 'schedule'" class="schedule-wrapper">
-  <daypilot-scheduler
-    #scheduler
-    [config]="config"
-    [events]="events">
-  </daypilot-scheduler>
-</div> -->
-<!-- <div *ngIf="viewMode === 'schedule'" class="schedule-wrapper">
-  <daypilot-scheduler
-    #scheduler
-    class="scheduler"
-    [config]="config"
-    [events]="events">
-  </daypilot-scheduler>
-</div> -->
+
 <div *ngIf="viewMode === 'schedule'" class="schedule-wrapper">
 
   <!-- 月份導覽列：白底＋置中 -->
@@ -306,15 +300,14 @@
     <button class="nav" (click)="prevMonth()" aria-label="上一月">
       <mat-icon>chevron_left</mat-icon>
     </button>
-
-    <div class="month-nav-title">{{ currentMonthLabel }}</div>
-
+  
+    <div class="month-nav-title">{{ scheduleMonthLabel }}</div>
+  
     <button class="nav" (click)="nextMonth()" aria-label="下一月">
       <mat-icon>chevron_right</mat-icon>
     </button>
-
-
   </div>
+  
 
   <daypilot-scheduler
     #scheduler

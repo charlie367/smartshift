@@ -5,10 +5,9 @@ import { MatDialogRef } from '@angular/material/dialog';
   selector: 'app-success',
   imports: [],
   templateUrl: './success.html',
-  styleUrl: './success.scss'
+  styleUrl: './success.scss',
 })
 export class Success {
-
   constructor(private dialogRef: MatDialogRef<Success>) {}
 
   ngOnInit(): void {
@@ -17,5 +16,4 @@ export class Success {
       this.dialogRef.close();
     }, 2000);
   }
-
 }

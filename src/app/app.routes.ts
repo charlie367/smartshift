@@ -12,7 +12,7 @@ export const routes: Routes = [
     {path:'',component:LoginComponent},
     {path:'scheduling',component:SchedulingComponent},
     {path: 'leave', component: LeaveFormComponent },
-    {path:'back', component: BackIndex},
+    {path:'backindex', component: BackIndex},
     { path: 'leave-requests', component: LeaveRequestsComponent },
 ];
 

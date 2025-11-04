@@ -1,3 +1,9 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box !important;
+}
+
 .shift-form-blue {
   max-width: 420px;
   margin: 30px auto;

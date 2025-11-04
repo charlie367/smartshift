@@ -1,3 +1,6 @@
+* {
+  box-sizing: border-box !important;
+}
 /* 整體容器 */
 .opinion-page-container {
   width: 100%;
@@ -31,7 +34,7 @@
 .content-layout {
   display: grid;
   grid-template-columns: 1fr 380px;
-  gap: 24px;
+  gap: 12px;
   height: 100%;       /* 讓內容撐滿 dialog 高度 */
   overflow: hidden;   /* 避免 dialog 出現額外滾動條 */
 }
@@ -45,8 +48,9 @@
 .section-title {
   font-size: 20px;
   font-weight: 700;
-  color: #3f51b5;
-  margin-bottom: 16px;
+  color: #235347;
+  margin: 0 0 16px 0;
+  text-align: center;
 }
 
 /* ---------------- 左側（固定可滾動） ---------------- */
@@ -54,7 +58,8 @@
   position: sticky;
   top: 0;
   overflow-y: auto;
-  padding-right: 6px;
+  // padding-right: 6px;
+  padding: 16px 6px 16px 16px;
   max-height: 100%;
 }
 .opinion-section::-webkit-scrollbar {

@@ -38,7 +38,7 @@ export class UpdateEmployee {
     //先取得該員工資料
     this.http.getApi(`http://localhost:8080/head/search?id=${this.employeeInfo.id}`).subscribe((employeeData:any)=>{
       this.updateEmployeeList = employeeData
-      console.log(this.updateEmployeeList)
+      console.log("info", this.updateEmployeeList)
     })
   }
 
@@ -170,7 +170,11 @@ export class UpdateEmployee {
         })
         return;
       }
+
+      console.log("111111", data)
     })
+
+
   }
 
   //取消更新

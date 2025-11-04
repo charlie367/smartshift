@@ -1,52 +1,185 @@
-<div class="notice-board">
-
-  <!-- 標題列 -->
-  <div class="notice-header-bar">
-    <h2 class="notice-title">📢 通知佈告欄</h2>
-    <button mat-raised-button color="primary" (click)="showAddDialog()">新增通知</button>
-  </div>
-
-  <!-- 搜尋列 -->
-  <div class="notice-filter-bar">
-    <div class="date-filter">
-      <label>開始日期：</label>
-      <input type="date" (change)="searchDate()" [(ngModel)]="filterStartDate">
-    </div>
-
-    <div class="date-filter">
-      <label>結束日期：</label>
-      <input type="date" (change)="searchDate()" [(ngModel)]="filterEndDate">
-    </div>
-
-    @if(isDateError){
-      <div class="date-error">
-        開始日期不能大於結束日期
-      </div>
-    }
-  </div>
-
-  <!-- 通知清單 -->
-  @for(notify of notifyList; track $index; let index = $index){
-    @if(!notify.publish){
-      <div class="notice-item clickable" (click)="showEditDialog(notify.id)">
-        <div class="notice-header">
-          <label class="notice-content">{{notify.title}}</label>
+<div class="no-wrapper">
+  <mat-tab-group class="custom-tab-group">
+    <mat-tab label="全體通知">
+      <div class="notice-board">
+        <!-- 標題列 -->
+        <div class="notice-header-bar">
+          <h2 class="notice-title"><img src="laba.png" alt="" /> 通知佈告欄</h2>
+          <button mat-raised-button color="primary" (click)="showAddDialog()">
+            新增通知
+          </button>
         </div>
-        <p class="notice-message">{{notify.message}}</p>
-        <label class="notice-link" (click)="routerUrl($event,notify.linkUrl)">{{notify.linkUrl}}</label>
-        <span class="notice-date">{{notify.createdDate}}</span>
-      </div>
-    }@else {
-      <div class="notice-item published">
-        <div class="notice-header">
-          <label class="notice-content">{{notify.title}}</label>
-          <mat-icon class="publish-icon">check_circle</mat-icon>
-        </div>
-        <p class="notice-message">{{notify.message}}</p>
-        <label class="notice-link" (click)="routerUrl($event,notify.linkUrl)">{{notify.linkUrl}}</label>
-        <span class="notice-date">{{notify.createdDate}}</span>
-      </div>
-    }
-  }
 
+        <!-- 搜尋列 -->
+        <div class="notice-filter-bar">
+          <div class="date-filter">
+            <label>開始日期：</label>
+            <input
+              type="date"
+              (change)="searchDate()"
+              [(ngModel)]="filterStartDate"
+            />
+          </div>
+
+          <div class="date-filter">
+            <label>結束日期：</label>
+            <input
+              type="date"
+              (change)="searchDate()"
+              [(ngModel)]="filterEndDate"
+            />
+          </div>
+
+          @if(isDateError){
+          <div class="date-error">開始日期不能大於結束日期</div>
+          }
+        </div>
+
+        <!-- 通知清單 -->
+        @for(notify of notifyList; track $index; let index = $index){
+        @if(!notify.publish){
+        <div class="notice-item clickable" (click)="showEditDialog(notify.id)">
+          <div class="notice-header">
+            <label class="notice-content">{{notify.title}}</label>
+            <img
+              src="edit.png"
+              width="14px"
+              height="14px"
+              style="margin-left: 6px; opacity: 0.8"
+              alt=""
+            />
+          </div>
+          <div class="notice-info-group">
+            <!-- <p class="notice-message">{{notify.message}}</p> -->
+            <p class="notice-message" [title]="notify.message">
+              {{ notify.message?.length > 120 ? (notify.message | slice:0:120) +
+              ' ...' : notify.message }}
+            </p>
+
+            <label
+              class="notice-link"
+              (click)="routerUrl($event,notify.linkUrl)"
+              >{{notify.linkUrl}}</label
+            >
+          </div>
+          <span class="notice-date">{{notify.createdDate}}</span>
+        </div>
+        }@else {
+        <!-- !??! -->
+        <!-- ???? -->
+        <!-- !??! -->
+        <div
+          class="notice-item published"
+          (click)="showPublicDialog(notify.id)"
+        >
+          <div class="notice-header">
+            <label class="notice-content">{{notify.title}}</label>
+            <!-- <mat-icon class="publish-icon">check_circle</mat-icon> -->
+          </div>
+          <div class="notice-info-group">
+            <!-- <p class="notice-message">{{notify.message}}</p> -->
+            <p class="notice-message" [title]="notify.message">
+              {{ notify.message?.length > 120 ? (notify.message | slice:0:120) +
+              ' ...' : notify.message }}
+            </p>
+
+            <label
+              class="notice-link"
+              (click)="routerUrl($event,notify.linkUrl)"
+              >{{notify.linkUrl}}</label
+            >
+          </div>
+          <span class="notice-date">{{notify.createdDate}}</span>
+        </div>
+        } }
+      </div>
+    </mat-tab>
+
+    <mat-tab label="職員個人通知">
+      <div class="notice-board personal-notice-board">
+        <!-- 標題列 -->
+        <div class="notice-header-bar">
+          <h2 class="notice-title">
+            <img src="person.png" style="transform: rotate(0)" alt="" />
+            職員個人通知
+          </h2>
+          <button
+            mat-raised-button
+            color="accent"
+            (click)="showEmployeeNotifyAddDialog()"
+          >
+            新增個人通知
+          </button>
+        </div>
+
+        <!-- 搜尋列 -->
+        <div class="notice-filter-bar">
+          <div class="date-filter">
+            <label>開始日期：</label>
+            <input
+              type="date"
+              (change)="searchEmployeeDate()"
+              [(ngModel)]="filterStartDate"
+            />
+          </div>
+
+          <div class="date-filter">
+            <label>結束日期：</label>
+            <input
+              type="date"
+              (change)="searchEmployeeDate()"
+              [(ngModel)]="filterEndDate"
+            />
+          </div>
+
+          @if(isEmployeeDateError){
+          <div class="date-error">開始日期不能大於結束日期</div>
+          }
+        </div>
+
+        <!-- 通知清單 -->
+        <!-- !?????!!!haha -->
+        <div class="personal-notice-list">
+          @for (notify of employeeNotifyList; track $index; let index = $index)
+          {
+          <div
+            class="personal-notice-item"
+            (click)="showEmployeeNotifyUpdateDialog(notify.id)"
+          >
+            <div class="personal-notice-header">
+              <div class="personal-notice-info">
+                <span class="employee-name"
+                  >職員編號：{{ notify.employeeId }}</span
+                >
+                <span class="notify-title">{{ notify.title }}</span>
+              </div>
+            </div>
+
+            <!-- <p class="notify-message">{{ notify.message }}</p> -->
+
+            <p class="notice-message" [title]="notify.message">
+              {{ notify.message?.length > 120 ? (notify.message | slice:0:120) +
+              ' ...' : notify.message }}
+            </p>
+
+            @if (notify.linkUrl) {
+            <label
+              class="notify-link"
+              (click)="routerUrl($event, notify.linkUrl)"
+            >
+              {{ notify.linkUrl }}
+            </label>
+            }
+
+            <div class="notify-meta">
+              <span class="notify-date">{{ notify.createdDate }}</span>
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
 </div>
+
+<!-- <img class="backToTop" (click)="backTop()" src="back-to-top.png" /> -->

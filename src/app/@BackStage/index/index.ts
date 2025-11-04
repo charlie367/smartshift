@@ -1,14 +1,14 @@
 import { Component } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { BackEmployeeManger } from "../employee_manger/employee-manger";
-import { BackNotifications } from "../notifications/notifications";
+import { BackEmployeeManger } from '../employee_manger/employee-manger';
+import { BackNotifications } from '../notifications/notifications';
 import { BackLeave } from '../leave/leave';
 import { BackShift } from '../shift/shift';
 import { BackOpinion } from '../opinion/opinion';
-import { BackClock } from "../clock/clock";
-import {MatSidenavModule} from '@angular/material/sidenav';
+import { BackClock } from '../clock/clock';
+import { MatSidenavModule } from '@angular/material/sidenav';
 import { CommonModule } from '@angular/common';
-import { SalaryComponent } from "../salary/salary.component";
+import { SalaryComponent } from '../salary/salary.component';
 
 @Component({
   selector: 'app-back-index',
@@ -22,16 +22,12 @@ import { SalaryComponent } from "../salary/salary.component";
     BackClock,
     MatSidenavModule,
     CommonModule,
-    SalaryComponent
-],
+    SalaryComponent,
+  ],
   templateUrl: './index.html',
-  styleUrl: './index.scss'
+  styleUrl: './index.scss',
 })
-
-
-
 export class BackIndex {
-
   //判斷畫面布林值
   isBackEmployeeManger = false;
   isBackSalary = false;
@@ -51,8 +47,8 @@ export class BackIndex {
   }
 
   toggleSidebar() {
-  this.openSide = !this.openSide;
-}
+    this.openSide = !this.openSide;
+  }
 
   //切換方法
   toggleIcon(page: string) {
@@ -65,4 +61,3 @@ export class BackIndex {
     this.isBackSalary = page === 'salary';
   }
 }
-

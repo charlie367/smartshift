@@ -1,0 +1,87 @@
+<div class="makeup-root">
+    <!-- Header -->
+    <div class="makeup-header">
+      <h2 class="title">補打卡申請</h2>
+      <button class="icon-btn" (click)="close()" aria-label="close">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  
+    <!-- Body -->
+    <div class="makeup-body">
+      <!-- 員工編號 -->
+      <div class="form-item">
+        <label class="label">
+          <mat-icon class="label-ic">badge</mat-icon>
+          員工編號 <span class="req">*</span>
+        </label>
+        <input class="input" type="text" [(ngModel)]="form.employeeId" placeholder="請輸入員工編號" />
+      </div>
+  
+      <!-- 日期 -->
+      <div class="form-item">
+        <label class="label">
+          <mat-icon class="label-ic">event</mat-icon>
+          補打卡日期 <span class="req">*</span>
+        </label>
+        <input class="input" type="date" [(ngModel)]="form.date" />
+      </div>
+  
+      <!-- 原因說明 -->
+      <div class="form-item">
+        <label class="label">
+          <mat-icon class="label-ic">description</mat-icon>
+          補打卡原因說明 <span class="req">*</span>
+        </label>
+        <textarea
+          class="textarea"
+          rows="4"
+          [(ngModel)]="form.description"
+          placeholder="請詳細說明補打卡原因..."
+        ></textarea>
+      </div>
+  
+      <!-- 檔案上傳 -->
+      <div class="form-item">
+        <label class="label">
+          <mat-icon class="label-ic">upload</mat-icon>
+          上傳證明文件
+        </label>
+  
+        <div class="uploader" (click)="fileInput.click()">
+          <input
+            #fileInput
+            type="file"
+            class="hidden"
+            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+            (change)="onFileChange($event)"
+          />
+          <ng-container *ngIf="previewUrl; else fileInfo">
+            <img [src]="previewUrl" alt="預覽" class="preview-img" />
+            <p class="file-name">{{ fileName }}</p>
+            <p class="hint">點擊可更換檔案</p>
+          </ng-container>
+  
+          <ng-template #fileInfo>
+            <ng-container *ngIf="fileName; else emptyState">
+              <mat-icon class="file-ic">description</mat-icon>
+              <p class="file-name">{{ fileName }}</p>
+              <p class="hint">點擊可更換檔案</p>
+            </ng-container>
+            <ng-template #emptyState>
+              <mat-icon class="upload-ic">upload</mat-icon>
+              <p class="empty-text">點擊上傳或拖曳檔案至此</p>
+              <p class="sub-text">支援 PDF, JPG, PNG, DOC, DOCX</p>
+            </ng-template>
+          </ng-template>
+        </div>
+      </div>
+  
+      <!-- Buttons -->
+      <div class="btn-row">
+        <button class="btn ghost" (click)="reset()">清除</button>
+        <button class="btn primary" (click)="submit()">送出申請</button>
+      </div>
+    </div>
+  </div>
+  
