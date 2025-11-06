@@ -83,13 +83,13 @@ export class PreScheduleDialogComponent implements OnInit {
     }
 
     const employeeId = localStorage.getItem("employeeId") || "E001";
-    const key = `preSchedule_${employeeId}`;
-    const confirmedKey = `confirmedSchedule_${employeeId}`;
+    const key = 'preSchedule_' + employeeId;
+    const confirmedKey = 'confirmedSchedule_' + employeeId;
 
     const preData = JSON.parse(localStorage.getItem(key) || "[]");
     const confirmedData = JSON.parse(localStorage.getItem(confirmedKey) || "[]");
 
-    // 合併已排日期
+    // Set 會自動把相同的值只會抓一筆
     const filledDates = new Set([
       ...preData.map((x: any) => x.applyDate),
       ...confirmedData.map((x: any) => x.applyDate)
@@ -125,7 +125,7 @@ export class PreScheduleDialogComponent implements OnInit {
     while (cells.length % 7 !== 0) cells.push(null);
 
     this.weeks = [];
-    for (let i = 0; i < cells.length; i += 7) {
+    for (let i = 0; i < cells.length; i = i + 7) {
       this.weeks.push(cells.slice(i, i + 7));
     }
   }
@@ -165,8 +165,8 @@ export class PreScheduleDialogComponent implements OnInit {
 
     ref.afterClosed().subscribe(result => {
       if (result) {
+        //set()更新或儲存那筆map資料
         this.selectedDates.set(cell.key, result);
-        this.buildWeeks(); // 點擊後立即刷新禁用已選日期
       }
     });
   }
@@ -174,18 +174,18 @@ export class PreScheduleDialogComponent implements OnInit {
   toggleDate(dateKey: string): void {
     if (this.selectedDates.has(dateKey)) {
       this.selectedDates.delete(dateKey);
-      this.buildWeeks(); // 刪除後刷新
     }
   }
 
   getSortedDates(): string[] {
+  //Array.from 把傳入的值轉成陣列
     return Array.from(this.selectedDates.keys()).sort();
   }
 
   formatDate(dateKey: string): string {
     const [y, m, d] = dateKey.split('-').map(Number);
     return y + "/" + m + "/" + d;
-  }
+  } 
 
   getWeekday(dateKey: string): string {
     const [y, m, d] = dateKey.split('-').map(Number);
@@ -194,7 +194,6 @@ export class PreScheduleDialogComponent implements OnInit {
 
   clearAllDates(): void {
     this.selectedDates.clear();
-    this.buildWeeks();
   }
 
   closeAndRefresh() {
@@ -211,7 +210,7 @@ export class PreScheduleDialogComponent implements OnInit {
     }
 
     const employeeId = localStorage.getItem("employeeId") || "E001";
-    const key = `preSchedule_${employeeId}`;
+    const key = "preSchedule_"+employeeId;
 
     const updateList: any[] = [];
     this.selectedDates.forEach((value, dateKey) => {

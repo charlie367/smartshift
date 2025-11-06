@@ -158,24 +158,25 @@ export class AnnouncementDialogComponent implements OnInit {
   }
   
 
-get publicUnread(): number {
-  return this.notifyList.filter(n => !this.isRead(n.id)).length;
-}
+  publicUnread(): number {
+    return this.notifyList.filter(n => !this.isRead(n.id)).length;
+  }
 
 isRead(id: number): boolean {
   return this.readIds.includes(id);
 }
 
-get personalUnread(): number {
+personalUnread(): number {
   return this.personalList.filter(n => !this.isPersonalRead(n.id)).length;
 }
+
 
 isPersonalRead(id: number): boolean {
   return this.readPersonalIds.includes(id);
 }
 
-get totalUnread(): number {
-  return this.publicUnread + this.personalUnread;
+totalUnread(): number {
+  return this.publicUnread() + this.personalUnread();
 }
 
 
@@ -200,8 +201,6 @@ markAsRead(id: number): void {
   }
 
   switchTab(tab: Tab) { this.currentTab = tab; }
-
-  trackById = (_: number, n: { id: number }) => n.id;
 
   normalizedLink(link?: string): string {
     if (!link) return '';

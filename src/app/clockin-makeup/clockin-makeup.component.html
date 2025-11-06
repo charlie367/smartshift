@@ -1,87 +1,207 @@
-<div class="makeup-root">
-    <!-- Header -->
-    <div class="makeup-header">
-      <h2 class="title">補打卡申請</h2>
-      <button class="icon-btn" (click)="close()" aria-label="close">
-        <mat-icon>close</mat-icon>
-      </button>
+<div class="makeup-root" [class.loading]="loading">
+  <!-- Header -->
+  <div class="makeup-header">
+    <h2 class="title">補打卡申請</h2>
+    <button class="icon-btn" (click)="close()" aria-label="close">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Scrollable Body -->
+  <div class="makeup-body scroll-body">
+    <!-- 員工編號 -->
+    <div class="form-item" [class.invalid]="showErrors && errors.employeeId">
+      <label class="label">
+        <mat-icon class="label-ic">badge</mat-icon>
+        員工編號 <span class="req">*</span>
+      </label>
+      <input
+        class="input"
+        type="text"
+        [(ngModel)]="form.employeeId"
+        placeholder="請輸入員工編號"
+        (ngModelChange)="onEmpChange($event)"
+        (blur)="touch('employeeId')"
+      />
+      <div class="err" *ngIf="showErrors && errors.employeeId">{{ errors.employeeId }}</div>
     </div>
-  
-    <!-- Body -->
-    <div class="makeup-body">
-      <!-- 員工編號 -->
-      <div class="form-item">
+
+    <!-- 補打卡日期 -->
+    <div class="form-item" [class.invalid]="showErrors && errors.date">
+      <label class="label">
+        <mat-icon class="label-ic">event</mat-icon>
+        補打卡日期 <span class="req">*</span>
+      </label>
+      <input
+        class="input"
+        type="date"
+        [(ngModel)]="form.date"
+        [max]="today"
+        (ngModelChange)="onDateChange($event)"
+      />
+      <div class="err" *ngIf="showErrors && errors.date">{{ errors.date }}</div>
+    </div>
+
+    <!-- 上下班時間 -->
+    <div class="grid-2">
+      <div class="form-item" [class.invalid]="showErrors && errors.startTime">
         <label class="label">
-          <mat-icon class="label-ic">badge</mat-icon>
-          員工編號 <span class="req">*</span>
+          <mat-icon class="label-ic">schedule</mat-icon>
+          開始時間 <span class="req">*</span>
         </label>
-        <input class="input" type="text" [(ngModel)]="form.employeeId" placeholder="請輸入員工編號" />
+        <input
+          class="input"
+          type="time"
+          [(ngModel)]="form.startTime"
+          (blur)="touch('startTime')"
+        />
+        <div class="err" *ngIf="showErrors && errors.startTime">{{ errors.startTime }}</div>
       </div>
-  
-      <!-- 日期 -->
-      <div class="form-item">
+
+      <div class="form-item" [class.invalid]="showErrors && errors.endTime">
         <label class="label">
-          <mat-icon class="label-ic">event</mat-icon>
-          補打卡日期 <span class="req">*</span>
+          <mat-icon class="label-ic">schedule</mat-icon>
+          結束時間 <span class="req">*</span>
         </label>
-        <input class="input" type="date" [(ngModel)]="form.date" />
+        <input
+          class="input"
+          type="time"
+          [(ngModel)]="form.endTime"
+          (blur)="touch('endTime')"
+        />
+        <div class="err" *ngIf="showErrors && errors.endTime">{{ errors.endTime }}</div>
       </div>
-  
-      <!-- 原因說明 -->
-      <div class="form-item">
+    </div>
+
+    <!-- 午休時間（選填） -->
+    <div class="grid-2">
+      <div class="form-item" [class.invalid]="showErrors && errors.lunchStartTime">
         <label class="label">
-          <mat-icon class="label-ic">description</mat-icon>
-          補打卡原因說明 <span class="req">*</span>
+          <mat-icon class="label-ic">free_breakfast</mat-icon>
+          午休開始
         </label>
-        <textarea
-          class="textarea"
-          rows="4"
-          [(ngModel)]="form.description"
-          placeholder="請詳細說明補打卡原因..."
-        ></textarea>
+        <input
+          class="input"
+          type="time"
+          [(ngModel)]="form.lunchStartTime"
+          (blur)="touch('lunchStartTime')"
+        />
+        <div class="err" *ngIf="showErrors && errors.lunchStartTime">{{ errors.lunchStartTime }}</div>
       </div>
-  
-      <!-- 檔案上傳 -->
-      <div class="form-item">
+
+      <div class="form-item" [class.invalid]="showErrors && errors.lunchEndTime">
         <label class="label">
-          <mat-icon class="label-ic">upload</mat-icon>
-          上傳證明文件
+          <mat-icon class="label-ic">free_breakfast</mat-icon>
+          午休結束
         </label>
-  
-        <div class="uploader" (click)="fileInput.click()">
-          <input
-            #fileInput
-            type="file"
-            class="hidden"
-            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-            (change)="onFileChange($event)"
-          />
-          <ng-container *ngIf="previewUrl; else fileInfo">
-            <img [src]="previewUrl" alt="預覽" class="preview-img" />
+        <input
+          class="input"
+          type="time"
+          [(ngModel)]="form.lunchEndTime"
+          (blur)="touch('lunchEndTime')"
+        />
+        <div class="err" *ngIf="showErrors && errors.lunchEndTime">{{ errors.lunchEndTime }}</div>
+      </div>
+    </div>
+
+    <!-- 重要程度評分 -->
+    <div class="form-item">
+      <label class="label">
+        <mat-icon class="label-ic">grade</mat-icon>
+        重要程度評分
+      </label>
+      <div class="stars">
+        <button
+          type="button"
+          class="star-btn"
+          *ngFor="let s of stars"
+          (click)="setRating(s)"
+          [attr.aria-label]="'評分 ' + s"
+        >
+          <mat-icon class="star" [class.filled]="s <= form.rating">star</mat-icon>
+        </button>
+        <span class="rating-text" *ngIf="form.rating > 0">{{ form.rating }} / 5</span>
+      </div>
+    </div>
+
+    <!-- 原因說明 -->
+    <div class="form-item" [class.invalid]="showErrors && errors.description">
+      <label class="label">
+        <mat-icon class="label-ic">description</mat-icon>
+        補打卡原因說明 <span class="req">*</span>
+      </label>
+      <textarea
+        class="textarea"
+        rows="4"
+        [(ngModel)]="form.description"
+        placeholder="請詳細說明補打卡原因（至少 10 個字）..."
+        (blur)="touch('description')"
+      ></textarea>
+      <div class="err" *ngIf="showErrors && errors.description">{{ errors.description }}</div>
+    </div>
+
+    <!-- 檔案上傳 -->
+    <div class="form-item" [class.invalid]="showErrors && errors.file">
+      <label class="label">
+        <mat-icon class="label-ic">upload</mat-icon>
+        上傳證明文件（選填，10MB 以內）
+      </label>
+
+      <div
+        class="uploader"
+        [class.dragover]="dragOver"
+        (click)="fileInput.click()"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)"
+        (drop)="onDrop($event)"
+        role="button"
+        tabindex="0"
+      >
+        <input
+          #fileInput
+          type="file"
+          class="hidden"
+          accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+          (change)="onFileChange($event)"
+        />
+
+        <ng-container *ngIf="previewUrl; else fileInfo">
+          <img [src]="previewUrl" alt="預覽" class="preview-img" />
+          <p class="file-name">{{ fileName }}</p>
+          <p class="hint">點擊可更換檔案</p>
+          <button class="mini-btn" type="button" (click)="removeFile($event)">
+            <mat-icon>close</mat-icon> 移除
+          </button>
+        </ng-container>
+
+        <ng-template #fileInfo>
+          <ng-container *ngIf="fileName; else emptyState">
+            <mat-icon class="file-ic">description</mat-icon>
             <p class="file-name">{{ fileName }}</p>
             <p class="hint">點擊可更換檔案</p>
+            <button class="mini-btn" type="button" (click)="removeFile($event)">
+              <mat-icon>close</mat-icon> 移除
+            </button>
           </ng-container>
-  
-          <ng-template #fileInfo>
-            <ng-container *ngIf="fileName; else emptyState">
-              <mat-icon class="file-ic">description</mat-icon>
-              <p class="file-name">{{ fileName }}</p>
-              <p class="hint">點擊可更換檔案</p>
-            </ng-container>
-            <ng-template #emptyState>
-              <mat-icon class="upload-ic">upload</mat-icon>
-              <p class="empty-text">點擊上傳或拖曳檔案至此</p>
-              <p class="sub-text">支援 PDF, JPG, PNG, DOC, DOCX</p>
-            </ng-template>
+          <ng-template #emptyState>
+            <mat-icon class="upload-ic">upload</mat-icon>
+            <p class="empty-text">點擊上傳或拖曳檔案至此</p>
+            <p class="sub-text">支援 PDF, JPG, PNG, DOC, DOCX，最大 10MB</p>
           </ng-template>
-        </div>
+        </ng-template>
       </div>
-  
-      <!-- Buttons -->
-      <div class="btn-row">
-        <button class="btn ghost" (click)="reset()">清除</button>
-        <button class="btn primary" (click)="submit()">送出申請</button>
-      </div>
+      <div class="err" *ngIf="showErrors && errors.file">{{ errors.file }}</div>
     </div>
   </div>
-  
+
+  <!-- Footer Buttons -->
+  <div class="btn-row sticky-footer">
+    <button class="btn ghost" type="button" (click)="reset()" [disabled]="loading">清除</button>
+    <button class="btn primary" type="button" (click)="submit()" [disabled]="loading">
+      <ng-container *ngIf="!loading; else loadingTpl">送出申請</ng-container>
+    </button>
+    <ng-template #loadingTpl>
+      <span class="spinner"></span> 送出中...
+    </ng-template>
+  </div>
+</div>

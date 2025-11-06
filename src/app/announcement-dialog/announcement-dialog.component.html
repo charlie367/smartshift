@@ -9,76 +9,91 @@
     <h2 class="notice-title">📢 通知佈告欄</h2>
   </div>
 
-  <!-- 分頁切換（新增） -->
-  <!-- <div class="tabs">
-    <button class="tab-btn" [class.active]="currentTab==='public'" (click)="switchTab('public')">全體通知</button>
-    <button class="tab-btn" [class.active]="currentTab==='personal'" (click)="switchTab('personal')">個人通知</button>
-  </div> -->
-
   <div class="tabs">
     <button class="tab-btn" [class.active]="currentTab==='public'" (click)="switchTab('public')">
       全體通知
-      <span class="badge" *ngIf="publicUnread">{{ publicUnread }}</span>
+      @if (publicUnread()) {
+        <span class="badge">{{ publicUnread() }}</span>
+      }
     </button>
-  
+
     <button class="tab-btn" [class.active]="currentTab==='personal'" (click)="switchTab('personal')">
       個人通知
-      <span class="badge" *ngIf="personalUnread">{{ personalUnread }}</span>
+      @if (personalUnread()) {
+        <span class="badge">{{ personalUnread() }}</span>
+      }
     </button>
   </div>
 
   <div class="extra-line"></div>
 
-  <!-- 內容捲動區（新增） -->
   <div class="scroll-area">
-
     <!-- 公告分頁 -->
-    <ng-container *ngIf="currentTab==='public'">
-      <div *ngIf="notifyList.length === 0" class="empty-hint">
-        目前沒有可顯示的公告
-      </div>
+    @if (currentTab === 'public') {
+      @if (notifyList.length === 0) {
+        <div class="empty-hint">目前沒有可顯示的公告</div>
+      }
 
-      <div
-        *ngFor="let notify of notifyList; trackBy: trackById"
-        class="notice-item"
-        [class.read]="isRead(notify.id)"
-        (click)="markAsRead(notify.id)"
-      >
-        <div class="notice-header">
-          <!-- 直接顯示字串，避免 date 管線時區偏移 -->
-          <span class="notice-date">{{ notify.date }}</span>
-          <span class="notice-title-inline" *ngIf="notify.title">{{ notify.title }}</span>
+      @for (notify of notifyList; track notify.id) {
+        <div
+          class="notice-item"
+          [class.read]="isRead(notify.id)"
+          (click)="markAsRead(notify.id)"
+        >
+          <div class="notice-header">
+            <!-- 直接顯示字串，避免 date 管線時區偏移 -->
+            <span class="notice-date">{{ notify.date }}</span>
+            @if (notify.title) {
+              <span class="notice-title-inline">{{ notify.title }}</span>
+            }
+          </div>
+
+          <p class="notice-content">{{ notify.message }}</p>
+
+          @if (notify.link) {
+            <a
+              [href]="normalizedLink(notify.link)"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {{ notify.link }}
+            </a>
+          }
         </div>
+      }
+    }
 
-        <p class="notice-content">{{ notify.message }}</p>
+    <!-- 個人通知分頁 -->
+    @if (currentTab === 'personal') {
+      @if (personalList.length === 0) {
+        <div class="empty-hint">目前沒有個人通知</div>
+      }
 
-        <a *ngIf="notify.link"
-           [href]="normalizedLink(notify.link)"
-           target="_blank" rel="noopener noreferrer">
-          {{ notify.link }}
-        </a>
-      </div>
-    </ng-container>
+      @for (p of personalList; track p.id) {
+        <div
+          class="notice-item personal"
+          [class.read]="isPersonalRead(p.id)"
+          (click)="markPersonalAsRead(p.id)"
+        >
+          <div class="kv"><span class="k">通知主旨:</span><span class="v">{{ p.title || p.employeeId }}</span></div>
+          <div class="kv"><span class="k">通知內容:</span><span class="v">{{ p.message }}</span></div>
 
-    <!-- 個人通知分頁（新增） -->
-    <ng-container *ngIf="currentTab==='personal'">
-      <div *ngIf="personalList.length === 0" class="empty-hint">目前沒有個人通知</div>
+          @if (p.link) {
+            <div class="kv">
+              <span class="k">網址：</span>
+              <span class="v">
+                <a
+                  [href]="normalizedLink(p.link)"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >{{ p.link }}</a>
+              </span>
+            </div>
+          }
 
-      <div
-        *ngFor="let p of personalList; trackBy: trackById"
-        class="notice-item personal"
-        [class.read]="isPersonalRead(p.id)"
-        (click)="markPersonalAsRead(p.id)"
-      >
-        <div class="kv"><span class="k">通知主旨:</span><span class="v">{{ p.title || p.employeeId }}</span></div>
-        <div class="kv"><span class="k">通知內容:</span><span class="v">{{ p.message }}</span></div>
-        <div class="kv" *ngIf="p.link">
-          <span class="k">網址：</span>
-          <span class="v"><a [href]="normalizedLink(p.link)" target="_blank" rel="noopener noreferrer">{{ p.link }}</a></span>
+          <div class="kv"><span class="k">通知日期：</span><span class="v">{{ p.date }}</span></div>
         </div>
-        <div class="kv"><span class="k">通知日期：</span><span class="v">{{ p.date }}</span></div>
-      </div>
-    </ng-container>
-
+      }
+    }
   </div>
 </div>

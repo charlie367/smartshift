@@ -44,7 +44,6 @@ export class ShiftSelectDialogComponent {
       this.shift = data.value.shift;
       this.shift2 = data.value.shift2;
       this.dayOff = data.value.dayOff;
-      // this.noPreference = data.value.noPreference;
       //!!強制轉成布林值
       this.showSecondShift = !!data.value.shift2;
     }
@@ -61,21 +60,11 @@ export class ShiftSelectDialogComponent {
 
   onDayOffChange() {
     if (this.dayOff) {
-      // this.noPreference = false;
       this.shift = '';
       this.shift2 = '';
       this.showSecondShift = false;
     }
   }
-
-  // onNoPreferenceChange() {
-  //   if (this.noPreference) {
-  //     this.dayOff = false;
-  //     this.shift = '';
-  //     this.shift2 = '';
-  //     this.showSecondShift = false;
-  //   }
-  // }
 
   confirm() {
     // 沒選任何東西
@@ -87,7 +76,7 @@ export class ShiftSelectDialogComponent {
       return;
     }
 
-    // 選了班別 + (休假/沒意見)
+    // 選了班別 + (休假)
     if ((this.shift || this.shift2) && this.dayOff ){
       this.dialog.open(ErrorDialogComponent, {
         width: '320px',
@@ -120,7 +109,6 @@ export class ShiftSelectDialogComponent {
       shift: this.shift,
       shift2: this.shift2,
       dayOff: this.dayOff,
-      // noPreference: this.noPreference,
       displayText
     });
   }

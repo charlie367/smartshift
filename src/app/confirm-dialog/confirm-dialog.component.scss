@@ -1,22 +1,113 @@
-.dialog-container {
-    text-align: center;
-    padding: 20px;
-  }
-  
-  .dialog-video {
-    width: 150px;
-    height: auto;
-    margin-bottom: 20px;
-    border-radius: 10px;
-  }
-  
-  .dialog-actions {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-  
-    button {
-      min-width: 100px;
-    }
-  }
-  
+/* 讓 Material 的 Dialog 外觀接近你的設計 */
+.mat-mdc-dialog-surface {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 24px !important;
+  padding: 32px 28px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.title {
+  text-align: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0 0 12px;
+}
+
+/* 內容置中 */
+.dialog-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 水平置中 */
+  gap: 16px;
+  text-align: center;  /* 文字置中 */
+  isolation: isolate;  /* 確保混合模式只影響內容自身 */
+}
+
+/* 影片容器（確保真的置中） */
+.emoji-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin: 4px 0 12px;
+}
+
+/* 影片大小與外觀（不裁切圖案） */
+.dialog-video {
+  width: 120px;            /* 想更大就改這裡 */
+  height: 120px;
+  display: block;
+  object-fit: contain;     /* 不裁切，完整呈現圖案 */
+  border-radius: 0;
+  box-shadow: none;
+
+  /* 把白底融到卡片背景（白/淺色背景最佳） */
+  mix-blend-mode: multiply;
+}
+
+.message {
+  font-size: 16px;
+  color: #718096;
+  line-height: 1.6;
+  margin: 0 0 8px;
+}
+
+.button-group {
+  display: flex;
+  gap: 16px;
+}
+
+.btn {
+  flex: 1;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* 次要按鈕（左） */
+.btn-secondary {
+  background: #e2e8f0;
+  color: #4a5568;
+}
+.btn-secondary:hover {
+  background: #cbd5e0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 主要按鈕（右） */
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102,126,234,0.4);
+}
+
+/* ====== 追加：確保字色不被 Material 覆蓋（不改你原有設定） ====== */
+/* 主要按鈕：白字 */
+.btn-primary,
+.btn-primary .mdc-button__label {
+  color: #fff !important;
+}
+
+/* 次要按鈕：黑字（或深灰） */
+.btn-secondary,
+.btn-secondary .mdc-button__label {
+  color: #111 !important;
+}
+
+/* Hover / Focus 仍維持字色 */
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:hover .mdc-button__label,
+.btn-primary:focus .mdc-button__label,
+.btn-secondary:hover,
+.btn-secondary:focus,
+.btn-secondary:hover .mdc-button__label,
+.btn-secondary:focus .mdc-button__label {
+  color: inherit !important;
+}

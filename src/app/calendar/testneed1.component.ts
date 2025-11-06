@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
 type CellType = 'prev-month' | 'current-month' | 'next-month';
 type DateCell = { date: Date; day: number; type: CellType; };
@@ -11,17 +11,64 @@ type SelectedRange = { start: Date | null; end: Date | null; };
   imports: [CommonModule],
   templateUrl: './testneed1.component.html',
   styleUrls: ['./testneed1.component.scss'],
+
+
+
+
 })
 export class Testneed1Component implements OnInit {
+
+
+constructor(private cd: ChangeDetectorRef) {}
+
   weekDays = ['日','一','二','三','四','五','六'];
   currentYear = new Date().getFullYear();
   currentMonth = new Date().getMonth();
   weeks: DateCell[][] = [];
 
+   private _selected: Date | null = null;
+
   selectedRange: SelectedRange = { start: null, end: null };
+
+
+  @Input() activeDate?: Date | null;
+  @Output() selectedChange = new EventEmitter<Date>();
 
   @Output() rangeChange = new EventEmitter<SelectedRange>();
   @Output() dateClick = new EventEmitter<Date>();  // ★ 新增
+
+
+
+
+@Input()
+set selected(d: Date | null) {
+  if (!d) {
+    this._selected = null;
+    this.selectedRange = { start: null, end: null };
+    return;
+  }
+  // normalize to start of day
+  const s = this.toStartOfDay(d);
+  this._selected = s;
+  // 把內部選取也同步（會讓 getDateClasses 回傳 selected-single）
+  this.selectedRange = { start: s, end: null };
+  // 若需要把 calendar 重渲染（例如 currentMonth 不在 selected 所在月），調整 currentYear/currentMonth
+  this.currentYear = s.getFullYear();
+  this.currentMonth = s.getMonth();
+  this.buildCalendar(this.currentYear, this.currentMonth);
+
+
+  try { this.cd.detectChanges(); } catch(e) { /* ignore */ }
+
+}
+get selected(): Date | null {
+  return this._selected;
+}
+
+
+
+
+
 
   get currentMonthName(): string {
     const names = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
@@ -79,36 +126,43 @@ export class Testneed1Component implements OnInit {
     return `${y}/${m}/${dd}`;
   }
 
-  handleDateClick(cell: DateCell) {
-  if (cell.type !== 'current-month') return;
-  const clicked = this.toStartOfDay(cell.date);
 
-  // 只做單日選取：把 start 設為 clicked，end 清空
-  this.selectedRange = { start: clicked, end: null };
-  // 通知父元件（你已在父元件使用 (dateClick)="onDateSelected($event)"）
-  this.dateClick.emit(clicked);
-
-  // 如果你還想讓父元件兼容 rangeChange 可以發一個簡短的 payload（start=end=nullable）
-  this.rangeChange.emit({ ...this.selectedRange });
+toStartOfDay(date: Date): Date {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
 }
 
 
-  isInRange(cell: DateCell): boolean {
-  // 現在只在 start && end 都有時才會回 true（你已移除 end），因此預設 false
-  const { start, end } = this.selectedRange;
-  if (!start || !end) return false;
-  const t = this.toStartOfDay(cell.date).getTime();
-  return t >= start.getTime() && t <= end.getTime();
+
+isSameDay(date1: Date | null, date2: Date | null): boolean {
+  if (!date1 || !date2) return false;
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
+  );
 }
+
+
+
+isToday(date: Date): boolean {
+  const today = new Date();
+  return (
+    date.getFullYear() === today.getFullYear() &&
+    date.getMonth() === today.getMonth() &&
+    date.getDate() === today.getDate()
+  );
+}
+
 
 getDateClasses(cell: DateCell): string {
   const classes: string[] = [];
   if (cell.type !== 'current-month') classes.push('outside-month');
   if (this.isToday(cell.date)) classes.push('today');
 
-  const { start } = this.selectedRange;
+  const start = this.selectedRange.start;
 
-  // 單日選取
   if (start && this.isSameDay(cell.date, start)) {
     classes.push('selected-single');
   }
@@ -116,7 +170,18 @@ getDateClasses(cell: DateCell): string {
   return classes.join(' ');
 }
 
-  private toStartOfDay(d: Date): Date { const x = new Date(d); x.setHours(0,0,0,0); return x; }
-  private isSameDay(a: Date, b: Date): boolean { return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
-  private isToday(d: Date): boolean { return this.isSameDay(d, new Date()); }
+handleDateClick(cell: DateCell) {
+  if (cell.type !== 'current-month') return;
+  const clicked = this.toStartOfDay(cell.date);
+
+  // 更新子元件內部狀態
+  this._selected = clicked;
+  this.selectedRange = { start: clicked, end: null };
+
+  // 通知父元件（使用者點擊時發出）
+  this.dateClick.emit(clicked);
+  this.selectedChange.emit(clicked);
+  this.rangeChange.emit({ ...this.selectedRange });
+}
+
 }

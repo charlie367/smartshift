@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewEncapsulation, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { HttpClient } from '@angular/common/http';
 import { HttpClientService } from '../@Service/HttpClientService';
@@ -8,11 +8,14 @@ import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { ClockinMakeupComponent } from '../clockin-makeup/clockin-makeup.component';
 import { firstValueFrom, from, of } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
+import { MatButtonModule } from '@angular/material/button';
+import { GeoInfoDialogComponent } from '../geo-info-dialog/geo-info-dialog.component';
+
 
 @Component({
   selector: 'app-reclockin',
   standalone: true,
-  imports: [CommonModule, MatIconModule],
+  imports: [CommonModule, MatIconModule,MatButtonModule,MatDialogModule],
   templateUrl: './reclockin.component.html',
   styleUrls: ['./reclockin.component.scss'],
   encapsulation: ViewEncapsulation.None,
@@ -52,84 +55,91 @@ export class ReclockinComponent implements OnInit, OnDestroy {
   mode: 'single' | 'lunch' | 'multi' = 'single';
   round = 1;
 
-  // ===== 覆寫 postApi 用 =====
+
   private _origPostApi?: (url: string, body: any) => any;
 
-  // ===== 住家圍欄設定（改這裡）=====
-  private HOME = {
-    lat: 22.61854,         // 你的家：22.618540...
-    lng: 120.294441,       //        120.294441...
-    radiusM: 200,          // 允許半徑（公尺）
-    accuracyMax: 150       // 接受的最大精度（公尺）
-  };
+  
+    private HOME = {
+      lat:22.60420809143353,         // 你的家：22.618540...
+      lng:120.29850544793425,       //        120.294441...
+      radiusM: 200,          // 允許半徑（公尺）
+      accuracyMax: 150       // 接受的最大精度（公尺）
+    };
 
   ngOnInit(): void {
     if (!this.data.employeeId) {
       this.data.employeeId = localStorage.getItem('employeeId') || '';
     }
     if (!this.data.workDate) {
+      //把時間轉成國際標準格式（ISO 8601）字串
       this.data.workDate = new Date().toISOString().slice(0, 10); // yyyy-MM-dd
     }
 
-    // === 只在本元件有效的 postApi 包裝器（住家前端判斷 + 自動附座標）===
     {
-      const augmentEndpoints = [/\/on$/, /\/rest\/start$/, /\/rest\/end$/, /\/clock\/off2$/];
+      //正規表達式
+      const augmentEndpoints = [/\/on$/,/\/rest\/start$/, /\/rest\/end$/,/\/clock\/off2$/];
 
-      // 保存原方法，離開時在 ngOnDestroy 還原
+      //把原本的api改成用地裡位址來包成的api//製作出一個可重複使用的函式跟this.http.postApi差別在於有沒有this最後.bind(this.http)這裡是把this綁回http
+      //as標明型別，把這個東西當作一個可以接受 (url: string, body: any) 兩個參數，並且會回傳 any 型別的函式。
       this._origPostApi = this.http.postApi.bind(this.http) as (url: string, body: any) => any;
       const originalPostApi = this._origPostApi;
-
+      //因為暫時複寫所以要用as any
       (this.http as any).postApi = (url: string, body: any) => {
         try {
-          // 只攔四個打卡 API，其餘照舊
+         //some 檢查陣列裡面是不是至少有一個元素符合條件。//test 檢查這個字串是否「符合」正規表達式（regex）規則。
           if (!augmentEndpoints.some(r => r.test(url))) {
-            return originalPostApi!(url, body);
+            return originalPostApi(url, body);
           }
 
-          // 1) 先做「住家」地理圍欄與精度檢查；不通過直接回錯（不打後端）
-          return from(this.frontCheckHome().catch(() => ({ ok: false, msg: '無法取得定位，請允許網站取得位置' }))).pipe(
+          // from用來把不是Observable的東西轉成Observable pipe是為了和後接續起來的和mergeMap會再丟一個新的非同步工作
+          return from(this.frontCheckHome()).pipe(
             mergeMap((chk: any) => {
               if (!chk.ok) {
-                // 讓現有錯誤對話框吃到非 200 code
+                // of 把一個或多個值包成 Observable。讓它變成「可被 RxJS 流訂閱」的資料來源
                 return of({ code: 460, message: chk.msg });
               }
-              // 2) 通過 → 再抓一次座標附上（給後端記錄）
-              return from(this.getLatLngAcc().catch(() => null)).pipe(
-                mergeMap((geo) => {
-                  const merged = geo
-                    ? { ...body, latitude: geo.latitude, longitude: geo.longitude, accuracy: geo.accuracy }
-                    : body;
-                  return originalPostApi!(url, merged);
-                })
-              );
+              return originalPostApi(url, body);
             })
           );
         } catch {
-          return originalPostApi!(url, body);
+          return originalPostApi(url, body);
         }
       };
     }
 
-    // === 你原本的初始化流程 ===
     this.tick();
+    //每一秒呼叫一次這個方法
     this.timerId = setInterval(() => this.tick(), 1000);
-
-    const savedRound = localStorage.getItem('CLOCK_ROUND');
-    if (savedRound) this.round = parseInt(savedRound, 10);
-
+    
     const incoming: any[] = Array.isArray(this.data?.shifts) ? this.data.shifts : [];
     if (incoming.length) {
       this.mode = this.detectMode(incoming);
       this.updateButtons();
     } else {
-      this.updateButtons();
-      this.fetchTodayShifts(this.data.employeeId, this.data.workDate)
-        .then(shifts => { this.mode = this.detectMode(shifts); this.updateButtons(); })
-        .catch(() => { this.mode = 'single'; this.updateButtons(); });
+      this.dialog.open(ErrorDialogComponent, { data: { message: '抓不到今日的班' } });
+  return;
     }
-
     this.loadTodayClock(); // 讀取今日狀態
   }
+
+  private updateButtons(): void {
+    if (this.mode === 'lunch') this.updateLunchButtons();
+    else if (this.mode === 'multi') this.updateMultiButtons();
+    else this.updateSingleButtons();
+  }
+
+    private detectMode(shifts: any[]): 'single' | 'lunch' | 'multi' {
+      const list = shifts.map(s => ({
+        swid: s. shift_work_id ?? 0,
+        start:s.start_time  ?? '',
+      }));
+      const ordered = [...list].sort((a, b) => a.start.localeCompare(b.start));
+      const n = ordered.length;
+      if (n === 1) return 'single';
+      const a = ordered[0].swid, b = ordered[1].swid;
+      const areConsecutive = (a === 1 && b === 2) || (a === 2 && b === 3) || (a === 3 && b === 4);
+      return areConsecutive ? 'lunch' : 'multi';
+    }
 
   ngOnDestroy(): void {
     // 還原 postApi，避免影響其他元件
@@ -139,116 +149,10 @@ export class ReclockinComponent implements OnInit, OnDestroy {
     clearInterval(this.timerId);
   }
 
-  // ===== 位置相關 =====
-
-  private getPosition(): Promise<GeolocationPosition> {
-    return new Promise((resolve, reject) => {
-      if (!navigator.geolocation) return reject(new Error('瀏覽器不支援定位'));
-      navigator.geolocation.getCurrentPosition(
-        resolve, reject,
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-      );
-    });
-  }
-
-  // 若你有環境檔可改成 environment.production
-  private isDev(): boolean {
-    return !/your-prod-domain\.com$/i.test(location.hostname);
-  }
-
-  // DEV_GEO 只在開發時可用（Console: localStorage.setItem('DEV_GEO','lat,lng,acc')）
-  private readDevGeo(): { lat: number; lng: number; acc: number } | null {
-    const raw = localStorage.getItem('DEV_GEO');
-    if (!raw || !this.isDev()) return null;
-    const [lat, lng, acc] = raw.split(',').map(Number);
-    if ([lat, lng, acc].some(v => Number.isNaN(v))) return null;
-    return { lat, lng, acc };
-  }
-
-  //「更聰明」抓定位：優先 DEV_GEO(僅 dev) → 多次取最佳 → 用快取備援
-  private async getSmartGeo(): Promise<{ latitude: number; longitude: number; accuracy: number }> {
-    const dev = this.readDevGeo();
-    if (dev) {
-      return { latitude: dev.lat, longitude: dev.lng, accuracy: dev.acc };
-    }
-
-    const TRIES = 3;
-    let best: { latitude: number; longitude: number; accuracy: number } | null = null;
-
-    for (let i = 0; i < TRIES; i++) {
-      try {
-        const pos = await this.getPosition();
-        const g = {
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
-          accuracy: pos.coords.accuracy ?? 999999
-        };
-        if (!best || g.accuracy < best.accuracy) best = g;
-        if (g.accuracy <= 60) break; // 夠好了就不等了
-      } catch {
-        // 忽略一次失敗，繼續
-      }
-    }
-
-    if (best) {
-      localStorage.setItem('LAST_GOOD_GEO', JSON.stringify(best));
-      return best;
-    }
-
-    const cached = localStorage.getItem('LAST_GOOD_GEO');
-    if (cached) {
-      return JSON.parse(cached);
-    }
-
-    throw new Error('定位失敗');
-  }
-
-  private async getLatLngAcc(): Promise<{ latitude: number; longitude: number; accuracy: number }> {
-    const dev = this.readDevGeo();
-    if (dev) {
-      return { latitude: dev.lat, longitude: dev.lng, accuracy: dev.acc };
-    }
-    const pos = await this.getPosition();
-    const { latitude, longitude, accuracy } = pos.coords;
-    return { latitude, longitude, accuracy };
-  }
-
-  private distanceMeters(lat1:number, lon1:number, lat2:number, lon2:number): number {
-    const toRad = (d:number) => d * Math.PI / 180, R = 6371000;
-    const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
-    const a = Math.sin(dLat/2)**2 +
-              Math.cos(toRad(lat1))*Math.cos(toRad(lat2)) *
-              Math.sin(dLon/2)**2;
-    return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  }
-
-  private async frontCheckHome(): Promise<{ ok:boolean; msg:string; dist?:number; acc?:number }> {
-    try {
-      const g = await this.getSmartGeo();
-      const dist = this.distanceMeters(g.latitude, g.longitude, this.HOME.lat, this.HOME.lng);
-      const ACC  = Math.round(g.accuracy ?? 999999);
-      const R    = this.HOME.radiusM;
-
-      console.log('[GeoCheck]', { lat: g.latitude, lng: g.longitude, acc: ACC, dist: Math.round(dist) });
-
-      // 嚴格規則：同時滿足兩個門檻才放行
-      if (ACC <= this.HOME.accuracyMax && dist <= R) {
-        return { ok:true, msg:'OK', dist, acc: ACC };
-      }
-      if (ACC > this.HOME.accuracyMax) {
-        return { ok:false, msg:`定位精度不足（≈${ACC}m > ${this.HOME.accuracyMax}m）`, dist, acc: ACC };
-      }
-      return { ok:false, msg:`不在允許打卡範圍（距離≈${Math.round(dist)}m > ${R}m）`, dist, acc: ACC };
-    } catch {
-      return { ok:false, msg:'無法取得定位，請允許網站取得位置' };
-    }
-  }
-
-  // ===== 其它：UI / 流程 =====
-
   openMakeupDialog() {
     const dialogRef = this.dialog.open(ClockinMakeupComponent, {
       width: '720px',
+      height: '95vh',
       panelClass: 'makeup-dialog-panel',
       data: {
         employeeId: this.data?.employeeId || localStorage.getItem('employeeId') || '',
@@ -263,34 +167,6 @@ export class ReclockinComponent implements OnInit, OnDestroy {
     });
   }
 
-  private async fetchTodayShifts(employeeId: string, workDate: string): Promise<any[]> {
-    const res = await firstValueFrom(
-      this.https.get<any>('http://localhost:8080/PreSchedule/getAcceptScheduleByEmployeeId', {
-        params: { employeeId }
-      })
-    );
-
-    const normalize = (t?: string) => {
-      if (!t) return '';
-      const [hh='00', mm='00', ss='00'] = t.slice(0,8).split(':');
-      return `${hh.padStart(2,'0')}:${mm.padStart(2,'0')}:${ss.padStart(2,'0')}`;
-    };
-
-    const list: any[] = res?.preScheduleList ?? [];
-    return list
-      .filter(s =>
-        String(s.applyDate).slice(0,10) === workDate &&
-        (Number(s.shiftWorkId ?? 0) > 0) &&
-        s.accept === true
-      )
-      .map(s => ({
-        start_time: normalize(s.startTime),
-        end_time:   normalize(s.endTime),
-        shift_work_id: Number(s.shiftWorkId ?? 0)
-      }))
-      .filter(s => s.start_time && s.end_time);
-  }
-
   private tick() {
     const now = new Date();
     const pad = (n: number) => n.toString().padStart(2, '0');
@@ -303,28 +179,7 @@ export class ReclockinComponent implements OnInit, OnDestroy {
       now.getDate() + '日 星期' + week;
   }
 
-  private detectMode(shifts: any[]): 'single' | 'lunch' | 'multi' {
-    if (!Array.isArray(shifts) || shifts.length === 0) return 'single';
-    const list = shifts.map(s => ({
-      swid: Number(s.shift_work_id ?? s.shiftWorkId ?? NaN),
-      start: String(s.start_time ?? s.startTime ?? ''),
-    })).filter(x => Number.isFinite(x.swid));
 
-    if (list.some(x => x.swid === 0)) return 'single';
-    const ordered = [...list].sort((a, b) => a.start.localeCompare(b.start));
-    const n = ordered.length;
-    if (n === 1) return 'single';
-    if (n >= 3)  return 'multi';
-    const a = ordered[0].swid, b = ordered[1].swid;
-    const areConsecutive = (a === 1 && b === 2) || (a === 2 && b === 3) || (a === 3 && b === 4);
-    return areConsecutive ? 'lunch' : 'multi';
-  }
-
-  private updateButtons(): void {
-    if (this.mode === 'lunch') this.updateLunchButtons();
-    else if (this.mode === 'multi') this.updateMultiButtons();
-    else this.updateSingleButtons();
-  }
 
   private updateSingleButtons() {
     if (!this.clockInTime) {
@@ -407,10 +262,11 @@ export class ReclockinComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ===== 兩側按鈕動作 =====
 
-  leftAction() {
+
+  async leftAction() {
     if (this.isBusy) return;
+
     if (this.mode === 'lunch') {
       if (!this.clockInTime) this.clockIn();
       else if (!this.restStart) this.startLunch();
@@ -419,8 +275,9 @@ export class ReclockinComponent implements OnInit, OnDestroy {
     }
   }
 
-  rightAction() {
+  async rightAction() {
     if (this.isBusy) return;
+
     if (this.mode === 'lunch') {
       if (!this.restEnd && this.restStart) this.endLunch();
       else if (!this.clockOutTime && this.restEnd) this.startClockOut();
@@ -429,16 +286,23 @@ export class ReclockinComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ===== 四個打卡 API（送出時已被 postApi 的地理圍欄攔住）=====
-
   private setBusy(v: boolean) {
     this.isBusy = v;
     this.leftDisabled = v || this.leftDisabled;
     this.rightDisabled = v || this.rightDisabled;
   }
 
-  clockIn() {
+  async clockIn() {
     if (!this.data.employeeId) return;
+
+    // 先等定位預覽完整跑完（至少 2 秒，且確定關閉）
+    try {
+      await this.showLocationDialog();
+    } catch {
+      // 取不到定位就略過或在這裏 return 視你的策略
+    }
+  
+
     this.setBusy(true);
     const now = this.nowClockTime();
     const req = { employeeId: this.data.employeeId, workDate: this.data.workDate, clockOn: now };
@@ -461,8 +325,9 @@ export class ReclockinComponent implements OnInit, OnDestroy {
     });
   }
 
-  startLunch() {
+ startLunch() {
     this.setBusy(true);
+
     const now = this.nowClockTime();
     const req = { employeeId: this.data.employeeId, workDate: this.data.workDate, restStart: now };
 
@@ -484,8 +349,9 @@ export class ReclockinComponent implements OnInit, OnDestroy {
     });
   }
 
-  endLunch() {
+endLunch() {
     this.setBusy(true);
+
     const now = this.nowClockTime();
     const req = { employeeId: this.data.employeeId, workDate: this.data.workDate, restEnd: now };
 
@@ -511,10 +377,12 @@ export class ReclockinComponent implements OnInit, OnDestroy {
     this.showMoodRating = true;
   }
 
-  completeClockOut() {
+ completeClockOut() {
     this.showMoodRating = false;
     this.setBusy(true);
-    const selectedRating = this.hoveredStar || this.moodRating;
+
+    this.hoveredStar = 0;  
+    const selectedRating = this.moodRating;
     const now = this.nowClockTime();
     const req = { employeeId: this.data.employeeId, clockOff: now, score: selectedRating };
 
@@ -547,7 +415,7 @@ export class ReclockinComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ===== 時間與顯示 =====
+
 
   formatDisplayTime(date: Date | null): string {
     if (!date) return '--';
@@ -557,12 +425,11 @@ export class ReclockinComponent implements OnInit, OnDestroy {
     const h = date.getHours().toString().padStart(2, '0');
     const mi = date.getMinutes().toString().padStart(2, '0');
     const s = date.getSeconds().toString().padStart(2, '0');
-    return `${y}/${m}/${d} ${h}:${mi}:${s}`;
+    return  y + '/' + m + '/' + d + ' ' + h + ':' + mi + ':' + s;
   }
 
   private nowClockTime(): string {
-    const dev = localStorage.getItem('DEV_CLOCK');
-    return dev || new Date().toTimeString().substring(0, 8);
+    return  new Date().toTimeString().substring(0, 8);
   }
 
   private toDate(dateStr: string, timeStr: string): Date {
@@ -573,10 +440,12 @@ export class ReclockinComponent implements OnInit, OnDestroy {
 
   private calcWorkDuration() {
     if (!this.clockInTime || !this.clockOutTime) return;
+    //getTime取毫秒數
     const diff = (this.clockOutTime.getTime() - this.clockInTime.getTime()) / 1000;
+    //把小數砍掉取整數
     const h = Math.floor(diff / 3600);
     const m = Math.floor((diff % 3600) / 60);
-    this.workDuration = `${h}小時${m}分鐘`;
+    this.workDuration =  h + '小時' + m + '分鐘';
   }
 
   private loadTodayClock(): void {
@@ -589,26 +458,33 @@ export class ReclockinComponent implements OnInit, OnDestroy {
       next: (res) => {
         if (res.code === 200 && Array.isArray(res.data) && res.data.length) {
           const latest = res.data[res.data.length - 1];
-          if (latest.clockOn)  this.clockInTime  = new Date(`${latest.workDate}T${latest.clockOn}`);
-          if (latest.clockOff) this.clockOutTime = new Date(`${latest.workDate}T${latest.clockOff}`);
-          if (latest.restStart) this.restStart   = new Date(`${latest.workDate}T${latest.restStart}`);
-          if (latest.restEnd)   this.restEnd     = new Date(`${latest.workDate}T${latest.restEnd}`);
+          if (latest.clockOn)  this.clockInTime  = new Date(latest.workDate + 'T' + latest.clockOn);
+          if (latest.clockOff) this.clockOutTime = new Date(latest.workDate + 'T' + latest.clockOff);
+          if (latest.restStart) this.restStart   = new Date(latest.workDate + 'T' + latest.restStart);
+          if (latest.restEnd)   this.restEnd     = new Date(latest.workDate + 'T' + latest.restEnd);          
           this.updateButtons();
         }
       },
-      error: (err) => console.error('載入今日打卡狀態錯誤', err)
+      error: () => {
+        this.dialog.open(ErrorDialogComponent, { data: { message: '伺服器錯誤' } });
+      }      
     });
   }
 
-  showSuccess(type: 'clockIn' | 'clockOut' | 'restStart' | 'restEnd', score?: number) {
+  showSuccess(type: 'clockIn' | 'clockOut' | 'restStart' | 'restEnd',score: number = 0) {
     const now = new Date();
     const timeStr = this.formatDisplayTime(now);
     if (type === 'clockOut') {
-      const rating = typeof score === 'number' ? score : 0;
+      const rating = score; 
       const moodText = this.getMoodText(rating);
-      const stars = Array.from({ length: 5 }, (_, i) =>
-        `<span style="font-size:22px; color:${i < rating ? '#FFD700' : '#ccc'};">★</span>`
-      ).join('');
+      let stars = '';
+      for (let i = 1; i <= 5; i++) {
+        if (i <= rating) {
+          stars = stars + '★';  // 加上實心星
+        } else {
+          stars = stars + '☆';  // 加上空心星
+        }
+      }      
       this.modalData = {
         icon: '✅',
         title: '下班打卡成功！',
@@ -616,7 +492,7 @@ export class ReclockinComponent implements OnInit, OnDestroy {
           <div style="text-align:center;">
             <p style="font-size:15px; color:#555;">打卡時間：<b>${timeStr}</b></p>
             <p style="font-size:15px; color:#333; margin:3px 0;">今日心情評分</p>
-            <div style="margin:3px 0;">${stars}</div>
+            <div style="margin:3px 0; font-size:22px;">${stars}</div>
             <p style="font-size:14px; color:#444; margin:2px 0;">${moodText}</p>
             <p style="font-size:15px; color:#444; margin-top:4px;">
               今日工作時長：<b>${this.workDuration}</b>
@@ -672,4 +548,149 @@ export class ReclockinComponent implements OnInit, OnDestroy {
   setMoodRating(s: number) { this.moodRating = s; }
   getMoodText(r: number) { return ['', '很糟糕 😞', '不太好 😕', '一般般 😐', '還不錯 😊', '非常好 😄'][r] || ''; }
   closeMoodRating() { this.showMoodRating = false; }
+
+  private async showLocationDialog(): Promise<void> {
+    const g = await this.getSmartGeo();
+    const distM = Math.round(
+      this.distanceMeters(g.latitude, g.longitude, this.HOME.lat, this.HOME.lng)
+    );
+  
+    const ref = this.dialog.open(GeoInfoDialogComponent, {
+      width: '360px',
+      panelClass: 'geo-dialog-panel',
+      autoFocus: false,
+      disableClose: true,            // 防止 2 秒內被點掉
+      data: { lat: g.latitude, lng: g.longitude, distM }
+    });
+  
+    // 等對話框動畫「開啟完成」
+    await firstValueFrom(ref.afterOpened());
+  
+    // 顯示至少 2 秒
+    await new Promise(r => setTimeout(r, 2000));
+  
+    // 手動關閉
+    ref.close();
+  
+    // 等關閉動畫完成
+    await firstValueFrom(ref.afterClosed());
+  }
+
+  private getPosition(): Promise<GeolocationPosition> {
+    //Promise 是 JavaScript 內建的物件，用來處理需要時間的工作
+    return new Promise((resolve, reject) => {
+      //navigator.geolocation 是 JavaScript 內建的物件用來看瀏覽器給不給抓位置
+      if (!navigator.geolocation) return reject(new Error('瀏覽器不支援定位'));
+      navigator.geolocation.getCurrentPosition(
+        resolve, reject,
+        //找位置第一個精準定位第二個最多找15秒第三個拿最新的位置
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      );
+    });
+  }
+
+
+
+
+  private readDevGeo(): { lat: number; lng: number; acc: number } | null {
+    const raw = localStorage.getItem('DEV_GEO');
+    if (!raw ) return null;
+    const [lat, lng, acc] = raw.split(',').map(Number);
+    if ([lat, lng, acc].some(v => Number.isNaN(v))) return null;
+    return { lat, lng, acc };
+  }
+  // GeolocationPosition {
+  //   coords: GeolocationCoordinates; // 重點在這裡
+  //   timestamp: number;              // 取得這筆定位的時間（毫秒）
+  // }
+  // async 非同步函式在這個函式裡可以使用promise和await
+  private async getSmartGeo(): Promise<{ latitude: number; longitude: number; accuracy: number }> {
+    const dev = this.readDevGeo();
+    if (dev) {
+      return { latitude: dev.lat, longitude: dev.lng, accuracy: dev.acc };
+    }
+
+    const TRIES = 3;
+    // 是| TypeScript 的[聯合型別]
+    let best: { latitude: number; longitude: number; accuracy: number } | null = null;
+
+    for (let i = 0; i < TRIES; i++) {
+      try {
+        //await 會在 async 函式裡暫停該函式的執行，直到有結果為止
+        const pos = await this.getPosition();
+        const g = {
+          latitude: pos.coords.latitude,// 緯度
+          longitude: pos.coords.longitude,// 經度
+          accuracy: pos.coords.accuracy ?? 999999 // 精度（公尺）
+        };
+        if (!best || g.accuracy < best.accuracy) best = g;
+        if (g.accuracy <= 60) break; // 夠好了就不等了
+      } catch {
+        // 忽略一次失敗，繼續
+      }
+    }
+
+    if (best) {
+      localStorage.setItem('LAST_GOOD_GEO', JSON.stringify(best));
+      return best;
+    }
+
+    const cached = localStorage.getItem('LAST_GOOD_GEO');
+    if (cached) {
+      return JSON.parse(cached);
+    }
+
+    throw new Error('定位失敗');
+  }
+
+  private async getLatLngAcc(): Promise<{ latitude: number; longitude: number; accuracy: number }> {
+    const dev = this.readDevGeo();
+    if (dev) {
+      return { latitude: dev.lat, longitude: dev.lng, accuracy: dev.acc };
+    }
+    const pos = await this.getPosition();
+    const { latitude, longitude, accuracy } = pos.coords;
+    return { latitude, longitude, accuracy };
+  }
+
+  //最終算出來是兩點之間的距離
+  private distanceMeters(lat1:number, lon1:number, lat2:number, lon2:number): number {
+    //這是哈弗辛公式
+    //R是地球的平均半徑(公尺)
+    //這是在算弧度(度)*拍/180
+    const toRad = (d:number) => d * Math.PI / 180, R = 6371000;
+    //算經度跟緯度度的差
+    const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
+    //計算中間變數a
+    const a = Math.sin(dLat/2)**2 +
+              Math.cos(toRad(lat1))*Math.cos(toRad(lat2)) *
+              Math.sin(dLon/2)**2;
+    //最後求中心角這啥我****，「算出中心角 c，再乘地球半徑，得到兩點的地表距離。」sqrt開根號，atan2是用來算出一個角度（弧度）
+    return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+
+  
+  private async frontCheckHome(): Promise<{ ok:boolean; msg:string; dist?:number; acc?:number }> {
+    try {
+      const g = await this.getSmartGeo();
+      const dist = this.distanceMeters(g.latitude, g.longitude, this.HOME.lat, this.HOME.lng);
+      const ACC  = Math.round(g.accuracy ?? 999999);
+      const R    = this.HOME.radiusM;
+
+      console.log('[GeoCheck]', { lat: g.latitude, lng: g.longitude, acc: ACC, dist: Math.round(dist) });
+
+      // GPS精準定位跟距離半徑我是設200跟150
+      if (ACC <= this.HOME.accuracyMax && dist <= R) {
+        return { ok:true, msg:'OK', dist, acc: ACC };
+      }
+      if (ACC > this.HOME.accuracyMax) {
+        return { ok: false, msg: "定位精度不足（≈" + ACC + "m > " + this.HOME.accuracyMax + "m）", dist, acc: ACC };
+      }
+      return { ok: false, msg: "不在允許打卡範圍（距離" + Math.round(dist) + "m > " + R + "m）", dist, acc: ACC };
+    } catch {
+      return { ok: false, msg: "無法取得定位，請允許網站取得位置" };
+    }
+  }
+
 }

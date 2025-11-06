@@ -25,8 +25,14 @@ export class FeedbackDialogComponent {
     private dialog: MatDialog,
     private http: HttpClient
   ) {
-    this.form.employeeId = localStorage.getItem('employeeId') ?? '';
+
   }
+
+  ngOnInit(): void {
+    const saved = localStorage.getItem('employeeId');
+    if (saved) this.form.employeeId = saved;
+  }
+
 
   private today(): string {
     const n = new Date(), p = (x: number) => String(x).padStart(2, '0');
@@ -59,7 +65,7 @@ export class FeedbackDialogComponent {
       return;
     }
 
-    const confirmRef = this.dialog.open(ConfirmDialogComponent, { width: '400px' });
+    const confirmRef = this.dialog.open(ConfirmDialogComponent, { width: '460px' });
     confirmRef.afterClosed().subscribe(ok => {
       if (!ok) return;
       this.loading = true;

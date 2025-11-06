@@ -1,0 +1,25 @@
+<div class="dialog-container">
+    <h2 class="dialog-title">
+      定位資訊
+    </h2>
+  
+    <div class="dialog-content">
+      <div class="info-field">
+        <label>緯度</label>
+        <div class="value">{{ data.lat | number:'1.6-6' }}</div>
+      </div>
+  
+      <div class="info-field">
+        <label>經度</label>
+        <div class="value">{{ data.lng | number:'1.6-6' }}</div>
+      </div>
+  
+      <div class="info-field highlight">
+        <label>距離公司</label>
+        <div class="value">
+          {{ data.distM | number:'1.0-0' }} <span class="unit">公尺</span>
+        </div>
+      </div>      
+    </div>
+  </div>
+  

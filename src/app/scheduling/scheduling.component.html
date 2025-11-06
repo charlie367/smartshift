@@ -1,28 +1,20 @@
-<div class="top-tag">   
+<div class="top-tag">
   @if(check){
-    <div class="backend-entry">
-      <button  class="btn-back" mat-raised-button color="primary" [routerLink]="['/backindex']">前往後臺</button>
-    </div>
+  <div class="backend-entry">
+    <button class="btn-back" mat-raised-button color="primary" [routerLink]="['/backindex']">前往後臺</button>
+  </div>
   }
   <div class="menu-item1" (click)="openAnnouncementDialog()">
-    <mat-icon
-      matBadge="{{ unreadCount }}"
-      [matBadgeHidden]="unreadCount === 0"
-      matBadgeColor="warn"
+    <mat-icon matBadge="{{ unreadCount }}" [matBadgeHidden]="unreadCount === 0" matBadgeColor="warn"
       matBadgePosition="above after">
       notifications
     </mat-icon>
   </div>
-  
-
 </div>
 
 <div class="sidebar">
-
-    <div class="logo-text"> <img src="shift.png" class="tag-icon" alt="logo" />EasyShift</div>
-
-
-  <div class="menu-item"  (click)="punchIn()">
+  <div class="logo-text"> <img src="shift.png" class="tag-icon" alt="logo" />EasyShift</div>
+  <div class="menu-item" (click)="punchIn()">
     <mat-icon>schedule</mat-icon>
     <label>打卡</label>
   </div>
@@ -32,83 +24,81 @@
   </div>
   <div class="menu-item" (click)="openFeedbackDialog()">
     <mat-icon>speaker_notes</mat-icon>
-    <label >問題意見</label>
+    <label>問題意見</label>
   </div>
-
   <div class="menu-item" (click)="showSchedule()">
     <mat-icon>next_week</mat-icon>
     <label>班表總覽
     </label>
   </div>
-
   <div class="menu-item" routerLink="/leave" style="cursor: pointer;">
     <mat-icon>text_snippet</mat-icon>
     <label>請假申請</label>
   </div>
   <div class="logout-section">
     <hr class="divider" />
-  
+
     @if (viewMode === 'dashboard') {
-      <div class="menu-item logout" (click)="logout()">
-        <mat-icon>logout</mat-icon>
-        <label>登出</label>
-      </div>
+    <div class="menu-item logout" (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      <label>登出</label>
+    </div>
     } @else if (viewMode === 'schedule') {
-      <div class="menu-item logout" (click)="goHome()">
-        <mat-icon>home</mat-icon>
-        <label>回首頁</label>
-      </div>
+    <div class="menu-item logout" (click)="goHome()">
+      <mat-icon>home</mat-icon>
+      <label>回首頁</label>
+    </div>
     }
   </div>
-  
+
 </div>
 
-      <div *ngIf="viewMode === 'dashboard'">
-        <div class="dashboard-row" style="margin-top: 100px !important">
-           <div class="left-col">
-               <div class="chat-box" #chatBox>
-   
-                 <div *ngFor="let msg of messages; let i = index" class="chat-row" [ngClass]="msg.sender">
-   
-             <!-- 助理頭像 -->
-             <ng-container *ngIf="msg.sender === 'assistant'">
-               <img src="kawaii.png" alt="助理" class="assistant-avatar" />
-             </ng-container>
-             <!-- 對話泡泡 -->
-              <div class="chat-ms">
-             <div class="chat-bubble">
-                    <div class="chat-text">
-                    <h3>{{ msg.text }}</h3>
-                   </div>
-   </div>
-                     <div class="chat-time">
-                     <h5 style="color: gray;  margin-left: 10px;
-                     margin-right: 10px;">{{ msg.time }}</h5>
-                     </div>
-   
+<div *ngIf="viewMode === 'dashboard'">
+  <div class="dashboard-row" style="margin-top: 100px !important">
+    <div class="left-col">
+      <div class="chat-box" #chatBox>
+
+        <div *ngFor="let msg of messages; let i = index" class="chat-row" [ngClass]="msg.sender">
+
+          <!-- 助理頭像 -->
+          <ng-container *ngIf="msg.sender === 'assistant'">
+            <img src="kawaii.png" alt="助理" class="assistant-avatar" />
+          </ng-container>
+          <!-- 對話泡泡 -->
+          <div class="chat-ms">
+            <div class="chat-bubble">
+              <div class="chat-text">
+                <h3>{{ msg.text }}</h3>
+              </div>
             </div>
-       </div>
-   
-   
-           <!-- 輸入區 -->
-           <div class="chat-box-input-group"> <input class="chat-box-input" type="text" placeholder="我有話想說 ..."
-               [(ngModel)]="userInput" (keyup.enter)="sendMessage()" />
-               <button (click)="sendMessage()" class="chat-button">
-                  <img src="send.png" alt="" width="28px">
-                 </button>
-                </div>
-         </div>
-   
+            <div class="chat-time">
+              <h5 style="color: gray;  margin-left: 10px;
+                     margin-right: 10px;">{{ msg.time }}</h5>
+            </div>
+
+          </div>
+        </div>
+
+
+        <!-- 輸入區 -->
+        <div class="chat-box-input-group"> <input class="chat-box-input" type="text" placeholder="我有話想說 ..."
+            [(ngModel)]="userInput" (keyup.enter)="sendMessage()" />
+          <button (click)="sendMessage()" class="chat-button">
+            <img src="send.png" alt="" width="28px">
+          </button>
+        </div>
+      </div>
+
       <main class="calendar-container">
-        <!-- <p class="title">選取預約時段</p> -->
+  
 
         <div class="left-calendar">
-          <app-test-need1
-            (dateClick)="onDateSelected($event)"
+          <app-test-need1 [(selected)]="selectedDate" (dateClick)="onDateSelected($event)"
             (rangeChange)="onRangeChange($event)">
           </app-test-need1>
+
         </div>
-        
+
 
 
         <div class="right-week">
@@ -134,24 +124,20 @@
                 <!-- 有班就畫卡片，沒有就走 else -->
                 <ng-container *ngIf="acceptedSlots(weekSlots[dateKey(d)]).length; else _noSlots">
                   <div class="slot-col">
-                    <div
-                      *ngFor="let s of acceptedSlots(weekSlots[dateKey(d)]); trackBy: trackBySlot"
-                      class="slot-vertical"
-                      [ngClass]="shiftTag(s)"
-                      [style.width.px]="50"
-                    >
+                    <div *ngFor="let s of acceptedSlots(weekSlots[dateKey(d)]); trackBy: trackBySlot"
+                      class="slot-vertical" [ngClass]="shiftTag(s)" [style.width.px]="50">
                       <div class="sv-time">{{ toHM(s.startTime) }}</div>
                       <div class="sv-bar"></div>
                       <div class="sv-time">{{ toHM(s.endTime) }}</div>
                     </div>
                   </div>
                 </ng-container>
-              
+
                 <ng-template #_noSlots>—</ng-template>
               </div>
-              
-              
-              
+
+
+
             </div>
           </div>
         </div>
@@ -163,11 +149,11 @@
     <aside class="right-aside">
       <div class="widget-card">
         <div class="widget-header">時鐘</div>
-        <div class="widget-body clock-body" >
+        <div class="widget-body clock-body">
           <app-clock class="clock-inline"></app-clock>
         </div>
       </div>
-      
+
 
 
       <div class="widget-card">
@@ -175,123 +161,123 @@
           <span>本月上班時數</span>
           <span class="salary-value">本月總時數 {{ monthQuotaHours }} 小時</span>
         </div>
-      
+
         <div class="widget-body salary-body" style="display:flex;align-items:center;">
           <div class="left-stats" style="min-width:120px;text-align:center;">
             <div class="label">已上時數</div>
             <div class="value" style="font-size:36px;font-weight:700">{{ workedHours }}</div>
             <div class="sub">小時</div>
           </div>
-      
+
           <!-- 就用你的水滴樣式 -->
           <app-water-drop class="drop" [level]="uiLevel"></app-water-drop>
 
 
         </div>
       </div>
-      
+
     </aside>
-    
+
   </div>
 
-<div class="dashboard-layout">
+  <div class="dashboard-layout">
 
-  <div class="month-container">
+    <div class="month-container">
 
-    <div class="month-header">
-      <button class="arrow" (click)="prevDashboardMonth()">
-        <img src="arrow-left.png" alt="" style="width: 24px;" />
-      </button>
-    
-      <div class="month-title">
-        {{ dashboardMonthLabel }}
-      </div>
-    
-      <button class="arrow" (click)="nextDashboardMonth()">
-        <img src="arrow-right.png" alt="" style="width: 24px;" />
-      </button>
-    </div>
-    
+      <div class="month-header">
+        <button class="arrow" (click)="prevDashboardMonth()">
+          <img src="arrow-left.png" alt="" style="width: 24px;" />
+        </button>
 
-    <div class="stats-row">
-      <div class="stat-card green">
-        <mat-icon>login</mat-icon>
-        <div>
-          <div class="value">{{ avgCheckIn }}</div>
-          <div class="label">平均上班打卡時間</div>
+        <div class="month-title">
+          {{ dashboardMonthLabel }}
         </div>
-      </div>
-      
-      <div class="stat-card orange">
-        <mat-icon>logout</mat-icon>
-        <div>
-          <div class="value">{{ avgCheckOut }}</div>
-          <div class="label">平均下班打卡時間</div>
-        </div>
-      </div>
-      
-      <div class="stat-card purple">
-        <mat-icon>schedule</mat-icon>
-        <div>
-          <div class="value">{{ avgWorkHr }}</div>
-          <div class="label">上班平均時數</div>
-        </div>
-      </div>
-      
-      <div class="stat-card red">
-        <mat-icon>block</mat-icon>
-        <div>
-          <div class="value">{{ absentLeaves }}</div>
-          <div class="label">本月請假時數</div>
-        </div>
-      </div>
-</div>      
-    
 
-    <!-- 出勤紀錄表格 -->
-    <div class="work-log-table-wrapper">
-      <table class="work-log-table">
-        <thead>
-          <tr>
-            <th>日期</th>
-            <th>上班打卡</th>
-            <th>下班打卡</th>
-            <th>工時</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let record of workLogs">
-            <td>{{ record.date }}</td>
-            <td class="checkin">{{ record.checkIn }}</td>
-            <td class="checkout">{{ record.checkOut }}</td>
-            <td>{{ record.hours }}</td>
-          </tr>
-        </tbody>
-      </table>
-      
-    </div>
-  </div>
+        <button class="arrow" (click)="nextDashboardMonth()">
+          <img src="arrow-right.png" alt="" style="width: 24px;" />
+        </button>
+      </div>
 
 
-  <div class="widget-card employee-card">
-    <div class="widget-header">今日出勤人員</div>
-    <div class="widget-body">
-      <div class="employee-list">
-        <div class="employee-item" *ngFor="let s of shifts">
-          <div class="info">
-            <div class="name">{{ s.name }}</div>
-            <div class="detail">{{ s.date }}</div>
-
-            <div class="extra">班別：{{ s.type }}</div>
+      <div class="stats-row">
+        <div class="stat-card green">
+          <mat-icon>login</mat-icon>
+          <div>
+            <div class="value">{{ avgCheckIn }}</div>
+            <div class="label">平均上班打卡時間</div>
           </div>
-          <div class="role">職別：{{ s.role }}</div>
+        </div>
+
+        <div class="stat-card orange">
+          <mat-icon>logout</mat-icon>
+          <div>
+            <div class="value">{{ avgCheckOut }}</div>
+            <div class="label">平均下班打卡時間</div>
+          </div>
+        </div>
+
+        <div class="stat-card purple">
+          <mat-icon>schedule</mat-icon>
+          <div>
+            <div class="value">{{ avgWorkHr }}</div>
+            <div class="label">上班平均時數</div>
+          </div>
+        </div>
+
+        <div class="stat-card red">
+          <mat-icon>block</mat-icon>
+          <div>
+            <div class="value">{{ absentLeaves }}</div>
+            <div class="label">本月請假時數</div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- 出勤紀錄表格 -->
+      <div class="work-log-table-wrapper">
+        <table class="work-log-table">
+          <thead>
+            <tr>
+              <th>日期</th>
+              <th>上班打卡</th>
+              <th>下班打卡</th>
+              <th>工時</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let record of workLogs">
+              <td>{{ record.date }}</td>
+              <td class="checkin">{{ record.checkIn }}</td>
+              <td class="checkout">{{ record.checkOut }}</td>
+              <td>{{ record.hours }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+
+
+    <div class="widget-card employee-card">
+      <div class="widget-header">今日出勤人員</div>
+      <div class="widget-body">
+        <div class="employee-list">
+          <div class="employee-item" *ngFor="let s of shifts">
+            <div class="info">
+              <div class="name">{{ s.name }}</div>
+              <div class="detail">{{ s.date }}</div>
+
+              <div class="extra">班別：{{ s.type }}</div>
+            </div>
+            <div class="role">職別：{{ s.role }}</div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-</div> 
+</div>
 
 <div *ngIf="viewMode === 'schedule'" class="schedule-wrapper">
 
@@ -300,19 +286,15 @@
     <button class="nav" (click)="prevMonth()" aria-label="上一月">
       <mat-icon>chevron_left</mat-icon>
     </button>
-  
+
     <div class="month-nav-title">{{ scheduleMonthLabel }}</div>
-  
+
     <button class="nav" (click)="nextMonth()" aria-label="下一月">
       <mat-icon>chevron_right</mat-icon>
     </button>
   </div>
-  
 
-  <daypilot-scheduler
-    #scheduler
-    class="scheduler"
-    [config]="config"
-    [events]="events">
+
+  <daypilot-scheduler #scheduler class="scheduler" [config]="config" [events]="events">
   </daypilot-scheduler>
 </div>

@@ -26,8 +26,8 @@ import { ViewChild } from '@angular/core';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { MatBadgeModule } from '@angular/material/badge';
 import { Testneed1Component } from '../calendar/testneed1.component';
-import { forkJoin, Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { forkJoin, Observable, of, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 type WeekSlot = {
   startTime: string | null;
@@ -114,7 +114,7 @@ export class SchedulingComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-
+    const employeeId2 = localStorage.getItem('employeeId') || '';
     // ① DayPilot 基本設定（含配色）
     this.config = {
       scale: 'Day',
@@ -150,10 +150,35 @@ export class SchedulingComponent implements OnInit {
       days
     };
 
-    this.messages.push({
-      sender: 'assistant',
-      text: '哈囉！我是您的 AI 助理，今天有什麼可以幫忙的嗎？',
-    });
+  // 今天
+  const today = new Date();
+  this.selectedDate = today;
+  this.startOfWeek = this.getStartOfWeek(today);
+
+  // 初始聊天訊息（顯示 loading / 歡迎）
+  this.messages = [{
+    sender: 'assistant',
+    text: `哈囉，${employeeId2}！我是您的 AI 助理，正在讀取本週排班...`
+  }];
+
+  // // 立刻滾動讓 loading 可見
+  setTimeout(() => this.scrollChatToBottom('auto'), 0);
+
+  // 抓本週班表（非同步），拿到後 render 今天
+  this.loadWeekSlotsForCurrentWeek().subscribe({
+    next: (map) => {
+      this.weekSlots = map || {};
+      // 用 map 去 render 今天（把結果放到 messages[0]）
+      this.renderScheduleForDate(today, this.weekSlots);
+
+
+    },
+    error: (err) => {
+      console.error('[ngOnInit] loadWeekSlotsForCurrentWeek error', err);
+      // 即使失敗，也嘗試用現有資料 render（可能是空）
+      this.renderScheduleForDate(today, this.weekSlots || {});
+    }
+  });
 
     this.monthQuotaReady = false;//分母
     this.workLogsReady = false;//分子
@@ -258,6 +283,7 @@ export class SchedulingComponent implements OnInit {
     return `${y}-${m}-${da}`;
   }
 
+  
   // 篩掉非上班或未核准的資料
   acceptedSlots(list?: WeekSlot[]): WeekSlot[] {
     return (list || []).filter(s => s.isWorking && s.isAccept);
@@ -614,96 +640,106 @@ export class SchedulingComponent implements OnInit {
 
   startOfWeek: Date = this.getStartOfWeek(new Date());
 
-  loadWeekSlotsForCurrentWeek(): void {
-    const employeeId = localStorage.getItem('employeeId');
-    if (!employeeId) { this.weekSlots = {}; return; }
-
-    const start = new Date(this.startOfWeek);
-    const end = new Date(start); end.setDate(end.getDate() + 6); end.setHours(23, 59, 59, 999);
-
-    this.http.get<any>('http://localhost:8080/PreSchedule/getAcceptScheduleByEmployeeId', {
-      params: { employeeId }
-    }).subscribe({
-      next: (res) => {
-
-        const raw: any[] = res.preScheduleList ?? [];
-        const map: Record<string, WeekSlot[]> = {};
-        for (const s of raw) {
-          const dateStr = s.applyDate?.slice(0, 10);
-          if (!dateStr) continue;
-          const d = this.parseYMD(dateStr);
-          if (d < start || d > end) continue;
-          const isWorking = s.shiftWorkId > 0;
-          const isAccept = s.accept;
-          const startTime = s.startTime ? s.startTime.slice(0, 8) : null;
-          const endTime = s.endTime ? s.endTime.slice(0, 8) : null;
-          const shiftWorkId = s.shiftWorkId;
-
-          (map[dateStr] ||= []).push({ startTime, endTime, isWorking, isAccept, shiftWorkId });
-        }
-
-        // 補齊 7 天
-        const cur = new Date(start);
-        while (cur <= end) {
-          const k = cur.getFullYear() + '-' +
-            String(cur.getMonth() + 1).padStart(2, '0') + '-' +
-            String(cur.getDate()).padStart(2, '0');
-          //如果說（false、null、undefined、0、空字串等等），就把 x 設成 y；否則保持原值。
-          map[k] ||= [];
-          cur.setDate(cur.getDate() + 1);
-        }
-        this.weekSlots = map;
-      },
-      error: (err) => { console.error('[week] API 失敗', err); this.weekSlots = {}; }
-    });
-  }
-  // loadWeekSlotsForCurrentWeek(): Observable<Record<string, WeekSlot[]>> {
+  // loadWeekSlotsForCurrentWeek(): void {
   //   const employeeId = localStorage.getItem('employeeId');
-  //   if (!employeeId) {
-  //     // 立即回傳空物件 observable
-  //     return of({} as Record<string, WeekSlot[]>);
-  //   }
+  //   if (!employeeId) { this.weekSlots = {}; return; }
 
-  //   const start = new Date(this.startOfWeek); start.setHours(0,0,0,0);
-  //   const end = new Date(start); end.setDate(end.getDate() + 6); end.setHours(23,59,59,999);
+  //   const start = new Date(this.startOfWeek);
+  //   const end = new Date(start); end.setDate(end.getDate() + 6); end.setHours(23, 59, 59, 999);
 
-  //   return this.http.get<any>('http://localhost:8080/PreSchedule/getAcceptScheduleByEmployeeId', { params: { employeeId } })
-  //     .pipe(
-  //       map(res => {
-  //         const raw: any[] = res?.preScheduleList ?? res?.list ?? res?.preScheduleResList ?? res?.data ?? [];
-  //         const map: Record<string, WeekSlot[]> = {};
+  //   this.http.get<any>('http://localhost:8080/PreSchedule/getAcceptScheduleByEmployeeId', {
+  //     params: { employeeId }
+  //   }).subscribe({
+  //     next: (res) => {
 
-  //         for (const s of raw) {
-  //           const dateStr: string = (s.applyDate ?? s.apply_date ?? '').slice(0, 10);
-  //           if (!dateStr) continue;
+  //       const raw: any[] = res.preScheduleList ?? [];
+  //       const map: Record<string, WeekSlot[]> = {};
+  //       for (const s of raw) {
+  //         const dateStr = s.applyDate?.slice(0, 10);
+  //         if (!dateStr) continue;
+  //         const d = this.parseYMD(dateStr);
+  //         if (d < start || d > end) continue;
+  //         const isWorking = s.shiftWorkId > 0;
+  //         const isAccept = s.accept;
+  //         const startTime = s.startTime ? s.startTime.slice(0, 8) : null;
+  //         const endTime = s.endTime ? s.endTime.slice(0, 8) : null;
+  //         const shiftWorkId = s.shiftWorkId;
 
-  //           const d = this.parseYMD(dateStr);
-  //           if (d < start || d > end) continue;
+  //         (map[dateStr] ||= []).push({ startTime, endTime, isWorking, isAccept, shiftWorkId });
+  //       }
 
-  //           const isWorking = Number(s.shiftWorkId ?? s.shift_work_id ?? 0) > 0;
-  //           const isAccept  = (s.accept ?? s.isAccept ?? s.is_accept) === true
-  //                          || (s.accept ?? s.isAccept ?? s.is_accept) === 1
-  //                          || (s.accept ?? s.isAccept ?? s.is_accept) === '1';
-
-  //           const startTime: string | null = (s.startTime ?? s.start_time ?? null) ? String(s.startTime ?? s.start_time).slice(0,8) : null;
-  //           const endTime:   string | null = (s.endTime   ?? s.end_time   ?? null) ? String(s.endTime   ?? s.end_time).slice(0,8) : null;
-
-  //           (map[dateStr] ||= []).push({ startTime, endTime, isWorking, isAccept });
-  //         }
-
-  //         // 補齊 7 天
-  //         const cur = new Date(start);
-  //         while (cur <= end) {
-  //           const k = `${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
-  //           map[k] ||= [];
-  //           cur.setDate(cur.getDate() + 1);
-  //         }
-
-  //         return map;
-  //       })
-  //     );
+  //       // 補齊 7 天
+  //       const cur = new Date(start);
+  //       while (cur <= end) {
+  //         const k = cur.getFullYear() + '-' +
+  //           String(cur.getMonth() + 1).padStart(2, '0') + '-' +
+  //           String(cur.getDate()).padStart(2, '0');
+  //         //如果說（false、null、undefined、0、空字串等等），就把 x 設成 y；否則保持原值。
+  //         map[k] ||= [];
+  //         cur.setDate(cur.getDate() + 1);
+  //       }
+  //       this.weekSlots = map;
+  //     },
+  //     error: (err) => {
+  //       this.weekSlots = {}; 
+  //       this.dialog.open(ErrorDialogComponent, {
+  //         data: { message: '讀取本週班表失敗，請稍後再試。' }
+  //       });
+  //     }
+  //   });
   // }
+  loadWeekSlotsForCurrentWeek(): Observable<Record<string, WeekSlot[]>> {
+    const employeeId = localStorage.getItem('employeeId');
+    if (!employeeId) {
+      // 立即回傳空物件 observable
+      return of({} as Record<string, WeekSlot[]>);
+    }
+  
+    const start = new Date(this.startOfWeek); start.setHours(0,0,0,0);
+    const end = new Date(start); end.setDate(end.getDate() + 6); end.setHours(23,59,59,999);
+  
+   return this.http.get<any>('http://localhost:8080/PreSchedule/getAcceptScheduleByEmployeeId', { params: { employeeId } })
+  .pipe(
+    map(res => { 
 
+      const raw: any[] = res?.preScheduleList ?? res?.list ?? res?.preScheduleResList ?? res?.data ?? [];
+      const map: Record<string, WeekSlot[]> = {};
+
+      for (const s of raw) {
+        const dateStr= (s.applyDate ?? s.apply_date ?? '').slice(0, 10);
+        if (!dateStr) continue;
+
+        const d = this.parseYMD(dateStr);
+        if (d < start || d > end) continue;
+                 const isWorking = s.shiftWorkId > 0;
+                const isAccept = s.accept;
+                const startTime = s.startTime ? s.startTime.slice(0, 8) : null;
+                const endTime = s.endTime ? s.endTime.slice(0, 8) : null;
+                const shiftWorkId = s.shiftWorkId;
+
+        (map[dateStr] ||= []).push({ startTime, endTime, isWorking, isAccept, shiftWorkId });
+      }
+
+      // 補齊 7 天
+      const cur = new Date(start);
+      while (cur <= end) {
+        const k = `${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
+        map[k] ||= [];
+        cur.setDate(cur.getDate() + 1);
+      }
+
+      return this.weekSlots = map;
+    }),
+    catchError((error: any) => {
+      const customError = {
+        error: true,
+        message: '讀取本週班表失敗，請稍後再試。',
+        details: error?.message ?? '未知錯誤'
+      };
+      return throwError(() => customError);
+    })
+  );
+}
 
 
 
@@ -1078,98 +1114,98 @@ export class SchedulingComponent implements OnInit {
   }
 
 
-  onDateSelected(date: Date) {
-    console.log("onDateSelected", date);
-    this.selectedDate = date;
-    this.startOfWeek = this.getStartOfWeek(date);
-
-    // 先刷新當週班表
-    this.loadWeekSlotsForCurrentWeek();
-
-    // 將聊天框先清空，顯示 loading
-    this.messages = [{ sender: 'assistant', text: '正在查詢該天排班...' }];
-
-    //TypeScript 特有的內建泛型工具型別
-    const dateKey = this.dateKey(date);
-
-    // 抓該天班表
-    const slots = this.weekSlots[dateKey] || [];
-
-    let replyText = '';
-
-    if (!slots.length) {
-      replyText = `${date.toLocaleDateString('zh-TW')} 沒有排班紀錄`;
-    } else {
-      replyText = `${date.toLocaleDateString('zh-TW')} 排班如下：\n`;
-      slots.forEach((s, i) => {
-        if (!s.isWorking || !s.isAccept) {
-          replyText += `第${i + 1}班：休假\n`;
-        } else {
-          const start = this.toHM(s.startTime);
-          const end = this.toHM(s.endTime);
-          replyText += `第${i + 1}班：${start} - ${end}\n`;
-        }
-      });
-    }
-
-    // 將結果更新到聊天框
-    this.messages[0] = { sender: 'assistant', text: replyText };
-
-    // 滾動到底
-    setTimeout(() => this.scrollChatToBottom(), 50);
-  }
-
   // onDateSelected(date: Date) {
   //   console.log("onDateSelected", date);
   //   this.selectedDate = date;
   //   this.startOfWeek = this.getStartOfWeek(date);
 
-  //   // 先顯示 loading 訊息
+  //   // 先刷新當週班表
+  //   this.loadWeekSlotsForCurrentWeek();
+
+  //   // 將聊天框先清空，顯示 loading
   //   this.messages = [{ sender: 'assistant', text: '正在查詢該天排班...' }];
-  //   // 先滾一次讓 loading 可見（立即）
-  //   setTimeout(() => this.scrollChatToBottom('auto'), 0);
 
-  //   // 呼叫 fetch（非同步）
-  //   this.loadWeekSlotsForCurrentWeek().subscribe({
-  //     next: (map) => {
-  //       // 1) 更新本地 weekSlots（如果你想要讓其他地方也可用）
-  //       this.weekSlots = map;
+  //   //TypeScript 特有的內建泛型工具型別
+  //   const dateKey = this.dateKey(date);
 
-  //       // 2) 根據選的日期組 reply
-  //       const key = this.dateKey(date);
-  //       const slots = map[key] ?? [];
+  //   // 抓該天班表
+  //   const slots = this.weekSlots[dateKey] || [];
 
-  //       let replyText = '';
-  //       if (!slots.length) {
-  //         replyText = `${date.toLocaleDateString('zh-TW')} 沒有排班紀錄`;
+  //   let replyText = '';
+
+  //   if (!slots.length) {
+  //     replyText = `${date.toLocaleDateString('zh-TW')} 沒有排班紀錄`;
+  //   } else {
+  //     replyText = `${date.toLocaleDateString('zh-TW')} 排班如下：\n`;
+  //     slots.forEach((s, i) => {
+  //       if (!s.isWorking || !s.isAccept) {
+  //         replyText += `第${i + 1}班：休假\n`;
   //       } else {
-  //         replyText = `${date.toLocaleDateString('zh-TW')} 排班如下：\n`;
-  //         slots.forEach((s, i) => {
-  //           if (!s.isWorking || !s.isAccept) {
-  //             replyText += `第${i + 1}班：休假\n`;
-  //           } else {
-  //             const start = this.toHM(s.startTime);
-  //             const end = this.toHM(s.endTime);
-  //             replyText += `第${i + 1}班：${start} - ${end}\n`;
-  //           }
-  //         });
+  //         const start = this.toHM(s.startTime);
+  //         const end = this.toHM(s.endTime);
+  //         replyText += `第${i + 1}班：${start} - ${end}\n`;
   //       }
+  //     });
+  //   }
 
-  //       // 3) 用 reply 替換 loading（保持順序）
-  //       this.messages[0] = { sender: 'assistant', text: replyText };
+  //   // 將結果更新到聊天框
+  //   this.messages[0] = { sender: 'assistant', text: replyText };
 
-  //       // 4) 確保 Angular 更新 DOM 並滾到底
-  //       try { this.cd.detectChanges(); } catch(e) { /* ignore */ }
-  //       setTimeout(() => this.scrollChatToBottom('smooth'), 40);
-  //     },
-  //     error: (err) => {
-  //       console.error('[onDateSelected] fetch weekSlots error', err);
-  //       this.messages[0] = { sender: 'assistant', text: '查詢班表失敗，請稍後再試' };
-  //       try { this.cd.detectChanges(); } catch(e) { /* ignore */ }
-  //       setTimeout(() => this.scrollChatToBottom('smooth'), 40);
-  //     }
-  //   });
+  //   // 滾動到底
+  //   setTimeout(() => this.scrollChatToBottom(), 50);
   // }
+
+  onDateSelected(date: Date) {
+    console.log("onDateSelected", date);
+    this.selectedDate = date;
+    this.startOfWeek = this.getStartOfWeek(date);
+
+    // 先顯示 loading 訊息
+    this.messages = [{ sender: 'assistant', text: '正在查詢該天排班...' }];
+    // 先滾一次讓 loading 可見（立即）
+    setTimeout(() => this.scrollChatToBottom('auto'), 0);
+
+    // 呼叫 fetch（非同步）
+    this.loadWeekSlotsForCurrentWeek().subscribe({
+      next: (map) => {
+        // 1) 更新本地 weekSlots（如果你想要讓其他地方也可用）
+        this.weekSlots = map;
+
+        // 2) 根據選的日期組 reply
+        const key = this.dateKey(date);
+        const slots = map[key] ?? [];
+
+        let replyText = '';
+        if (!slots.length) {
+          replyText = `${date.toLocaleDateString('zh-TW')} 沒有排班紀錄`;
+        } else {
+          replyText = `${date.toLocaleDateString('zh-TW')} 排班如下：\n`;
+          slots.forEach((s, i) => {
+            if (!s.isWorking || !s.isAccept) {
+              replyText += `第${i + 1}班：休假\n`;
+            } else {
+              const start = this.toHM(s.startTime);
+              const end = this.toHM(s.endTime);
+              replyText += `第${i + 1}班：${start} - ${end}\n`;
+            }
+          });
+        }
+
+        // 3) 用 reply 替換 loading（保持順序）
+        this.messages[0] = { sender: 'assistant', text: replyText };
+
+        // 4) 確保 Angular 更新 DOM 並滾到底
+        try { this.cd.detectChanges(); } catch(e) { /* ignore */ }
+        setTimeout(() => this.scrollChatToBottom('smooth'), 40);
+      },
+      error: (err) => {
+        console.error('[onDateSelected] fetch weekSlots error', err);
+        this.messages[0] = { sender: 'assistant', text: '查詢班表失敗，請稍後再試' };
+        try { this.cd.detectChanges(); } catch(e) { /* ignore */ }
+        setTimeout(() => this.scrollChatToBottom('smooth'), 40);
+      }
+    });
+  }
 
   scrollChatToBottom(behavior: ScrollBehavior = 'smooth') {
     try {
@@ -1293,6 +1329,36 @@ export class SchedulingComponent implements OnInit {
     });
   }
 
-
+  private renderScheduleForDate(date: Date, map: Record<string, WeekSlot[]>) {
+    const key = this.dateKey(date);
+    const slots = map[key] ?? [];
+  
+    let replyText = '';
+    if (!slots.length) {
+      replyText = `${date.toLocaleDateString('zh-TW')} 沒有排班紀錄`;
+    } else {
+      replyText = `${date.toLocaleDateString('zh-TW')} 排班如下：\n`;
+      slots.forEach((s, i) => {
+        if (!s.isWorking || !s.isAccept) {
+          replyText += `第${i + 1}班：休假\n`;
+        } else {
+          const start = this.toHM(s.startTime);
+          const end = this.toHM(s.endTime);
+          replyText += `第${i + 1}班：${start} - ${end}\n`;
+        }
+      });
+    }
+  
+    // 把 loading 訊息替換或直接覆蓋到 messages（保持第一則為助理回覆）
+    if (this.messages.length === 0) {
+      this.messages.push({ sender: 'assistant', text: replyText });
+    } else {
+      this.messages[0] = { sender: 'assistant', text: replyText };
+    }
+  
+    // 更新 view 並滾動到底
+    try { this.cd.detectChanges(); } catch(e) { /* ignore */ }
+    setTimeout(() => this.scrollChatToBottom('smooth'), 40);
+  }
 
 }

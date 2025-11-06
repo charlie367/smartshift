@@ -65,7 +65,7 @@
         <h2 class="mood-title">評價今日心情</h2>
         <p class="mood-subtitle">請為您今天的工作心情評分</p>
       </div>
-
+<!-- mouseenter（滑鼠指標進入元素時觸發）、mouseleave（滑鼠指標離開元素時觸發） -->
       <div class="star-rating">
         @for (star of [1,2,3,4,5]; track star) {
         <button class="star-button" (mouseenter)="setHoveredStar(star)" (mouseleave)="setHoveredStar(0)"

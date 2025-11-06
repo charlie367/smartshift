@@ -1,6 +1,6 @@
 /* ========== 全域基底（僅限此元件樹） ========== */
 .makeup-root,
-.makeup-root * ,
+.makeup-root *,
 .makeup-root *::before,
 .makeup-root *::after {
   box-sizing: border-box;
@@ -11,6 +11,7 @@
   background: #fff;
   border-radius: 16px;
   overflow: hidden;
+  max-width: 760px; /* 維持穩定寬度（與 dialog width 對齊） */
 }
 
 /* ========== Header ========== */
@@ -31,12 +32,12 @@
 }
 
 .icon-btn {
-  display: inline-grid;           /* grid 的置中更穩 */
-  place-items: center;            /* 水平+垂直置中 */
+  display: inline-grid;
+  place-items: center;
   width: 32px;
   height: 32px;
-  padding: 0;                     /* 移除干擾 */
-  line-height: 0;                 /* 移除行高干擾 */
+  padding: 0;
+  line-height: 0;
   border-radius: 8px;
   background: rgba(255,255,255,.15);
   border: 1px solid rgba(255,255,255,.25);
@@ -50,10 +51,16 @@
 }
 .icon-btn:active{ transform: translateY(1px); }
 
-/* ========== Body ========== */
+/* ========== Body（可滾動區域） ========== */
 .makeup-body{
-  /* 統一左右內距，避免內容貼齊或溢出 */
   padding: 16px 24px 24px 24px; /* 上 右 下 左 */
+}
+
+/* 內容超出時，只有 body 滾動；header/footer 保持在視窗內 */
+.scroll-body {
+  max-height: min(70vh, 560px); /* 維持現在的視覺高度；超過就出現滾輪 */
+  overflow-y: auto;
+  padding-bottom: 12px; /* 讓最後一個欄位不被 footer 擋住 */
 }
 
 /* 每個欄位區塊 */
@@ -99,8 +106,20 @@
 .input:focus,
 .textarea:focus{
   border-color: #60a5fa;
-  /* 較內收的焦點圈，避免貼齊右邊界 */
   box-shadow: 0 0 0 2px rgba(59,130,246,.20);
+}
+
+/* 錯誤狀態 */
+.form-item.invalid .input,
+.form-item.invalid .textarea,
+.form-item.invalid .uploader {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, .15);
+}
+.err {
+  margin-top: 6px;
+  color: #ef4444;
+  font-size: 12px;
 }
 
 /* ========== 檔案上傳區 ========== */
@@ -118,6 +137,10 @@
 .uploader:hover{
   border-color: #60a5fa;
   background: #fafafa;
+}
+.uploader.dragover {
+  border-color: #2563eb;
+  background: #eff6ff;
 }
 
 .hidden{ display: none; }
@@ -156,11 +179,48 @@
 .empty-text{ color: #374151; }
 .sub-text{ color: #9ca3af; font-size: 12px; }
 
-/* ========== 底部按鈕列 ========== */
+/* mini 移除按鈕 */
+.mini-btn {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  cursor: pointer;
+  font-size: 12px;
+}
+.mini-btn:hover { background: #f9fafb; }
+
+/* ========== 兩欄網格（時間區） ========== */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ========== 星星評分 ========== */
+.stars { display: flex; align-items: center; gap: 8px; }
+.star-btn { border: 0; background: transparent; cursor: pointer; padding: 2px; }
+.star { font-size: 28px; color: #d1d5db; transition: transform .1s, color .15s; }
+.star.filled { color: #f59e0b; } /* amber-500 */
+.star-btn:hover .star { transform: scale(1.08); }
+.rating-text { color: #6b7280; font-weight: 600; }
+
+/* ========== 底部按鈕列（固定） ========== */
 .btn-row{
   display: flex;
   gap: 12px;
   padding-top: 8px;
+}
+.sticky-footer {
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  padding: 12px 24px 20px 24px; /* 與 body 對齊 */
+  box-shadow: 0 -6px 12px -8px rgba(0,0,0,.12);
 }
 
 .btn{
@@ -195,9 +255,28 @@
 .btn.primary:hover{ background: #1d4ed8; }
 .btn.primary:active{ transform: translateY(1px); }
 
+/* disabled & loading */
+.btn[disabled] { opacity: .6; cursor: not-allowed; }
+.makeup-root.loading { pointer-events: none; opacity: .98; }
+
+/* 小 spinner（純 CSS） */
+.spinner {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border: 2px solid #fff;
+  border-right-color: transparent;
+  border-radius: 50%;
+  margin-right: 6px;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
 /* ========== 響應式微調（窄螢幕） ========== */
 @media (max-width: 420px){
   .makeup-body{ padding: 12px 16px 16px 16px; }
   .btn-row{ flex-direction: column; }
   .btn{ height: 38px; }
+  .grid-2 { grid-template-columns: 1fr; }
 }
+
+

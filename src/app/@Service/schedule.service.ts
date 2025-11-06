@@ -16,9 +16,6 @@ export class ScheduleService {
     return this.http.get<any>(`${this.apiUrl}/getAllSchedule`);
   }
 
-
-
-
   getScheduleByEmployeeId(employeeId: string): Observable<any> {
     return this.http.get<any>(this.apiUrl + "/getScheduleByEmployeeId", {
       //params是 HttpClient.get() 這個方法本身允許的「設定選項 (options)」。
