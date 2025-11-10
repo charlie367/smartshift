@@ -11,272 +11,256 @@
   background: #fff;
   border-radius: 16px;
   overflow: hidden;
-  max-width: 760px; /* 維持穩定寬度（與 dialog width 對齊） */
+  max-width: 760px;
 }
 
-/* ========== Header ========== */
+/* Header */
 .makeup-header{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: flex; align-items: center; justify-content: space-between;
   padding: 14px 20px;
   background: linear-gradient(90deg, #2563eb, #4f46e5);
   color: #fff;
 }
-
-.title{
-  margin: 0;
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: .5px;
+.title{ margin: 0; font-size: 20px; font-weight: 700; letter-spacing: .5px; }
+.icon-btn{
+  display: inline-grid; place-items: center; width: 32px; height: 32px;
+  padding: 0; line-height: 0; border-radius: 8px;
+  background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25);
+  color: #fff; cursor: pointer; transition: background .15s, border-color .15s, transform .02s;
 }
-
-.icon-btn {
-  display: inline-grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  line-height: 0;
-  border-radius: 8px;
-  background: rgba(255,255,255,.15);
-  border: 1px solid rgba(255,255,255,.25);
-  color: #fff;
-  cursor: pointer;
-  transition: background .15s, border-color .15s, transform .02s;
-}
-.icon-btn:hover{
-  background: rgba(255,255,255,.25);
-  border-color: rgba(255,255,255,.35);
-}
+.icon-btn:hover{ background: rgba(255,255,255,.25); border-color: rgba(255,255,255,.35); }
 .icon-btn:active{ transform: translateY(1px); }
 
-/* ========== Body（可滾動區域） ========== */
-.makeup-body{
-  padding: 16px 24px 24px 24px; /* 上 右 下 左 */
-}
+/* Body */
+.makeup-body{ padding: 16px 24px 24px 24px; }
+.scroll-body{ max-height: min(70vh, 560px); overflow-y: auto; padding-bottom: 12px; }
+.form-item{ margin-bottom: 16px; }
 
-/* 內容超出時，只有 body 滾動；header/footer 保持在視窗內 */
-.scroll-body {
-  max-height: min(70vh, 560px); /* 維持現在的視覺高度；超過就出現滾輪 */
-  overflow-y: auto;
-  padding-bottom: 12px; /* 讓最後一個欄位不被 footer 擋住 */
+/* 上傳空狀態圖示 */
+.folder-icon {
+  width: 40px;      /* 圖示尺寸 */
+  height: 40px;
+  display: block;   /* 變區塊才能 margin: 0 auto 置中 */
+  margin: 0 auto;
+  opacity: .9;      /* 顏色深淺 */
 }
+.upload-text { color: #777; }
 
-/* 每個欄位區塊 */
-.form-item{
-  margin-bottom: 16px;
-}
-
-/* 標籤列（含小圖示與必填星號） */
+/* 標題：統一字級與粗細 */
 .label{
   display: block;
   margin-bottom: 8px;
   color: #374151;
   font-weight: 600;
+  font-size: 16px; /* 統一標題字級 */
 }
-.label-ic{
-  font-size: 18px;
-  vertical-align: middle;
-  margin-right: 6px;
-  color: #4b5563;
-}
-.req{
-  color: #ef4444;
-  margin-left: 4px;
-}
+.label-ic { font-size: 20px; vertical-align: -2px; }
+.req{ color: #ef4444; margin-left: 4px; }
 
-/* ========== 表單控制 ========== */
-.input,
-.textarea{
-  width: 100%;
-  max-width: 100%;
-  border: 1px solid #d1d5db;
-  border-radius: 10px;
-  padding: 10px 12px;
-  outline: none;
-  background: #fff;
-  color: #111827;
+/* 表單控制 */
+.input, .textarea{
+  width: 100%; border: 1px solid #d1d5db; border-radius: 10px;
+  padding: 10px 12px; outline: none; background: #fff; color: #111827;
   transition: box-shadow .2s, border-color .2s, background .2s;
 }
-.input::placeholder,
-.textarea::placeholder{
-  color: #9ca3af;
-}
-.input:focus,
-.textarea:focus{
-  border-color: #60a5fa;
-  box-shadow: 0 0 0 2px rgba(59,130,246,.20);
-}
+.input::placeholder, .textarea::placeholder{ color: #9ca3af; }
+.input:focus, .textarea:focus{ border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(59,130,246,.20); }
 
-/* 錯誤狀態 */
 .form-item.invalid .input,
 .form-item.invalid .textarea,
-.form-item.invalid .uploader {
-  border-color: #ef4444 !important;
-  box-shadow: 0 0 0 2px rgba(239, 68, 68, .15);
+.form-item.invalid .uploader{
+  border-color: #ef4444 !important; box-shadow: 0 0 0 2px rgba(239, 68, 68, .15);
 }
-.err {
-  margin-top: 6px;
-  color: #ef4444;
-  font-size: 12px;
-}
+.err{ margin-top: 6px; color: #ef4444; font-size: 12px; }
 
-/* ========== 檔案上傳區 ========== */
+/* 上傳 */
 .uploader{
-  width: 100%;
-  max-width: 100%;
-  border: 2px dashed #d1d5db;
-  border-radius: 12px;
-  padding: 20px;
-  text-align: center;
-  cursor: pointer;
+  width: 100%; border: 2px dashed #d1d5db; border-radius: 12px;
+  padding: 20px; text-align: center; cursor: pointer; background: #fff;
   transition: border-color .2s, background .2s;
-  background: #fff;
 }
-.uploader:hover{
-  border-color: #60a5fa;
-  background: #fafafa;
-}
-.uploader.dragover {
-  border-color: #2563eb;
-  background: #eff6ff;
-}
-
+.uploader:hover{ border-color: #60a5fa; background: #fafafa; }
+.uploader.dragover{ border-color: #2563eb; background: #eff6ff; }
 .hidden{ display: none; }
-
-.preview-img{
-  max-height: 200px;
-  width: auto;
-  border-radius: 10px;
-  border: 1px solid #e5e7eb;
-  display: block;
-  margin: 0 auto 8px;
-}
-
-.file-name{
-  color: #059669;
-  font-weight: 600;
-  font-size: 14px;
-  margin: 4px 0;
-}
-.hint{
-  color: #6b7280;
-  font-size: 12px;
-}
-.file-ic{
-  font-size: 40px;
-  color: #10b981;
-  display: block;
-  margin: 0 auto 6px;
-}
-.upload-ic{
-  font-size: 40px;
-  color: #9ca3af;
-  display: block;
-  margin: 0 auto 6px;
-}
+.preview-img{ max-height: 200px; width: auto; border-radius: 10px; border: 1px solid #e5e7eb; display: block; margin: 0 auto 8px; }
+.file-name{ color: #059669; font-weight: 600; font-size: 14px; margin: 4px 0; }
+.hint{ color: #6b7280; font-size: 12px; }
+.file-ic{ font-size: 40px; color: #10b981; display: block; margin: 0 auto 6px; }
+.upload-ic{ font-size: 40px; color: #9ca3af; display: block; margin: 0 auto 6px; }
 .empty-text{ color: #374151; }
-.sub-text{ color: #9ca3af; font-size: 12px; }
 
-/* mini 移除按鈕 */
-.mini-btn {
-  margin-top: 8px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  cursor: pointer;
-  font-size: 12px;
+/* 小按鈕（一般用途） */
+.mini-btn{
+  margin-top: 8px; display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 8px; border-radius: 8px; border: 1px solid #e5e7eb;
+  background: #fff; cursor: pointer; font-size: 12px;
 }
-.mini-btn:hover { background: #f9fafb; }
+.mini-btn:hover{ background: #f9fafb; }
 
-/* ========== 兩欄網格（時間區） ========== */
-.grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+/* 兩欄網格 */
+.grid-2{ display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* 每組的小標＆右側清除 */
+.form-row-head{
+  display: flex; align-items: center; justify-content: space-between;
+  margin: 8px 0 6px;
 }
-
-/* ========== 星星評分 ========== */
-.stars { display: flex; align-items: center; gap: 8px; }
-.star-btn { border: 0; background: transparent; cursor: pointer; padding: 2px; }
-.star { font-size: 28px; color: #d1d5db; transition: transform .1s, color .15s; }
-.star.filled { color: #f59e0b; } /* amber-500 */
-.star-btn:hover .star { transform: scale(1.08); }
-.rating-text { color: #6b7280; font-weight: 600; }
-
-/* ========== 底部按鈕列（固定） ========== */
-.btn-row{
-  display: flex;
-  gap: 12px;
-  padding-top: 8px;
+.head-left{ display: inline-flex; align-items: center; gap: 6px; color: #374151; font-weight: 700; }
+.head-text{ font-size: 14px; }
+.row-x{
+  border: 1px solid #e5e7eb; background: #fff; border-radius: 999px;
+  width: 30px; height: 30px; cursor: pointer; font-weight: 700;
 }
-.sticky-footer {
-  position: sticky;
-  bottom: 0;
-  background: #fff;
-  padding: 12px 24px 20px 24px; /* 與 body 對齊 */
-  box-shadow: 0 -6px 12px -8px rgba(0,0,0,.12);
-}
+.row-x:hover{ background: #f3f4f6; }
 
+/* 24h：隱藏 WebKit 的 AM/PM 欄位 */
+.input.h24::-webkit-datetime-edit-ampm-field{ display: none; }
+.input.h24::-webkit-calendar-picker-indicator{ cursor: pointer; }
+
+/* 星等 */
+.stars{ display: flex; align-items: center; gap: 8px; }
+.star-btn{ border: 0; background: transparent; cursor: pointer; padding: 2px; }
+.star{ font-size: 28px; color: #d1d5db; transition: transform .1s, color .15s; }
+.star.filled{ color: #f59e0b; }
+.star-btn:hover .star{ transform: scale(1.08); }
+.rating-text{ color: #6b7280; font-weight: 600; }
+
+/* Footer */
+.btn-row{ display: flex; gap: 12px; padding-top: 8px; }
+.sticky-footer{
+  position: sticky; bottom: 0; background: #fff;
+  padding: 12px 24px 20px 24px; box-shadow: 0 -6px 12px -8px rgba(0,0,0,.12);
+}
 .btn{
-  flex: 1;
-  height: 40px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  font-weight: 600;
-  border: 1px solid transparent;
-  cursor: pointer;
+  flex: 1; height: 40px; padding: 10px 12px; border-radius: 10px;
+  font-weight: 600; border: 1px solid transparent; cursor: pointer;
   transition: background .15s, color .15s, border-color .15s, box-shadow .15s, transform .02s;
 }
-
-/* 次要（清除） */
-.btn.ghost{
-  background: #fff;
-  border-color: #d1d5db;
-  color: #374151;
-  box-shadow: 0 1px 2px rgba(0,0,0,.04);
-}
-.btn.ghost:hover{
-  background: #f9fafb;
-}
-
-/* 主要（送出申請） */
-.btn.primary{
-  background: #2563eb;
-  color: #fff;
-  border-color: #1f4ed8;
-  box-shadow: 0 1px 2px rgba(0,0,0,.06);
-}
+.btn.ghost{ background: #fff; border-color: #d1d5db; color: #374151; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+.btn.ghost:hover{ background: #f9fafb; }
+.btn.primary{ background: #2563eb; color: #fff; border-color: #1f4ed8; box-shadow: 0 1px 2px rgba(0,0,0,.06); }
 .btn.primary:hover{ background: #1d4ed8; }
 .btn.primary:active{ transform: translateY(1px); }
-
-/* disabled & loading */
-.btn[disabled] { opacity: .6; cursor: not-allowed; }
-.makeup-root.loading { pointer-events: none; opacity: .98; }
-
-/* 小 spinner（純 CSS） */
-.spinner {
-  display: inline-block;
-  width: 16px; height: 16px;
-  border: 2px solid #fff;
-  border-right-color: transparent;
-  border-radius: 50%;
-  margin-right: 6px;
-  animation: spin .7s linear infinite;
-}
+.btn[disabled]{ opacity: .6; cursor: not-allowed; }
+.makeup-root.loading{ pointer-events: none; opacity: .98; }
+.spinner{ display: inline-block; width: 16px; height: 16px; border: 2px solid #fff; border-right-color: transparent; border-radius: 50%; margin-right: 6px; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ========== 響應式微調（窄螢幕） ========== */
+/* 手機 */
 @media (max-width: 420px){
   .makeup-body{ padding: 12px 16px 16px 16px; }
   .btn-row{ flex-direction: column; }
   .btn{ height: 38px; }
-  .grid-2 { grid-template-columns: 1fr; }
+  .grid-2{ grid-template-columns: 1fr; }
 }
 
+/* ====== 右側小叉叉（輸入框清除） ====== */
+.input-with-x { position: relative; }
+.input-with-x > .input { padding-right: 44px; }
 
+/* 小叉叉按鈕：正方形 + Flex 置中 + 無內距 */
+.inline-x{
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  width: 28px; height: 28px;
+  padding: 0;               /* 重要：避免把內容擠偏 */
+  border-radius: 999px;
+  border: 1px solid black;
+  background: #fff;
+  display: flex;            /* Flex 置中 */
+  align-items: center;      /* 垂直置中 */
+  justify-content: center;  /* 水平置中 */
+  cursor: pointer;
+}
+.inline-x:hover { background: #f3f4f6; }
+.inline-x mat-icon{
+  display: block;           /* 避免 baseline 影響 */
+  font-size: 18px;
+  line-height: 1;           /* 取消字體基線空隙 */
+  width: 18px; height: 18px;
+}
+
+/* ====== 標題右側「新增時間段」按鈕 ====== */
+.label-with-btn{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.label-with-btn .label-left{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 新增時間段按鈕（右上） */
+.add-slot{
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid #d0d7de;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.2;
+}
+.add-slot mat-icon{ font-size: 18px; width: 18px; height: 18px; }
+.add-slot:hover{ background: #f6f8fa; border-color: #c3ccd5; }
+
+
+/* === 讓左右兩欄完全對齊（統一標題高度 & 不換行） === */
+
+/* 兩欄容器以頂對齊，避免右邊內容高把整列撐歪 */
+.grid-2 {
+  align-items: start;
+}
+
+/* 所有標題行統一用 flex、垂直置中、固定最小高度 */
+.label {
+  display: flex;                 /* 原本是 block，改成 flex */
+  align-items: center;           /* 圖示與文字垂直置中 */
+  gap: 8px;
+  min-height: 28px;              /* 統一標題高度（可微調 26~32） */
+  margin-bottom: 8px;            /* 保留原本間距 */
+  white-space: nowrap;           /* 不要自動換行 */
+}
+
+/* 右側含按鈕的標題：左右分散，避免擠到換行 */
+.label-with-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  white-space: nowrap;           /* 關鍵：避免「下班打卡時／間」被擠斷行 */
+}
+
+/* 左側文字容器允許縮，超出以省略號結束 */
+.label-with-btn .label-left {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 標題裡的圖示不要撐高行 */
+.label-ic {
+  display: inline-block;
+  line-height: 1;
+  vertical-align: middle;        /* 或保留你的 -2px 都可 */
+}
+
+/* 標題內的小按鈕不要有上外距，避免把整個標題往下推 */
+.label .mini-btn,
+.label-with-btn .add-slot {
+  margin-top: 0 !important;      /* 覆蓋原本 .mini-btn 的 margin-top: 8px; */
+  flex: 0 0 auto;
+}
+
+/* 時間輸入右側的「X」已絕對定位，不會再撐高；這裡補個保險的高度一致 */
+.input {
+  height: 44px;                  /* 視覺上讓左右輸入框高度一致 */
+  box-sizing: border-box;
+}

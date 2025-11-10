@@ -86,7 +86,7 @@ export class SchedulingComponent implements OnInit {
     this.hidden = !this.hidden;
   }
 
-  //是用來生成變數好控制畫面的渲染
+  //是用來生成變數好控制畫面的渲染，這會抓到模板上那個 #scheduler 的 元件實例，可以用this.scheduler.control.update()
   @ViewChild('scheduler', { static: false }) scheduler!: DayPilotSchedulerComponent;
 
   @ViewChild('chatBox', { static: false }) chatBoxRef!: ElementRef<HTMLDivElement>;
@@ -115,70 +115,20 @@ export class SchedulingComponent implements OnInit {
 
   ngOnInit(): void {
     const employeeId2 = localStorage.getItem('employeeId') || '';
-    // ① DayPilot 基本設定（含配色）
-    this.config = {
-      scale: 'Day',
-      cellWidth: 50,
-      rowHeaderWidth: 150,
-      resources: [],
-      timeHeaders: [{ groupBy: 'Day', format: 'd' }],
-      eventMoveHandling: 'Disabled',
-      eventResizeHandling: 'Disabled',
-      eventClickHandling: 'Disabled',
-      onBeforeEventRender: (args) => {
-        const txt = String(args.data.text ?? '');
-        const first = txt.split('｜')[0]?.trim() || '休';
-        const colorMap: Record<string, string> = {
-          '早': '#E3F2FD',
-          '中': '#FFF8E1',
-          '晚': '#E8F5E9',
-          '夜': '#E1BEE7',
-          '休': '#FFEBEE',
-        };
-        const bgColor = colorMap[first] ?? '#ECEFF1';
-        args.data.cssClass = 'shift-event';
-        args.data.html = `<div class="shift-box" style="background-color:${bgColor}">${txt}</div>`;
-      }
-    } as DayPilot.SchedulerConfig;
+    // 今天
+    const today = new Date();
+    this.selectedDate = today;
+    this.startOfWeek = this.getStartOfWeek(today);
 
+    // 初始聊天訊息（顯示 loading / 歡迎）
+    this.messages = [{
+      sender: 'assistant',
+      text: `哈囉，${employeeId2}！我是您的 AI 助理，正在讀取本週排班...`
+    }];
 
-    const { firstDay, days } = this.monthWindow(this.scheduleMonth);
+    // // 立刻滾動讓 loading 可見
+    setTimeout(() => this.scrollChatToBottom('auto'), 0);
 
-    this.config = {
-      ...this.config,
-      startDate: new DayPilot.Date(firstDay),
-      days
-    };
-
-  // 今天
-  const today = new Date();
-  this.selectedDate = today;
-  this.startOfWeek = this.getStartOfWeek(today);
-
-  // 初始聊天訊息（顯示 loading / 歡迎）
-  this.messages = [{
-    sender: 'assistant',
-    text: `哈囉，${employeeId2}！我是您的 AI 助理，正在讀取本週排班...`
-  }];
-
-  // // 立刻滾動讓 loading 可見
-  setTimeout(() => this.scrollChatToBottom('auto'), 0);
-
-  // 抓本週班表（非同步），拿到後 render 今天
-  this.loadWeekSlotsForCurrentWeek().subscribe({
-    next: (map) => {
-      this.weekSlots = map || {};
-      // 用 map 去 render 今天（把結果放到 messages[0]）
-      this.renderScheduleForDate(today, this.weekSlots);
-
-
-    },
-    error: (err) => {
-      console.error('[ngOnInit] loadWeekSlotsForCurrentWeek error', err);
-      // 即使失敗，也嘗試用現有資料 render（可能是空）
-      this.renderScheduleForDate(today, this.weekSlots || {});
-    }
-  });
 
     this.monthQuotaReady = false;//分母
     this.workLogsReady = false;//分子
@@ -199,7 +149,7 @@ export class SchedulingComponent implements OnInit {
     // 本月安全邊界
     const y = this.dashboardMonth.getFullYear();
     const m = this.dashboardMonth.getMonth();
-    
+
     const first = new Date(y, m, 1, 0, 0, 0, 0);
     const last = new Date(y, m + 1, 0, 23, 59, 59, 999);
 
@@ -283,7 +233,7 @@ export class SchedulingComponent implements OnInit {
     return `${y}-${m}-${da}`;
   }
 
-  
+
   // 篩掉非上班或未核准的資料
   acceptedSlots(list?: WeekSlot[]): WeekSlot[] {
     return (list || []).filter(s => s.isWorking && s.isAccept);
@@ -297,7 +247,7 @@ export class SchedulingComponent implements OnInit {
     }
     const workDate = this.todayLocal();
     const nowTime = new Date().toTimeString().slice(0, 8);
-  
+
     const normalize = (t: string) => {
       if (!t) return '';
       const p = t.trim().split(':').map(Number);
@@ -305,7 +255,7 @@ export class SchedulingComponent implements OnInit {
       const pad = (n: number) => n.toString().padStart(2, '0');
       return `${pad(hh)}:${pad(mm)}:${pad(ss)}`;
     };
-  
+
     const openDialog = (shifts: any[]) => {
       const dialogRef = this.dialog.open(ReclockinComponent, {
         width: '600px',
@@ -316,7 +266,7 @@ export class SchedulingComponent implements OnInit {
         if (refresh) this.loadClockData();
       });
     };
-  
+
     // 先用本地快取（若當週剛好不是今天所在週，就會拿不到）
     const rawLocal = this.weekSlots[workDate] || [];
     let shifts = this.acceptedSlots(rawLocal)
@@ -326,17 +276,19 @@ export class SchedulingComponent implements OnInit {
         shift_work_id: Number(s.shiftWorkId ?? 0)
       }))
       .filter(s => s.start_time && s.end_time);
-  
+
     if (shifts.length) {
       openDialog(shifts);
       return;
     }
-  
-  
+
+
+
     this.http.get<any>('http://localhost:8080/PreSchedule/getAcceptScheduleByEmployeeId', {
       params: { employeeId }
     }).subscribe({
       next: (res) => {
+
         const list: any[] = res?.preScheduleList ?? [];
         const todays = list.filter(s =>
           String(s.applyDate).slice(0, 10) === workDate &&
@@ -354,7 +306,7 @@ export class SchedulingComponent implements OnInit {
       error: () => openDialog([])   // 後端掛了就用空資料，至少不擋流程
     });
   }
-  
+
 
   currentMonth = new Date();
 
@@ -467,7 +419,7 @@ export class SchedulingComponent implements OnInit {
 
         const y = this.dashboardMonth.getFullYear();
         const m = this.dashboardMonth.getMonth();
-        
+
         const first = new Date(y, m, 1);
         const last = new Date(y, m + 1, 0, 23, 59, 59, 999);
 
@@ -523,13 +475,13 @@ export class SchedulingComponent implements OnInit {
     const m = this.dashboardMonth.getMonth() + 1;
     return `${y} 年 ${m.toString().padStart(2, '0')} 月`;
   }
-  
+
   get scheduleMonthLabel(): string {
     const y = this.scheduleMonth.getFullYear();
     const m = this.scheduleMonth.getMonth() + 1;
     return `${y} 年 ${m.toString().padStart(2, '0')} 月`;
   }
-  
+
 
 
   /** 讀取本月「已核准」請假時數 → 顯示成 `X 小時` 到 this.absentLeaves */
@@ -540,7 +492,7 @@ export class SchedulingComponent implements OnInit {
     // 當月起訖（你已經有 formatDateLocal / currentMonth 可用）
     const y = this.dashboardMonth.getFullYear();
     const m = this.dashboardMonth.getMonth();
-    
+
     const start = new Date(y, m, 1, 0, 0, 0, 0);
     const end = new Date(y, m + 1, 0, 23, 59, 59, 999);
     const startStr = this.formatDateLocal(start);
@@ -640,106 +592,61 @@ export class SchedulingComponent implements OnInit {
 
   startOfWeek: Date = this.getStartOfWeek(new Date());
 
-  // loadWeekSlotsForCurrentWeek(): void {
-  //   const employeeId = localStorage.getItem('employeeId');
-  //   if (!employeeId) { this.weekSlots = {}; return; }
-
-  //   const start = new Date(this.startOfWeek);
-  //   const end = new Date(start); end.setDate(end.getDate() + 6); end.setHours(23, 59, 59, 999);
-
-  //   this.http.get<any>('http://localhost:8080/PreSchedule/getAcceptScheduleByEmployeeId', {
-  //     params: { employeeId }
-  //   }).subscribe({
-  //     next: (res) => {
-
-  //       const raw: any[] = res.preScheduleList ?? [];
-  //       const map: Record<string, WeekSlot[]> = {};
-  //       for (const s of raw) {
-  //         const dateStr = s.applyDate?.slice(0, 10);
-  //         if (!dateStr) continue;
-  //         const d = this.parseYMD(dateStr);
-  //         if (d < start || d > end) continue;
-  //         const isWorking = s.shiftWorkId > 0;
-  //         const isAccept = s.accept;
-  //         const startTime = s.startTime ? s.startTime.slice(0, 8) : null;
-  //         const endTime = s.endTime ? s.endTime.slice(0, 8) : null;
-  //         const shiftWorkId = s.shiftWorkId;
-
-  //         (map[dateStr] ||= []).push({ startTime, endTime, isWorking, isAccept, shiftWorkId });
-  //       }
-
-  //       // 補齊 7 天
-  //       const cur = new Date(start);
-  //       while (cur <= end) {
-  //         const k = cur.getFullYear() + '-' +
-  //           String(cur.getMonth() + 1).padStart(2, '0') + '-' +
-  //           String(cur.getDate()).padStart(2, '0');
-  //         //如果說（false、null、undefined、0、空字串等等），就把 x 設成 y；否則保持原值。
-  //         map[k] ||= [];
-  //         cur.setDate(cur.getDate() + 1);
-  //       }
-  //       this.weekSlots = map;
-  //     },
-  //     error: (err) => {
-  //       this.weekSlots = {}; 
-  //       this.dialog.open(ErrorDialogComponent, {
-  //         data: { message: '讀取本週班表失敗，請稍後再試。' }
-  //       });
-  //     }
-  //   });
-  // }
   loadWeekSlotsForCurrentWeek(): Observable<Record<string, WeekSlot[]>> {
     const employeeId = localStorage.getItem('employeeId');
     if (!employeeId) {
       // 立即回傳空物件 observable
       return of({} as Record<string, WeekSlot[]>);
     }
-  
-    const start = new Date(this.startOfWeek); start.setHours(0,0,0,0);
-    const end = new Date(start); end.setDate(end.getDate() + 6); end.setHours(23,59,59,999);
-  
-   return this.http.get<any>('http://localhost:8080/PreSchedule/getAcceptScheduleByEmployeeId', { params: { employeeId } })
-  .pipe(
-    map(res => { 
 
-      const raw: any[] = res?.preScheduleList ?? res?.list ?? res?.preScheduleResList ?? res?.data ?? [];
-      const map: Record<string, WeekSlot[]> = {};
+    const start = new Date(this.startOfWeek); start.setHours(0, 0, 0, 0);
+    const end = new Date(start); end.setDate(end.getDate() + 6); end.setHours(23, 59, 59, 999);
 
-      for (const s of raw) {
-        const dateStr= (s.applyDate ?? s.apply_date ?? '').slice(0, 10);
-        if (!dateStr) continue;
+    return this.http.get<any>('http://localhost:8080/PreSchedule/getAcceptScheduleByEmployeeId', { params: { employeeId } })
+      .pipe(
+        map(res => {
 
-        const d = this.parseYMD(dateStr);
-        if (d < start || d > end) continue;
-                 const isWorking = s.shiftWorkId > 0;
-                const isAccept = s.accept;
-                const startTime = s.startTime ? s.startTime.slice(0, 8) : null;
-                const endTime = s.endTime ? s.endTime.slice(0, 8) : null;
-                const shiftWorkId = s.shiftWorkId;
+          const raw: any[] = res.preScheduleList ?? [];
+          const map: Record<string, WeekSlot[]> = {};
 
-        (map[dateStr] ||= []).push({ startTime, endTime, isWorking, isAccept, shiftWorkId });
-      }
+          for (const s of raw) {
+            const dateStr = s.applyDate?.slice(0, 10);
+            if (!dateStr) continue;
 
-      // 補齊 7 天
-      const cur = new Date(start);
-      while (cur <= end) {
-        const k = `${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
-        map[k] ||= [];
-        cur.setDate(cur.getDate() + 1);
-      }
+            const d = this.parseYMD(dateStr);
+            if (d < start || d > end) continue;
+            const isWorking = s.shiftWorkId > 0;
+            const isAccept = s.accept;
+            const startTime = s.startTime ? s.startTime.slice(0, 8) : null;
+            const endTime = s.endTime ? s.endTime.slice(0, 8) : null;
+            const shiftWorkId = s.shiftWorkId;
 
-      return this.weekSlots = map;
-    }),
-    catchError((error: any) => {
-      const customError = {
-        error: true,
-        message: '讀取本週班表失敗，請稍後再試。',
-        details: error?.message ?? '未知錯誤'
-      };
-      return throwError(() => customError);
-    })
-  );
-}
+            (map[dateStr] ||= []).push({ startTime, endTime, isWorking, isAccept, shiftWorkId });
+          }
+
+          // 補齊 7 天
+          const cur = new Date(start);
+          while (cur <= end) {
+            const k = cur.getFullYear() + '-' +
+              String(cur.getMonth() + 1).padStart(2, '0') + '-' +
+              String(cur.getDate()).padStart(2, '0');
+            //如果說（false、null、undefined、0、空字串等等），就把 x 設成 y；否則保持原值。
+            map[k] ||= [];
+            cur.setDate(cur.getDate() + 1);
+          }
+
+          return this.weekSlots = map;
+        }),
+        catchError((error: any) => {
+          const customError = {
+            error: true,
+            message: '讀取本週班表失敗，請稍後再試。',
+            details: error?.message ?? '未知錯誤'
+          };
+          return throwError(() => customError);
+        })
+      );
+  }
 
 
 
@@ -749,7 +656,6 @@ export class SchedulingComponent implements OnInit {
     return `${y} 年 ${m.toString().padStart(2, '0')} 月`;
   }
 
-
   viewMode: 'dashboard' | 'schedule' = 'dashboard';
 
   selectedDate: Date | null = null;
@@ -757,80 +663,9 @@ export class SchedulingComponent implements OnInit {
   messages: { sender: 'user' | 'assistant'; text: string; time?: string }[] = [];
   userInput = "";
   sending = false;
-  // 範例時段
-  /** 只用靜態資料驗證畫面是否能渲染 */
-  private debugPopulateStatic(): void {
-    const start = '2025-10-01';
-    const days = 31;
 
 
-    this.config = {
-      scale: 'Day',
-      cellWidth: 50,
-      rowHeaderWidth: 150,
-      timeHeaders: [{ groupBy: 'Day', format: 'd' }],
-      startDate: new DayPilot.Date(start),
-      days,
-      heightSpec: 'Fixed',
-      height: 520,
-      resources: [
-        { id: 'e1', name: '測試員工 A（正職）' },
-        { id: 'e2', name: '測試員工 B（計時）' },
-      ],
-      onBeforeEventRender: (args) => {
-        const txt = String(args.data.text ?? '');
-        const first = txt.split('｜')[0]?.trim() || '休';
-        const colorMap: Record<string, string> = {
-          '早': '#E3F2FD', '中': '#FFF8E1', '晚': '#E8F5E9', '夜': '#E1BEE7', '休': '#FFEBEE'
-        };
-        args.data.html = `<div class="shift-box" style="background:${colorMap[first] ?? '#ECEFF1'}">${txt}</div>`;
-      }
-    } as DayPilot.SchedulerConfig;
 
-    this.events = [
-      { id: 'e1-2025-10-03', text: '早｜晚', start: new DayPilot.Date('2025-10-03T00:00:00'), end: new DayPilot.Date('2025-10-03T23:59:59'), resource: 'e1', fontColor: 'black' },
-      { id: 'e2-2025-10-04', text: '休', start: new DayPilot.Date('2025-10-04T00:00:00'), end: new DayPilot.Date('2025-10-04T23:59:59'), resource: 'e2', fontColor: 'black' },
-    ];
-
-    console.log('[CHECK] startDate=', this.config.startDate?.toString(), 'days=', this.config.days);
-    console.log('[CHECK] resources=', this.config.resources?.length, 'events=', this.events.length);
-
-    setTimeout(() => this.scheduler?.control.update(), 0);
-  }
-
-  private toEvents(res: any): DayPilot.EventData[] {
-    const { firstDay, lastDay } = this.currentMonthWindow();
-    const inMonth = (d: string) => d >= firstDay && d <= lastDay;
-
-    const id2txt = (id: number) =>
-      id === 0 ? '休' : id === 1 ? '早' : id === 2 ? '中' : id === 3 ? '晚' : id === 4 ? '夜' : '';
-
-    const events: DayPilot.EventData[] = [];
-    (res.employeeList ?? []).forEach((emp: any) => {
-      (emp.date ?? []).forEach((d: any) => {
-        const apply = String(d.applyDate).slice(0, 10);
-        if (!inMonth(apply)) return;
-
-        let shifts = (d.shiftDetailList ?? [])
-          .filter((s: any) => s.accept)
-          .map((s: any) => id2txt(s.shiftWorkId))
-          .filter(Boolean);
-
-        if (shifts.includes('休')) shifts = ['休'];
-        if (!shifts.length) return;
-
-        events.push({
-          id: `${emp.employeeId}-${apply}`,
-          text: shifts.join('｜'),
-          start: new DayPilot.Date(`${apply}T00:00:00`),
-          end: new DayPilot.Date(`${apply}T23:59:59`),
-          resource: String(emp.employeeId),
-          fontColor: 'black'
-        });
-      });
-    });
-    return events;
-  }
 
 
   trackBySlot = (_: number, s: WeekSlot) => `${s.startTime ?? ''}-${s.endTime ?? ''}`;
@@ -923,77 +758,7 @@ export class SchedulingComponent implements OnInit {
     this.router.navigate(['/']);
   }
 
-  /** 把 Scheduler 調成「月檢視」並設定顏色渲染 */
 
-  loadFinalSchedule() {
-    this.http.get<any>('http://localhost:8080/PreSchedule/prettySchedule').subscribe({
-      next: (res) => {
-        // 先組 resources（一定要在 config 上重新指派）
-        const resources = (res.employeeList ?? []).map((emp: any) => ({
-          id: String(emp.employeeId),
-          name: emp.name ? `${emp.name}${emp.title ? '（' + emp.title + '）' : ''}` : String(emp.employeeId)
-        }));
-
-        this.config = { ...(this.config ?? {}), resources };
-
-        // 再組 events，一次性指派（Angular 會偵測）
-        this.events = this.toEvents(res);
-
-        // 保險再把時間窗鎖定當月（重新指派）
-        this.setMonthWindow();
-
-        // 等 *ngIf 建好元件後再請 DayPilot 重繪一次（不是必要，但更穩）
-        setTimeout(() => this.scheduler?.control.update(), 0);
-
-      },
-      error: (err) => {
-        console.error('prettySchedule 失敗:', err);
-        this.events = [];
-        setTimeout(() => this.scheduler?.control.update(), 0);
-      }
-    });
-  }
-
-
-  private setMonthWindow() {
-    const { firstDay, days } = this.monthWindow(this.scheduleMonth);
-    this.config = {
-      ...(this.config ?? {}),
-      scale: 'Day',
-      cellWidth: 50,
-      rowHeaderWidth: 150,
-      timeHeaders: [{ groupBy: 'Day', format: 'd' }],
-      startDate: new DayPilot.Date(firstDay),
-      days,
-      widthSpec: 'Parent100Pct',
-      heightSpec: 'Auto',
-    } as DayPilot.SchedulerConfig;
-  }
-  
-  showSchedule() {
-    this.viewMode = 'schedule';
-    this.setMonthWindow();     // 先建立月時間軸 + 寬高
-    this.loadFinalSchedule();  // 再塞 resources + events
-    setTimeout(() => this.scheduler?.control.update(), 0);
-  }
-
-  private currentMonthWindow() {
-    return this.monthWindow(this.scheduleMonth);
-  }
-  
-
-  prevMonth() {  // 班表用
-    this.scheduleMonth.setMonth(this.scheduleMonth.getMonth() - 1);
-    this.setMonthWindow();
-    this.loadFinalSchedule();
-  }
-  
-  nextMonth() {  // 班表用
-    this.scheduleMonth.setMonth(this.scheduleMonth.getMonth() + 1);
-    this.setMonthWindow();
-    this.loadFinalSchedule();
-  }
-  
   prevDashboardMonth() {
     this.dashboardMonth.setMonth(this.dashboardMonth.getMonth() - 1);
     this.monthQuotaReady = false;
@@ -1002,7 +767,7 @@ export class SchedulingComponent implements OnInit {
     this.loadClockData();          // 打卡紀錄(分子) + 平均資訊
     this.loadLeaveHours();         // 本月請假時數
   }
-  
+
   nextDashboardMonth() {
     this.dashboardMonth.setMonth(this.dashboardMonth.getMonth() + 1);
     this.monthQuotaReady = false;
@@ -1011,15 +776,8 @@ export class SchedulingComponent implements OnInit {
     this.loadClockData();
     this.loadLeaveHours();
   }
-  
 
-  //從數字轉成字串讓後端可以接收
-  private formatDateLocal(d: Date): string {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return y + "-" + m + "-" + day;
-  }
+
 
   // scheduling.component.ts
   get uiLevel(): number {
@@ -1102,58 +860,33 @@ export class SchedulingComponent implements OnInit {
 
   prevWeek() {
     this.startOfWeek.setDate(this.startOfWeek.getDate() - 7);
-    this.startOfWeek.setHours(0, 0, 0, 0);   // ★
+    this.startOfWeek.setHours(0, 0, 0, 0);
     this.startOfWeek = new Date(this.startOfWeek);
-    this.loadWeekSlotsForCurrentWeek();
+  
+    this.loadWeekSlotsForCurrentWeek().subscribe({
+      next: (map) => {
+        this.weekSlots = map || {};
+        try { this.cd.detectChanges(); } catch {}
+      },
+      error: (err) => console.error('[prevWeek] load error', err)
+    });
   }
+  
   nextWeek() {
     this.startOfWeek.setDate(this.startOfWeek.getDate() + 7);
-    this.startOfWeek.setHours(0, 0, 0, 0);   // ★
+    this.startOfWeek.setHours(0, 0, 0, 0);
     this.startOfWeek = new Date(this.startOfWeek);
-    this.loadWeekSlotsForCurrentWeek();
+  
+    this.loadWeekSlotsForCurrentWeek().subscribe({
+      next: (map) => {
+        this.weekSlots = map || {};
+        try { this.cd.detectChanges(); } catch {}
+      },
+      error: (err) => console.error('[nextWeek] load error', err)
+    });
   }
 
-
-  // onDateSelected(date: Date) {
-  //   console.log("onDateSelected", date);
-  //   this.selectedDate = date;
-  //   this.startOfWeek = this.getStartOfWeek(date);
-
-  //   // 先刷新當週班表
-  //   this.loadWeekSlotsForCurrentWeek();
-
-  //   // 將聊天框先清空，顯示 loading
-  //   this.messages = [{ sender: 'assistant', text: '正在查詢該天排班...' }];
-
-  //   //TypeScript 特有的內建泛型工具型別
-  //   const dateKey = this.dateKey(date);
-
-  //   // 抓該天班表
-  //   const slots = this.weekSlots[dateKey] || [];
-
-  //   let replyText = '';
-
-  //   if (!slots.length) {
-  //     replyText = `${date.toLocaleDateString('zh-TW')} 沒有排班紀錄`;
-  //   } else {
-  //     replyText = `${date.toLocaleDateString('zh-TW')} 排班如下：\n`;
-  //     slots.forEach((s, i) => {
-  //       if (!s.isWorking || !s.isAccept) {
-  //         replyText += `第${i + 1}班：休假\n`;
-  //       } else {
-  //         const start = this.toHM(s.startTime);
-  //         const end = this.toHM(s.endTime);
-  //         replyText += `第${i + 1}班：${start} - ${end}\n`;
-  //       }
-  //     });
-  //   }
-
-  //   // 將結果更新到聊天框
-  //   this.messages[0] = { sender: 'assistant', text: replyText };
-
-  //   // 滾動到底
-  //   setTimeout(() => this.scrollChatToBottom(), 50);
-  // }
+  
 
   onDateSelected(date: Date) {
     console.log("onDateSelected", date);
@@ -1195,13 +928,13 @@ export class SchedulingComponent implements OnInit {
         this.messages[0] = { sender: 'assistant', text: replyText };
 
         // 4) 確保 Angular 更新 DOM 並滾到底
-        try { this.cd.detectChanges(); } catch(e) { /* ignore */ }
+        try { this.cd.detectChanges(); } catch (e) { /* ignore */ }
         setTimeout(() => this.scrollChatToBottom('smooth'), 40);
       },
       error: (err) => {
         console.error('[onDateSelected] fetch weekSlots error', err);
         this.messages[0] = { sender: 'assistant', text: '查詢班表失敗，請稍後再試' };
-        try { this.cd.detectChanges(); } catch(e) { /* ignore */ }
+        try { this.cd.detectChanges(); } catch (e) { /* ignore */ }
         setTimeout(() => this.scrollChatToBottom('smooth'), 40);
       }
     });
@@ -1295,18 +1028,7 @@ export class SchedulingComponent implements OnInit {
 
   }
 
-  private monthWindow(base: Date) {
-    const y = base.getFullYear();
-    const m = base.getMonth();
-    const first = new Date(y, m, 1);
-    const last  = new Date(y, m + 1, 0);
-    return {
-      firstDay: this.formatDateLocal(first),
-      lastDay:  this.formatDateLocal(last),
-      days: last.getDate(),
-    };
-  }
-  
+
 
 
   formatDateTimeLocal(date: Date): string {
@@ -1321,18 +1043,17 @@ export class SchedulingComponent implements OnInit {
 
   openFeedbackDialog() {
     const dialogRef = this.dialog.open(FeedbackDialogComponent, {
-      autoFocus: false,
-      width: undefined,
-      height: undefined,
-      maxWidth: 'none',
-      maxHeight: 'none',
+      width: '600px',      // 你要固定寬
+  height: '510px',     // 你要固定高
+  maxWidth: '600px',   // 避免被預設 80vw 限制
+  panelClass: 'feedback-panel'
     });
   }
 
   private renderScheduleForDate(date: Date, map: Record<string, WeekSlot[]>) {
     const key = this.dateKey(date);
     const slots = map[key] ?? [];
-  
+
     let replyText = '';
     if (!slots.length) {
       replyText = `${date.toLocaleDateString('zh-TW')} 沒有排班紀錄`;
@@ -1348,17 +1069,177 @@ export class SchedulingComponent implements OnInit {
         }
       });
     }
-  
+
     // 把 loading 訊息替換或直接覆蓋到 messages（保持第一則為助理回覆）
     if (this.messages.length === 0) {
       this.messages.push({ sender: 'assistant', text: replyText });
     } else {
       this.messages[0] = { sender: 'assistant', text: replyText };
     }
-  
+
     // 更新 view 並滾動到底
-    try { this.cd.detectChanges(); } catch(e) { /* ignore */ }
+    try { this.cd.detectChanges(); } catch (e) { /* ignore */ }
     setTimeout(() => this.scrollChatToBottom('smooth'), 40);
+  }
+
+
+  private toEvents(res: any): DayPilot.EventData[] {
+    const { firstDay, lastDay } = this.currentMonthWindow();
+    const inMonth = (d: string) => d >= firstDay && d <= lastDay;
+
+    const id2txt = (id: number) =>
+      id === 0 ? '休' : id === 1 ? '早' : id === 2 ? '中' : id === 3 ? '晚' : id === 4 ? '夜' : '';
+
+    const events: DayPilot.EventData[] = [];
+    (res.employeeList ?? []).forEach((emp: any) => {
+      (emp.date ?? []).forEach((d: any) => {
+        const apply = d.applyDate.slice(0, 10);
+        if (!inMonth(apply)) return;
+
+        let shifts = (d.shiftDetailList ?? [])
+          .filter((s: any) => s.accept)
+          .map((s: any) => id2txt(s.shiftWorkId))
+
+
+        if (shifts.includes('休')) shifts = ['休'];
+        if (!shifts.length) return;
+
+        events.push({
+          id: emp.employeeId + '-' + apply,
+          text: shifts.join('|'),
+          start: new DayPilot.Date(apply + 'T00:00:00'),
+          end: new DayPilot.Date(apply + 'T23:59:59'),
+          resource: emp.employeeId,
+          fontColor: 'black'
+        });
+      });
+    });
+    return events;
+  }
+
+  loadFinalSchedule() {
+    this.http.get<any>('http://localhost:8080/PreSchedule/prettySchedule').subscribe({
+      next: (res) => {
+        // 先組 resources（一定要在 config 上重新指派）
+        const resources = (res.employeeList ?? []).map((emp: any) => ({
+          id: emp.employeeId,
+          name: emp.name ? emp.name + (emp.title ? '（' + emp.title + '）' : '') : emp.employeeId
+        }));
+
+        this.config = { ...(this.config ?? {}), resources };
+
+        this.events = this.toEvents(res);
+
+        this.setMonthWindow();
+        //如果 Scheduler 元件已就緒，就請它依最新資料重畫」control跟update()這個都是DayPilot Angular 元件內包了一個控制器（底層 DayPilot 控制物件）
+        setTimeout(() => this.scheduler?.control.update(), 0);
+        //排到「下一輪事件迴圈」setTimeout(,0)
+      },
+      error: (err) => {
+        this.events = [];
+        setTimeout(() => this.scheduler?.control.update(), 0);
+      }
+    });
+  }
+
+  private currentMonthWindow() {
+    return this.monthWindow(this.scheduleMonth);
+  }
+
+
+  private monthWindow(base: Date) {
+    const y = base.getFullYear();
+    const m = base.getMonth();
+    const first = new Date(y, m, 1);
+    const last = new Date(y, m + 1, 0);
+    return {
+      firstDay: this.formatDateLocal(first),
+      lastDay: this.formatDateLocal(last),
+      days: last.getDate(),
+    };
+  }
+
+  //從數字轉成字串讓後端可以接收
+  private formatDateLocal(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return y + "-" + m + "-" + day;
+  }
+
+  private setMonthWindow() {
+    const { firstDay, days } = this.monthWindow(this.scheduleMonth);
+    // 若你之前已經塞過 resources，就沿用；否則給空陣列。
+    const resources = this.config?.resources ?? [];
+    this.config = {
+      //每個時間刻度是以天為單位
+      scale: 'Day',
+      //每個時間刻度的寬              
+      cellWidth: 50,
+      //左側員工的寬           
+      rowHeaderWidth: 150,
+      //每格要用天顯示       
+      timeHeaders: [{ groupBy: 'Day', format: 'd' }],
+      //不能把事件拖著到別天/別列 
+      eventMoveHandling: 'Disabled',
+      //不能拉長/縮短事件
+      eventResizeHandling: 'Disabled',
+      //點了沒反應，不會觸發 onEventClick
+      eventClickHandling: 'Disabled',
+      //DayPilot Scheduler 專屬的 callback（生命週期鉤子），作用是在每個格子在渲染前可以先調樣式
+      onBeforeEventRender: (args) => {
+        //那一筆事件的資料
+        const txt = args.data.text ?? '';
+        const first = txt.split('|')[0]?.trim() || '休';
+        const colorMap: Record<string, string> = {
+          '早': '#E3F2FD',//淡藍色
+          '中': '#FFF8E1',//淡黃色
+          '晚': '#E8F5E9',//淡綠色
+          '夜': '#E1BEE7',//淡紫色
+          '休': '#FFEBEE',//淡粉紅色
+        };
+        const bgColor = colorMap[first] ?? '#ECEFF1';
+        //整張事件卡片統一套樣式
+        args.data.cssClass = 'shift-event';
+        //想控制卡片內文的結構與排版
+        args.data.html = `<div class="shift-box" style="background-color:${bgColor}">${txt}</div>`;
+      },
+
+      //從甚麼時候開始
+      startDate: new DayPilot.Date(firstDay),
+      //要畫幾天
+      days,
+
+      //滿版寬
+      widthSpec: 'Parent100Pct',
+      //高度自動撐開以容納所有列
+      heightSpec: 'Auto',
+
+      resources,  // 保留既有的 resources；loadFinalSchedule() 會再更新
+    } as DayPilot.SchedulerConfig;
+  }
+
+  showSchedule() {
+    this.viewMode = 'schedule';
+    this.setMonthWindow();     // 先建立月時間軸 + 寬高
+    this.loadFinalSchedule();  // 再塞 resources + events
+    setTimeout(() => this.scheduler?.control.update(), 0);
+  }
+
+  prevMonth() {  // 班表用
+    const d = new Date(this.scheduleMonth); // 複製一份
+    d.setMonth(d.getMonth() - 1);           // 改複製的
+    this.scheduleMonth = d;
+    this.setMonthWindow();
+    this.loadFinalSchedule();
+  }
+
+  nextMonth() {  // 班表用
+    const d = new Date(this.scheduleMonth); // 複製一份
+    d.setMonth(d.getMonth() + 1);           // 改複製的
+    this.scheduleMonth = d;
+    this.setMonthWindow();
+    this.loadFinalSchedule();
   }
 
 }

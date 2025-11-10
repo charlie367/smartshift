@@ -74,14 +74,17 @@
 
     /* 四班時刻表（顯示用） */
     .shift-badges {
+      //把每隔div變成一格一格
       display: grid;
+      //grid-template-columns把一格一格變成一排 repeat()重複建立欄 auto-fit自動決定要塞幾欄
+      //minmax(140px, 1fr))最低的寬是140px，最大寬可以撐到平均分配的比例（1fr）
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       gap: 10px;
       margin: 10px 0 18px;
       padding: 14px;
       border: 1px solid #eef1f6;
       border-radius: 10px;
-      background: linear-gradient(135deg, #f6f9ff 0%, #fff 100%);
+      background: #f5f5f5;
     }
     .shift-badge {
       display: flex; align-items: center; gap: 8px;
@@ -114,8 +117,16 @@
 
         &:hover { background: #f0f0f0; }
 
-        .folder-icon { font-size: 40px; }
-        .upload-text { color: #777; margin-left: 10px; }
+        .folder-icon {   
+          width: 64px;      /* 依你想要的尺寸調整 */
+          height: 64px;
+          //把行內元素變成區塊元素
+          display: block;
+          margin: 0 auto 6px;
+          //調顏色深淺
+          opacity: .9;       
+        }
+        .upload-text { color: #777;  }
 
         .preview-in-box {
           position: relative;

@@ -17,7 +17,7 @@ import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 export class FeedbackDialogComponent {
 
   form = { employeeId: '', title: '', message: '' };
-
+  messageCount: number = 0;
   loading = false;
 
   constructor(

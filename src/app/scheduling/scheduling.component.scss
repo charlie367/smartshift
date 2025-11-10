@@ -897,35 +897,23 @@ background-color: rgba(0, 123, 255, 0.1);
   opacity: 0 !important;
 }
 ////
-/* 事件容器 */
-::ng-deep .shift-event {
+::ng-deep .shift-event {  /* 外層事件卡片的通用樣式 */
   border: 1px solid #ddd;
   border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  overflow: hidden;
+  font-size: 14px;  
+  overflow: hidden;   /* 避免內部溢出 */
 }
 
-/* 事件內容（注意 ::ng-deep 後有空白） */
-::ng-deep .shift-box {
+::ng-deep .shift-event .shift-box {  /* 內層內容區（你塞的 html） */
   width: 100%;
   height: 100%;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: center;      /* 垂直置中文字 */
+  justify-content: center;  /* 水平置中文字 */
+  font-weight: 500;
   color: #333;
 }
 
-/* 你也可以保留這個縮寫，效果一樣 */
-.shift-event .shift-box{
-  height:24px; line-height:24px; text-align:center;
-  border-radius:6px; border:1px solid #ddd; font-weight:500;
-}
 
 :host {
   display: flex;

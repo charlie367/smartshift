@@ -2,7 +2,7 @@
   <!-- Header -->
   <div class="makeup-header">
     <h2 class="title">補打卡申請</h2>
-    <button class="icon-btn" (click)="close()" aria-label="close">
+    <button class="icon-btn" type="button" (click)="close()" aria-label="close">
       <mat-icon>close</mat-icon>
     </button>
   </div>
@@ -13,7 +13,7 @@
     <div class="form-item" [class.invalid]="showErrors && errors.employeeId">
       <label class="label">
         <mat-icon class="label-ic">badge</mat-icon>
-        員工編號 <span class="req">*</span>
+        <span>員工編號 <span class="req">*</span></span>
       </label>
       <input
         class="input"
@@ -30,61 +30,133 @@
     <div class="form-item" [class.invalid]="showErrors && errors.date">
       <label class="label">
         <mat-icon class="label-ic">event</mat-icon>
-        補打卡日期 <span class="req">*</span>
+        <span>補打卡日期 <span class="req">*</span></span>
       </label>
       <input
         class="input"
         type="date"
         [(ngModel)]="form.date"
-        [max]="today"
+        [max]="limitToToday ? today : null"
         (ngModelChange)="onDateChange($event)"
+        (blur)="touch('date')"
       />
       <div class="err" *ngIf="showErrors && errors.date">{{ errors.date }}</div>
     </div>
 
-    <!-- 上下班時間 -->
+    <!-- 上下班時間（第1組） -->
     <div class="grid-2">
+      <!-- 上班（主段） -->
       <div class="form-item" [class.invalid]="showErrors && errors.startTime">
         <label class="label">
           <mat-icon class="label-ic">schedule</mat-icon>
-          開始時間 <span class="req">*</span>
+          <span>
+            上班打卡時間
+            <span class="chip" *ngIf="promotedFromIndex">（第 {{ promotedFromIndex }} 組）</span>
+          </span>
         </label>
         <input
           class="input"
           type="time"
           [(ngModel)]="form.startTime"
+          (ngModelChange)="onStartTimeChange($event)"
           (blur)="touch('startTime')"
+          lang="en-GB"
         />
         <div class="err" *ngIf="showErrors && errors.startTime">{{ errors.startTime }}</div>
       </div>
 
+      <!-- 下班（主段） -->
       <div class="form-item" [class.invalid]="showErrors && errors.endTime">
-        <label class="label">
-          <mat-icon class="label-ic">schedule</mat-icon>
-          結束時間 <span class="req">*</span>
+        <!-- 標題右側加入「新增時間段」 -->
+        <label class="label label-with-btn">
+          <span class="label-left">
+            <mat-icon class="label-ic">schedule</mat-icon>
+            <span>
+              下班打卡時間
+              <span class="chip" *ngIf="promotedFromIndex">（第 {{ promotedFromIndex }} 組）</span>
+            </span>
+          </span>
+          <button
+            type="button"
+            class="mini-btn add-slot"
+            (click)="addEmptyShift()"
+            aria-label="新增時間段"
+          >
+            <mat-icon>add</mat-icon> 新增時間段
+          </button>
         </label>
-        <input
-          class="input"
-          type="time"
-          [(ngModel)]="form.endTime"
-          (blur)="touch('endTime')"
-        />
+
+        <div class="input-with-x">
+          <input
+            class="input"
+            type="time"
+            [(ngModel)]="form.endTime"
+            (ngModelChange)="onEndTimeChange($event)"
+            (blur)="touch('endTime')"
+            lang="en-GB"
+          />
+          <button class="inline-x" type="button" aria-label="清空主段或頂上下一組" (click)="removeMainShift()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
         <div class="err" *ngIf="showErrors && errors.endTime">{{ errors.endTime }}</div>
       </div>
     </div>
 
-    <!-- 午休時間（選填） -->
+    <!-- 動態班次：第 2 組起 -->
+    <div class="grid-2" *ngFor="let seg of form.extraShifts; let i = index">
+      <div class="form-item">
+        <label class="label">
+          <mat-icon class="label-ic">schedule</mat-icon>
+          <span>上班打卡時間（第 {{ i + 2 }} 組）</span>
+        </label>
+        <input
+          class="input"
+          type="time"
+          [(ngModel)]="seg.startTime"
+          (ngModelChange)="onExtraStartChange(i, $event)"
+          (blur)="touch('startTime')"
+          lang="en-GB"
+        />
+      </div>
+
+      <div class="form-item">
+        <label class="label">
+          <mat-icon class="label-ic">schedule</mat-icon>
+          <span>下班打卡時間（第 {{ i + 2 }} 組）</span>
+        </label>
+
+        <div class="input-with-x">
+          <input
+            class="input"
+            type="time"
+            [(ngModel)]="seg.endTime"
+            (ngModelChange)="onExtraEndChange(i, $event)"
+            (blur)="touch('endTime')"
+            lang="en-GB"
+          />
+          <button type="button" class="inline-x" (click)="removeShift(i)" aria-label="移除這組">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 午休時間（自動帶入，可編輯） -->
     <div class="grid-2">
       <div class="form-item" [class.invalid]="showErrors && errors.lunchStartTime">
         <label class="label">
           <mat-icon class="label-ic">free_breakfast</mat-icon>
-          午休開始
+          <span>午休開始</span>
         </label>
         <input
           class="input"
           type="time"
           [(ngModel)]="form.lunchStartTime"
+          (ngModelChange)="onLunchStartChange($event)"
           (blur)="touch('lunchStartTime')"
+          lang="en-GB"
         />
         <div class="err" *ngIf="showErrors && errors.lunchStartTime">{{ errors.lunchStartTime }}</div>
       </div>
@@ -92,24 +164,26 @@
       <div class="form-item" [class.invalid]="showErrors && errors.lunchEndTime">
         <label class="label">
           <mat-icon class="label-ic">free_breakfast</mat-icon>
-          午休結束
+          <span>午休結束</span>
         </label>
         <input
           class="input"
           type="time"
           [(ngModel)]="form.lunchEndTime"
           (blur)="touch('lunchEndTime')"
+          lang="en-GB"
         />
         <div class="err" *ngIf="showErrors && errors.lunchEndTime">{{ errors.lunchEndTime }}</div>
       </div>
     </div>
 
-    <!-- 重要程度評分 -->
-    <div class="form-item">
+    <!-- 評分必填 -->
+    <div class="form-item" [class.invalid]="showErrors && errors.rating">
       <label class="label">
         <mat-icon class="label-ic">grade</mat-icon>
-        重要程度評分
+        <span>當日的心情評個分 <span class="req">*</span></span>
       </label>
+
       <div class="stars">
         <button
           type="button"
@@ -122,19 +196,21 @@
         </button>
         <span class="rating-text" *ngIf="form.rating > 0">{{ form.rating }} / 5</span>
       </div>
+
+      <div class="err" *ngIf="showErrors && errors.rating">{{ errors.rating }}</div>
     </div>
 
     <!-- 原因說明 -->
     <div class="form-item" [class.invalid]="showErrors && errors.description">
       <label class="label">
         <mat-icon class="label-ic">description</mat-icon>
-        補打卡原因說明 <span class="req">*</span>
+        <span>補打卡原因說明 <span class="req">*</span></span>
       </label>
       <textarea
         class="textarea"
         rows="4"
         [(ngModel)]="form.description"
-        placeholder="請詳細說明補打卡原因（至少 10 個字）..."
+        placeholder="請詳細說明補打卡原因..."
         (blur)="touch('description')"
       ></textarea>
       <div class="err" *ngIf="showErrors && errors.description">{{ errors.description }}</div>
@@ -144,7 +220,7 @@
     <div class="form-item" [class.invalid]="showErrors && errors.file">
       <label class="label">
         <mat-icon class="label-ic">upload</mat-icon>
-        上傳證明文件（選填，10MB 以內）
+        <span>上傳證明文件</span>
       </label>
 
       <div
@@ -157,13 +233,7 @@
         role="button"
         tabindex="0"
       >
-        <input
-          #fileInput
-          type="file"
-          class="hidden"
-          accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-          (change)="onFileChange($event)"
-        />
+        <input #fileInput type="file" class="hidden" accept="*/*" (change)="onFileChange($event)" />
 
         <ng-container *ngIf="previewUrl; else fileInfo">
           <img [src]="previewUrl" alt="預覽" class="preview-img" />
@@ -184,9 +254,8 @@
             </button>
           </ng-container>
           <ng-template #emptyState>
-            <mat-icon class="upload-ic">upload</mat-icon>
+            <img class="folder-icon" src="upload.png" alt="上傳圖示">
             <p class="empty-text">點擊上傳或拖曳檔案至此</p>
-            <p class="sub-text">支援 PDF, JPG, PNG, DOC, DOCX，最大 10MB</p>
           </ng-template>
         </ng-template>
       </div>

@@ -34,13 +34,11 @@ export class LeaveFormComponent {
   constructor(private router: Router, private dialog: MatDialog) {}
 
 readonly SHIFT_TIMETABLE = [
- 
-  { name: '早班', time: '08:00–12:00', dotClass: 'morning' },
-  { name: '中班', time: '12:00–16:00', dotClass: 'afternoon' },
-  { name: '晚班', time: '16:00–20:00', dotClass: 'evening' },
-  { name: '夜班', time: '20:00–00:00', dotClass: 'night' },
+  { name: '早班', time: '08:00 ~ 12:00', dotClass: 'morning' },
+  { name: '中班', time: '12:00 ~ 16:00', dotClass: 'afternoon' },
+  { name: '晚班', time: '16:00 ~ 20:00', dotClass: 'evening' },
+  { name: '夜班', time: '20:00 ~ 00:00', dotClass: 'night' },
 ];
-
 
   period: LeavePeriod[] = [];
   wholeDays: WholeDay[] = [];
@@ -57,6 +55,12 @@ readonly SHIFT_TIMETABLE = [
     leaveProve: '',
     isWholeDay: '',
   };
+
+  onDayTypeChange() {
+    if (this.leave.isWholeDay === '整天') this.period = [];
+    else this.wholeDays = [];
+  }
+
 
   private API_BASE = 'http://localhost:8080';
 
@@ -104,10 +108,6 @@ readonly SHIFT_TIMETABLE = [
     return +(((e - s) / 60)).toFixed(2);
   }
 
-  onDayTypeChange() {
-    if (this.leave.isWholeDay === '整天') this.period = [];
-    else this.wholeDays = [];
-  }
 
   addWholeDay() {
     this.wholeDays.push({ leaveDate: '', shiftType: '', availableShifts: [] });
@@ -162,14 +162,20 @@ readonly SHIFT_TIMETABLE = [
   }
 
   onFileSelected(event: any) {
+    //event：是「這次發生的事件」的物件 - event.target：指向觸發事件的元素 - event.target.files：是那個 input 上的「檔案清單（FileList）」 
     const file = event.target.files?.[0];
     if (file) {
+      //檔案讀取器 API把檔案讀成可用的資料格式
       const reader = new FileReader();
+      //readAsDataURL這個是把把 File/Blob 非同步讀成 Data URL 字串+讀檔器reader=開始讀檔
+      reader.readAsDataURL(file);
+      //讀完檔案 - 自動觸發這裡
       reader.onload = () => {
+        //讀完加非同步轉換成字串之後reader.result存在這裡然後要告訴編譯器這是字串
         this.leave.leaveProve = reader.result as string;
         this.previewUrl = reader.result as string;
       };
-      reader.readAsDataURL(file);
+      
     }
   }
 

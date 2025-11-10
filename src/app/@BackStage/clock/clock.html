@@ -1,9 +1,31 @@
 <div class="page-container">
   <div class="page-header">
-    <h2>打卡紀錄管理</h2>
-    <button mat-raised-button color="primary" (click)="punchInLate()">
+    <h2>出勤紀錄管理</h2>
+    <!-- <button mat-raised-button color="primary" (click)="punchInLate()">
       補打卡
+    </button> -->
+    @if(missList.length > 0) {
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="showDialog = true"
+      matButton="elevated"
+      matBadge="{{missList.length}}"
+      [matBadgeHidden]="hidden"
+    >
+      補打卡申請
     </button>
+    } @else {
+
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="showDialog = true"
+      matButton="elevated"
+    >
+      補打卡申請
+    </button>
+    }
   </div>
 
   <div class="filter-section">
@@ -37,7 +59,10 @@
     </mat-form-field>
   </div>
 
-  <div class="table-wrapper">
+  <div
+    class="table-wrapper"
+    [style.zIndex]="(hidden || showDialog) ? -1 : null"
+  >
     <div class="mat-elevation-z8">
       <table mat-table [dataSource]="dataSource">
         <ng-container matColumnDef="id">
@@ -89,3 +114,23 @@
     </div>
   </div>
 </div>
+
+<!-- <app-my-dialog
+  [isOpen]="showDialog"
+  title="自定義 Dialog"
+  (closed)="showDialog = false"
+>
+  <p>內容</p>
+</app-my-dialog> -->
+
+@if(showDialog) {
+<app-my-dialog
+  [isOpen]="showDialog"
+  title="補打卡申請列表"
+  (closed)="closeDialog()"
+  @fadeAnimation
+  (approved)="onApproved($event)"
+>
+  <!-- <p>內容</p> -->
+</app-my-dialog>
+}

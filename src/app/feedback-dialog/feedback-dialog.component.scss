@@ -1,145 +1,185 @@
-
-
-:root {
-    // 全域變數
-    --dark-bule: #182d3b;
-    --dark-purple: #29091e;
-    --font-size-main: 16px;
+/* ==============================
+   可調參數（只調上面藍色與整體縮放）
+   ============================== */
+   :host {
+    --hdr-h: 56px;               /* 標題高度：56/64/76 px */
+    --hdr-px: 20px;              /* 標題左右內距 */
+    --hdr-radius: 16px;          /* 卡片圓角（含上緣） */
+    --hdr-from: #4f46e5;         /* 漸層起色 */
+    --hdr-to:   #2563eb;         /* 漸層迄色 */
+  
+    --body-pad-y: 20px;          /* 內容上下內距（縮小版） */
+    --body-pad-x: 24px;          /* 內容左右內距 */
+    --font: 14px;                /* 欄位文字大小（整體縮小） */
+    --label-font: 15px;          /* 標籤大小 */
+    --line: 1.5;                 /* 行高 */
   }
   
-  .mainDiv {
-    width: 600px;
-    margin: 0 auto;              // 水平置中
+  /* ==============================
+     MatDialog 外層（建議 open 時加 panelClass: 'feedback-panel'）
+     ============================== */
+  .feedback-panel .mdc-dialog__surface{
+    padding: 0 !important;
+    border-radius: var(--hdr-radius) !important;
+    overflow: hidden !important;
+  }
+  
+  /* ==============================
+     卡片：填滿 dialog（高度由 open() 決定）
+     ============================== */
+  .card{
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    background: #fff;
+    border-radius: var(--hdr-radius);
+    box-shadow: 0 20px 45px rgba(2,8,20,.12);
     display: flex;
     flex-direction: column;
-    align-items: center;          // 水平置中裡面內容
-    justify-content: center;      // 垂直置中
-    padding: 50px;  
-    box-sizing: border-box; 
+    box-sizing: border-box;
   }
   
-  // =========== 使用者資料 CSS =============
-  
-
-
-
-  
-  .inputCss {
-    flex: 1;
-    max-width: none;       /* ← 取消 250px 限制，和文字區同寬 */
-    padding: 5px 5px;
-    background: #ccc;
-    border: 2px black solid;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .fillinRow {
+  /* ==============================
+     標題列（藍色）
+     ============================== */
+  .card__header{
+    height: var(--hdr-h);
+    padding: 0 var(--hdr-px);
     display: flex;
-    justify-content: flex-start;
     align-items: center;
-    gap: 12px;
+    justify-content: space-between;
+    background: linear-gradient(90deg, var(--hdr-from) 0%, var(--hdr-to) 100%);
+    border-top-left-radius: var(--hdr-radius);
+    border-top-right-radius: var(--hdr-radius);
+  }
+  .card__header-left{ display:flex; align-items:center; gap:12px; }
+  .card__header-icon{
+    width: 32px; height: 32px; border-radius: 10px;
+    background: rgba(255,255,255,.2);
+    display:inline-flex; align-items:center; justify-content:center;
+  }
+  .card__header-icon img{ width: 20px; height: 20px; }
+  .card__title{ margin:0; font-size: 18px; font-weight:800; color:#fff; }
+  .card__close{
+    border:0; background:transparent; color: rgba(255,255,255,.9);
+    padding:0px; border-radius:8px; cursor:pointer; transition:.2s;
+  }
+  .card__close:hover{ background: rgba(255,255,255,.12); }
   
-    width: 400px;
-    margin: 8px auto;      /* ← 水平置中 + 上下間隔 */
+  /* ==============================
+     內容區（只有這裡可以滾動）
+     ============================== */
+  .card__body{
+    padding: var(--body-pad-y) var(--body-pad-x);
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overflow-x: hidden; /* 避免 focus ring 觸發水平捲軸 */
+    box-sizing: border-box;
   }
   
-  .fillinRow label {
-    width: 100px;   
-    text-align: right; 
-    color: black;
+  /* ==============================
+     欄位與標籤（縮小版）
+     ============================== */
+  .form-row{ margin-bottom: 14px; }
+  .label{
+    display:block;
+    font-size: var(--label-font);
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: 6px;
   }
-
-  // =========== 底下意見回饋 CSS =============
+  .req{ color:#ef4444; }
   
-  .title {
-    text-align:left;
-    font-size: 20px;
-    color: block;
-    font-weight: 700;    
-  }
-  
-  
-  .areaCss { // 意見輸入框
-    padding: 5px 10px; // 填寫文字位置
-    background: #ccc;
-    border: 2px black solid;
-  
-    cursor: pointer; // 改變滑鼠游標 - 手指
-    border-radius: 5px;
-    margin-bottom: 20px;
-  
-    width: 400px;
-    height: 300px;
-    font-size: 16px;
-    line-height: 1.5; // 文字段落行高
-  }
-  
-  .btnCss {
-    padding: 5px 15px;
-    background: #626262;
-    border: 2px black solid;
-    color: #ffffff; // 字體顏色
-    cursor: pointer;  // 改變滑鼠游標 - 手指
-    border-radius: 5px;
-  }
-  
-  .btnCss:active {
-    background: #434343;
-    transform: scale(0.95); // 微縮，模擬壓下去
-  }
-
-  
-  /* 飛機小圖 */
-  .btnRow {
-    display: flex;
-    justify-content: flex-end; /* → 全部靠右 */
-    gap: 5px;
- 
+  .input,
+  .textarea{
+    display:block;
     width: 100%;
-    margin-right: 55px;
+    max-width: 100%;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 8px 12px;
+    background: #fff;
+    outline: none;
+    font-size: var(--font);
+    line-height: var(--line);
+    box-sizing: border-box;
+    transition: border-color .15s, box-shadow .15s, background .2s;
+  }
+  .input{ height: 40px; line-height: 22px; }      /* 單行輸入更矮 */
+  .textarea{ min-height: 150px; resize: none; }   /* 文字區塊更矮 */
+  
+  .input::placeholder,
+  .textarea::placeholder{ color:#9ca3af; }
+  
+  /* 聚焦 ring（外擴），但不會出現水平捲軸 */
+  .input:focus, .textarea:focus{
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 6px rgba(99,102,241,.15);
   }
   
+  /* 唯讀員工編號（灰底） */
+  .input.display[readonly]{
+    background: #f9fafb;
+    color:#4b5563;
+    font-weight: 600;
+    cursor: default;
+  }
   
-  .button {
-    display: inline-flex;
-    height: 30px;
-    width: 80px;
-    border: 2px solid #4F5D75;
-    margin: 10px;
-    color: #4F5D75;
-    text-transform: uppercase;
-    text-decoration: none;
-    font-size: .9em;
-    letter-spacing: 1.5px;
-    align-items: center;
-    justify-content: center;  /* 讓文字永遠在正中間 */
-    position: relative;       /* 讓裡面的 icon 可以用 absolute 定位 */
-    cursor: pointer;
-    background: transparent;
+  /* 字數計數（縮小） */
+  .counter{
+    margin-top: 4px;
+    font-size: 11px;
+    color: #6b7280;
+  }
+  
+/* 共同：間距 */
+.card__btns {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;  /* 靠右 */
+  align-items: center;
+  margin-top: 8px;
+}
+
+
+.card__btns > .button {
+  width: auto;      
+  min-width: 120px;   
+  height: 36px;        
+  padding: 0 16px;
+  border-radius: 10px;
+}
+
+
+@media (max-width: 768px){
+  .card__btns {
+    justify-content: stretch;
+  }
+  .card__btns > .button {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 40px;
+  }
+}
+
+
+  .button{
+    display:inline-flex; width:80px; border:2px solid #4F5D75;
+    color:#4F5D75; text-transform:uppercase; text-decoration:none;
+    letter-spacing:1.5px; align-items:center; justify-content:center;
+    position:relative; cursor:pointer; background:transparent;
     transition: all .3s ease-in-out;
   }
+  #arrow-hover{
+    width:12px; height:12px; position:absolute; right:10px; bottom:8px; opacity:0;
+    transform: translateX(8px); transition: all .25s cubic-bezier(.14,.59,1,1.01);
+  }
+  #button-1:hover #arrow-hover{ opacity:1; transform: translateX(0); }
   
-  /* 飛機 icon */
-  #arrow-hover {
-    width: 12px;
-    height: 12px;
-    position: absolute;   /* 🔑 這裡改成 absolute */
-    right: 10px;           /* 距離右邊 8px */
-    bottom: 8px;         /* 距離下邊 10px (讓它偏右下角) */
-    opacity: 0;
-    transform: translateX(8px);  /* 初始往右一點 */
-    transition: all .25s cubic-bezier(.14, .59, 1, 1.01);
+  /* ==============================
+     響應式：小螢幕 padding 更緊
+     ============================== */
+  @media (max-width: 768px){
+    :host{ --body-pad-y: 16px; --body-pad-x: 18px; }
   }
   
-  /* hover 時進場 */
-  #button-1:hover #arrow-hover {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  
-  .userInfo{
-    width: 400px;
-    align-self: flex-start; /* 覆蓋 .mainDiv 的 align-items:center */
-    margin: 0;              /* 不要置中 */
-  }

@@ -43,32 +43,52 @@
       </div>
     </div>
 
-<div class="shift-badges">
-  <div class="shift-badge" *ngFor="let b of SHIFT_TIMETABLE">
-    <span class="shift-dot" [ngClass]="b.dotClass"></span>
-    {{ b.name }} {{ b.time }}
-  </div>
-</div>
+    <div class="shift-badges">
+      <!-- [ngClass]是 Angular 的內建指令，可以把後面的""字串裝到這個class上 -->
+      @for (b of SHIFT_TIMETABLE; track b.name) {
+        <div class="shift-badge">
+          <!-- span 行內元素，可以併排-->
+          <span class="shift-dot" [ngClass]="b.dotClass"></span>
+          {{ b.name }} {{ b.time }}
+        </div>
+      } 
+    </div>
+    
 
     <!-- 上傳請假證明 -->
     <div class="upload-section">
       <h3>上傳請假證明</h3>
       <div class="upload-box">
         <label class="upload-label">
-          <div *ngIf="previewUrl; else uploadEmpty">
+          
+          @if (previewUrl) {
             <div class="preview-in-box">
+              <!-- 只要檔案有被轉成base64那麼<img>就可以把 src 屬性更新成同樣的值 -->
+              <!-- $event.preventDefault()事件綁定裡阻止預設行為，避免又開檔案挑選器。 -->
               <img [src]="previewUrl" alt="預覽圖片" />
-              <button type="button" class="btn-remove-inbox" (click)="removeFile(); $event.preventDefault()">×</button>
+              <button
+                type="button"
+                class="btn-remove-inbox"
+                (click)="removeFile(); $event.preventDefault()"
+              >
+                ×
+              </button>
             </div>
-          </div>
-          <ng-template #uploadEmpty>
-            <div class="folder-icon">📁</div>
+          } @else {
+            <img class="folder-icon" src="upload.png" alt="上傳圖示">
             <span class="upload-text">點擊上傳檔案</span>
-          </ng-template>
-          <input type="file" (change)="onFileSelected($event)" accept="image/*" style="display: none;" />
+          }
+         <!-- 用了這個style="display: none;"把這個input 隱藏起來，不佔版面、不可見。因為包在label所以整個版面都能選 -->
+          <input
+            type="file"
+            (change)="onFileSelected($event)"
+            accept="image/*"
+            style="display: none;"
+          />
         </label>
       </div>
     </div>
+    
 
     <!-- 請假區段 -->
     <div class="period-section" *ngIf="leave.isWholeDay">

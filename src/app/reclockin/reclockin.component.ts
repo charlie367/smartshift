@@ -60,8 +60,8 @@ export class ReclockinComponent implements OnInit, OnDestroy {
 
   
     private HOME = {
-      lat:22.60420809143353,         // 你的家：22.618540...
-      lng:120.29850544793425,       //        120.294441...
+      lat:22.6041985554835,         // 你的家：22.618540...
+      lng:120.29826505214072,       //        120.294441...
       radiusM: 200,          // 允許半徑（公尺）
       accuracyMax: 150       // 接受的最大精度（公尺）
     };
@@ -115,10 +115,7 @@ export class ReclockinComponent implements OnInit, OnDestroy {
     if (incoming.length) {
       this.mode = this.detectMode(incoming);
       this.updateButtons();
-    } else {
-      this.dialog.open(ErrorDialogComponent, { data: { message: '抓不到今日的班' } });
-  return;
-    }
+    } 
     this.loadTodayClock(); // 讀取今日狀態
   }
 
