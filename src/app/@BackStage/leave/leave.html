@@ -3,12 +3,11 @@
   <div class="leave-info-container">
     <div class="leave-info-header">
       <button
-
         class="btn-bg-secondary"
         mat-raised-button
         color="primary"
         (click)="showLeaveInfo()"
-        style="color: #fff;"
+        style="color: #fff"
       >
         返回
       </button>
@@ -68,9 +67,10 @@
         <td mat-cell *matCellDef="let element">
           <button
             style="color: #6ea77c"
-            mat-button
             color="primary"
-            (click)="approvedLeave(element.leaveId)"
+            (click)="approvedLeave(element)"
+            data-name="{{element.employeeId}}"
+            id="{{element.leaveId}}"
           >
             同意
           </button>
@@ -84,7 +84,9 @@
             style="color: #dd6565"
             mat-button
             color="warn"
-            (click)="disagreeLeave(element.leaveId)"
+            (click)="disagreeLeave(element)"
+            data-name="{{element.employeeId}}"
+            id="{{element.leaveId}}"
           >
             不同意
           </button>

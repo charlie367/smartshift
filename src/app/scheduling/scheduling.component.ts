@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { ElementRef, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ElementRef, ChangeDetectorRef, Component, OnInit , OnDestroy} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { MatButtonModule } from '@angular/material/button';
@@ -73,7 +73,7 @@ interface Message {
   templateUrl: './scheduling.component.html',
   styleUrls: ['./scheduling.component.scss'],
 })
-export class SchedulingComponent implements OnInit {
+export class SchedulingComponent implements OnInit, OnDestroy {
 
   public config!: DayPilot.SchedulerConfig;
   public events: DayPilot.EventData[] = [];
@@ -112,6 +112,13 @@ export class SchedulingComponent implements OnInit {
     private employeeService: EmployeeService,
     private cd: ChangeDetectorRef
   ) { }
+  ngOnDestroy(): void {
+    document.removeEventListener('visibilitychange', this.onVisibility);
+    window.removeEventListener('focus', this.onFocus);
+    window.removeEventListener('storage', this.onStorage);
+    this.bc?.close();
+
+  }
 
   ngOnInit(): void {
     const employeeId2 = localStorage.getItem('employeeId') || '';
@@ -129,6 +136,21 @@ export class SchedulingComponent implements OnInit {
     // // 立刻滾動讓 loading 可見
     setTimeout(() => this.scrollChatToBottom('auto'), 0);
 
+  // 抓本週班表（非同步），拿到後 render 今天
+  this.loadWeekSlotsForCurrentWeek().subscribe({
+    next: (map) => {
+      this.weekSlots = map || {};
+      // 用 map 去 render 今天（把結果放到 messages[0]）
+      this.renderScheduleForDate(today, this.weekSlots);
+
+
+    },
+    error: (err) => {
+      console.error('[ngOnInit] loadWeekSlotsForCurrentWeek error', err);
+      // 即使失敗，也嘗試用現有資料 render（可能是空）
+      this.renderScheduleForDate(today, this.weekSlots || {});
+    }
+  });
 
     this.monthQuotaReady = false;//分母
     this.workLogsReady = false;//分子
@@ -137,10 +159,44 @@ export class SchedulingComponent implements OnInit {
     this.loadEmployees();
     this.loadWeekSlotsForCurrentWeek();
     this.recountUnread();
+
+  
+document.addEventListener('visibilitychange', this.onVisibility);
+window.addEventListener('focus', this.onFocus);
+window.addEventListener('storage', this.onStorage);
+
+try {
+  this.bc = new BroadcastChannel('notify-updates');
+  this.bc.onmessage = () => this.runRefresh();
+} catch {}
+
     this.loadLeaveHours();
 
     this.dayTickTimer = setInterval(() => this.ensureNewDay(), 60_000);
   }
+
+  // ======== 新增：跨分頁與事件處理 ========
+private bc?: BroadcastChannel;
+
+goLeave() { this.router.navigate(['/leave']); }
+
+private runRefresh = () => {
+  this.recountUnread();               // 你的既有方法：重算徽章
+  try { this.cd.detectChanges(); } catch {}
+};
+
+private onVisibility = () => {
+  if (!document.hidden) this.runRefresh();   // 分頁切回前景時刷新
+};
+
+private onFocus = () => {
+  this.runRefresh();                         // 視窗取得焦點時也刷新（補強）
+};
+
+private onStorage = (e: StorageEvent) => {
+  if (e.key === 'notifyDirtyAt') this.runRefresh();  // 後台分頁寫入 dirty key 時刷新
+};
+
 
   private recalcMonthQuotaHours() {
     const employeeId = localStorage.getItem('employeeId');
@@ -1027,9 +1083,6 @@ export class SchedulingComponent implements OnInit {
       });
 
   }
-
-
-
 
   formatDateTimeLocal(date: Date): string {
     const year = date.getFullYear();

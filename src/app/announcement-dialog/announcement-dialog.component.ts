@@ -70,7 +70,11 @@ export class AnnouncementDialogComponent implements OnInit {
     this.loadPersonalReadIds();    // 個人已讀
     this.fetchNotices();           // 公告
     this.fetchPersonalNotices();   // 個人
+
+   
   }
+
+
 
   private loadReadIds() {
     try {

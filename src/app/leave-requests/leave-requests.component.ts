@@ -1,10 +1,12 @@
-import { Component, OnInit, computed, signal, effect } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
-
+import { RouterLink } from '@angular/router';
+import { catchError, forkJoin, map, of } from 'rxjs';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
+//型別定義（只是規則，沒有值）
 type LeaveStatus = 'approved' | 'rejected' | 'pending';
 
 interface GetApplicationAndNameDto {
@@ -13,8 +15,8 @@ interface GetApplicationAndNameDto {
   name: string;
   leaveType: string;
   leaveDescription: string | null;
-  leaveProve: string | null;         // 後端回傳已含 data:image/png;base64,...
-  approved: boolean | null;          // true/false；待審核為 null
+  leaveProve: string | null;  // 已含 data:image/png;base64,...
+  approved: boolean | null;   // true/false；待審核為 null
 }
 
 interface DetailDto {
@@ -39,234 +41,207 @@ interface Row extends GetApplicationAndNameDto {
 @Component({
   selector: 'app-leave-requests',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule, RouterLink],
+  imports: [CommonModule, FormsModule, HttpClientModule, RouterLink, MatDialogModule],
   templateUrl: './leave-requests.component.html',
-  styleUrl: './leave-requests.component.scss',
+  styleUrls: ['./leave-requests.component.scss'],
 })
 export class LeaveRequestsComponent implements OnInit {
-  // ===== UI 狀態 =====
-  selectedMonth   = signal<string>(this.initMonth());
-  filterStatus    = signal<'all' | LeaveStatus>('all');
-  loading         = signal<boolean>(false);
-  errorMsg        = signal<string>('');
-  selectedRow     = signal<Row | null>(null);
-  selectedDetails = signal<DetailDto[] | null>(null);
 
-  // ===== 資料集合 =====
-  approvedRows        = signal<Row[]>([]);
-  pendingRows         = signal<Row[]>([]);
-  tableApplyDateMap   = signal<Record<number, string>>({});
-  tablePeriodMap      = signal<Record<number, string>>({});
 
-  // 合併後列表（依 tab 是否需含待審核）
-  allRows = computed<Row[]>(() => {
-    const ym = this.selectedMonth();
-    const list: Row[] = [...this.approvedRows()];
-    if (this.filterStatus() === 'all' || this.filterStatus() === 'pending') {
-      const monthPending = this.pendingRows().filter(r =>
+  selectedMonth: string = this.initMonth();
+  //filterStatus 只能是 'all' | 'approved' | 'rejected' | 'pending'，預設all
+  filterStatus: 'all' | LeaveStatus = 'all';
+  loading = false;
+  errorMsg = '';
+
+
+  approvedRows: Row[] = [];
+  pendingRows: Row[] = [];
+  tableApplyDateMap: Record<number, string> = {};
+  tablePeriodMap: Record<number, string> = {};
+
+  constructor(private http: HttpClient, private dialog: MatDialog) {}
+
+  ngOnInit(): void {
+    if (!this.myId()) {
+      this.errorMsg = '找不到登入資訊（employeeId），請重新登入。';
+      return;
+    }
+    this.fetchApprovedForMonth(this.selectedMonth);
+    this.fetchPendingOnce();
+  }
+
+  private prefetchMetaForRows(rows: Row[], opts: { reset?: boolean } = {}): void {
+    if (opts.reset) {
+      this.tableApplyDateMap = {};
+      this.tablePeriodMap = {};
+    }
+
+    const ids = rows.map(r => r.leaveId);
+    if (ids.length === 0) return;
+
+    const requests = ids.map(id =>
+      this.http.get<DetailDto[]>('http://localhost:8080/leave/getLeaveByLeaveId', {
+        params: { leaveId: id }
+        //把運算子串起來         
+        //RxJS 是一個獨立的 JavaScript 函式庫，主要是為了處理「非同步資料流」而設計的。
+      }).pipe(
+        map(details => ({ id, details }))
+      )
+    );
+    //一次等待多個非同步資料流都完成
+    forkJoin(requests).subscribe({
+      next: (results) => {
+        for (const { id, details } of results) {
+          if ((details?.length ?? 0) > 0) {
+            const earliest = details.map(d => d.leaveDate).sort()[0];
+            const period   = this.formatPeriod(details);
+            this.tableApplyDateMap = { ...this.tableApplyDateMap, [id]: earliest };
+            this.tablePeriodMap    = { ...this.tablePeriodMap,    [id]: period   };
+          }
+        }
+      },
+      error: () => {
+        this.dialog.open(ErrorDialogComponent, {
+          data: { message: '員工 id 資料抓失敗', autoCloseMs: 2000 }
+        });
+      }
+    });
+  }
+
+
+  fetchPendingOnce(): void {
+    const my = this.myId();
+    if (!my) return;
+
+    this.http.get<GetApplicationAndNameDto[]>(
+      'http://localhost:8080/leave/getAllApplication'
+    ).subscribe({
+      next: (list) => {
+        const mine = list?.filter(x => x.employeeId === my) ?? [];
+        const rows: Row[] = mine.map(x => ({ ...x, status: 'pending' }));
+        this.pendingRows = rows;
+        this.prefetchMetaForRows(this.pendingRows, { reset: false });
+      },
+      error: () => {
+        this.pendingRows = [];
+      }
+    });
+  }
+
+  fetchApprovedForMonth(ym: string): void {
+    const my = this.myId();
+    if (!my) return;
+
+    const { start, end } = this.monthRange(ym);
+    this.loading = true;
+    this.errorMsg = '';
+
+    this.http.get<GetApplicationAndNameDto[]>(
+      'http://localhost:8080/leave/getApprovedLeave',
+      { params: { start, end } }
+    ).subscribe({
+      next: (list) => {
+        const mine = (list || []).filter(x => x.employeeId === my);
+        const rows: Row[] = mine.map(x => ({
+          ...x,
+          status: x.approved === true ? 'approved' : 'rejected',
+        }));
+        this.approvedRows = rows;
+
+        const unionRows = [...this.approvedRows, ...this.pendingRows];
+        this.prefetchMetaForRows(unionRows, { reset: true });
+      },
+      error: (err) => {
+        this.errorMsg = err?.error?.message || err?.message || '載入失敗';
+        this.approvedRows = [];
+        this.tableApplyDateMap = {};
+        this.tablePeriodMap = {};
+        this.loading = false;
+      },
+      complete: () => {
+        this.loading = false;
+      }
+    });
+  }
+
+  //當你取值時自動執行的屬性不用手動呼較只要數值有動這個get就會自己運算
+  get allRows(): Row[] {
+    const ym = this.selectedMonth;
+    const list: Row[] = [...this.approvedRows];
+    if (this.filterStatus === 'all' || this.filterStatus === 'pending') {
+      const monthPending = this.pendingRows.filter(r =>
         this.inMonthByEarliestDate(r.leaveId, ym)
       );
       list.push(...monthPending);
-    }
+    } 
     return list;
-  });
-
-  filteredRows = computed(() => {
-    const st = this.filterStatus();
-    return this.allRows()
+  }
+  //當你取值時自動執行的屬性不用手動呼較只要數值有動這個get就會自己運算
+  get filteredRows(): Row[] {
+    const st = this.filterStatus;
+    return this.allRows 
       .filter(r => (st === 'all' ? true : r.status === st))
       .sort((a, b) => b.leaveId - a.leaveId);
-  });
-
-  kpi = computed(() => {
-    const list = this.filteredRows().length;
-    const ym = this.selectedMonth();
-    const pending  = this.pendingRows().filter(r => this.inMonthByEarliestDate(r.leaveId, ym)).length;
-    const approved = this.approvedRows().filter(r => r.status === 'approved').length;
-    const rejected = this.approvedRows().filter(r => r.status === 'rejected').length;
+  }
+  //當你取值時自動執行的屬性不用手動呼較只要數值有動這個get就會自己運算
+  get kpi() {
+    const list = this.filteredRows.length;
+    const ym = this.selectedMonth;
+    const pending  = this.pendingRows.filter(r => this.inMonthByEarliestDate(r.leaveId, ym)).length;
+    const approved = this.approvedRows.filter(r => r.status === 'approved').length;
+    const rejected = this.approvedRows.filter(r => r.status === 'rejected').length;
     return { list, pending, approved, rejected };
-  });
-
-  // 後端位址
-  private API_BASE = 'http://localhost:8080';
-
-  constructor(private http: HttpClient, private route: ActivatedRoute) {
-    effect(() => { void this.fetchApprovedForMonth(this.selectedMonth()); });
   }
 
-  ngOnInit(): void {
-    // 沒拿到 employeeId 直接提示
-    if (!this.myId()) {
-      this.errorMsg.set('找不到登入資訊（employeeId），請重新登入。');
-      return;
-    }
-
-    const qp = this.route.snapshot.queryParamMap;
-    const st = qp.get('status') as 'pending' | 'approved' | 'rejected' | null;
-    if (st && ['pending', 'approved', 'rejected'].includes(st)) {
-      this.filterStatus.set(st);
-    }
-
-    void this.fetchPendingOnce();
+  setFilterStatus(s: 'all' | LeaveStatus): void {
+    this.filterStatus = s;
   }
 
-  /** 從 localStorage 取得登入者 employeeId（支援字串或 JSON 結構） */
-  private myId(): string {
-    const raw = localStorage.getItem('employeeId');
-    if (!raw) return '';
-    try {
-      const parsed = JSON.parse(raw);
-      if (typeof parsed === 'string') return parsed;
-      return String(parsed?.employeeId ?? '');
-    } catch {
-      return raw;
-    }
-  }
-
-  private async fetchApprovedForMonth(ym: string): Promise<void> {
-    if (!this.myId()) return;
-    const { start, end } = this.monthRange(ym);
-    this.loading.set(true);
-    this.errorMsg.set('');
-    try {
-      const url = `${this.API_BASE}/leave/getApprovedLeave?start=${start}&end=${end}`;
-      const list = await firstValueFrom(this.http.get<GetApplicationAndNameDto[]>(url));
-  
-      // 只顯示我的
-      const mine = (list || []).filter(x => x.employeeId === this.myId());
-  
-
-      const uniqByLeaveId = Array.from(
-        new Map(mine.map(x => [x.leaveId, x])).values()
-      );
-  
-      const rows: Row[] = uniqByLeaveId.map(x => ({
-        ...x,
-        status: x.approved === true ? 'approved' : 'rejected',
-      }));
-      this.approvedRows.set(rows);
-  
-      await this.prefetchMetaForRows(rows);
-    } catch (e: any) {
-      this.errorMsg.set(e?.message || '載入失敗');
-      this.approvedRows.set([]);
-      this.tableApplyDateMap.set({});
-      this.tablePeriodMap.set({});
-    } finally {
-      this.loading.set(false);
-    }
-  }
-  
-
-  private async fetchPendingOnce(): Promise<void> {
-    if (!this.myId()) return;
-    try {
-      const url = `${this.API_BASE}/leave/getAllApplication`;
-      const list = await firstValueFrom(this.http.get<GetApplicationAndNameDto[]>(url));
-
-      // 只顯示我的
-      const mine = (list || []).filter(x => x.employeeId === this.myId());
-
-      const rows: Row[] = mine.map(x => ({ ...x, status: 'pending' }));
-      this.pendingRows.set(rows);
-
-      await this.prefetchMetaForRows(rows);
-    } catch {
-      this.pendingRows.set([]);
-    }
-  }
-
-  private async prefetchMetaForRows(rows: Row[]): Promise<void> {
-    const ids = Array.from(new Set(rows.map(r => r.leaveId)));
-    await Promise.all(
-      ids.map(async (id) => {
-        const hasDate   = !!this.tableApplyDateMap()[id];
-        const hasPeriod = !!this.tablePeriodMap()[id];
-        if (hasDate && hasPeriod) return;
-
-        try {
-          const url = `${this.API_BASE}/leave/getLeaveByLeaveId?leaveId=${id}`;
-          const details = await firstValueFrom(this.http.get<DetailDto[]>(url));
-
-          if (details?.length) {
-            const earliest = details.map(d => d.leaveDate).sort()[0];
-            this.tableApplyDateMap.update(m => ({ ...m, [id]: earliest }));
-            const period = this.formatPeriod(details);
-            this.tablePeriodMap.update(m => ({ ...m, [id]: period }));
-          }
-        } catch {
-          // 單筆失敗忽略
-        }
-      })
-    );
-  }
-
-  async openDetails(r: Row) {
-    // 防呆：不是自己的單不開
-    if (r.employeeId !== this.myId()) return;
-
-    this.selectedRow.set(r);
-    this.selectedDetails.set(null);
-    try {
-      const url = `${this.API_BASE}/leave/getLeaveByLeaveId?leaveId=${r.leaveId}`;
-      const list = await firstValueFrom(this.http.get<DetailDto[]>(url));
-      this.selectedDetails.set(list || []);
-    } catch {
-      this.selectedDetails.set([]);
-    }
-  }
-  closeDetails() { this.selectedRow.set(null); }
-
-  changeMonth(offset: number) {
-    const [y, m] = this.selectedMonth().split('-').map(Number);
-    const d = new Date(y, m - 1 + offset, 1);
-    this.selectedMonth.set(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
-  }
-
-  statusLabel(s: LeaveStatus) {
+  statusLabel(s: LeaveStatus): string {
     return s === 'approved' ? '已核准' : s === 'rejected' ? '已駁回' : '待審核';
   }
-  statusClass(s: LeaveStatus) {
+  statusClass(s: LeaveStatus): string {
     return s === 'approved' ? 'chip chip--green'
          : s === 'rejected' ? 'chip chip--red'
          : 'chip chip--yellow';
   }
-  typeClass(type: string) {
+
+  typeClass(type: string): string {
     switch (type) {
       case '事假': return 'pill pill--blue';
       case '病假': return 'pill pill--purple';
       case '特休': return 'pill pill--emerald';
       case '婚假': return 'pill pill--pink';
       case '喪假': return 'pill pill--gray';
-      case '其他': return 'pill pill--slate';       
-      default:     return 'pill pill--slate';  
+      default:     return 'pill pill--slate';
     }
   }
-  monthDisplay(): string {
-    const [y, m] = this.selectedMonth().split('-');
-    return `${y}年 ${m}月`;
+
+  // ===== UI =====
+  changeMonth(offset: number): void {
+    const [y, m] = this.selectedMonth.split('-').map(Number);
+    const d = new Date(y, m - 1 + offset, 1);
+    this.selectedMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    this.fetchApprovedForMonth(this.selectedMonth);
   }
-  trackById = (_: number, r: Row) => r.leaveId;
+
+
+  monthDisplay(): string {
+    const [y, m] = this.selectedMonth.split('-');
+    return y + '年 ' + m + '月';
+  }
+
 
   tableApplyDate(id: number): string {
-    return this.tableApplyDateMap()[id] || '-';
+    return this.tableApplyDateMap[id] ?? '-';
   }
-
   tablePeriod(r: Row): string {
-    return this.tablePeriodMap()[r.leaveId] || '-';
-  }
-
-  periodText(details: DetailDto[] | null): string {
-    if (!details || !details.length) return '-';
-    const dates = Array.from(new Set(details.map(d => d.leaveDate))).sort();
-    const start = dates[0];
-    const end   = dates[dates.length - 1];
-    const days  = dates.length;
-    return `${start} 至 ${end}（${days} 天）`;
+    return this.tablePeriodMap[r.leaveId] ?? '-';
   }
 
   private inMonthByEarliestDate(leaveId: number, ym: string): boolean {
-    const d = this.tableApplyDateMap()[leaveId]; // e.g. '2025-10-16'
+    const d = this.tableApplyDateMap[leaveId];
     if (!d) return false;
     const { start, end } = this.monthRange(ym);
     return d >= start && d <= end;
@@ -276,26 +251,22 @@ export class LeaveRequestsComponent implements OnInit {
     if (!list?.length) return '-';
     const byDate: Record<string, DetailDto[]> = {};
     for (const it of list) {
-      (byDate[it.leaveDate] ??= []).push(it);
+      if (byDate[it.leaveDate] == null) byDate[it.leaveDate] = [];
+      byDate[it.leaveDate].push(it);
     }
-    const pad = (n: number) => String(n).padStart(2, '0');
+    //  //JavaScript 內建的全域「物件工具箱」，用來取得物件的所有鍵（key）陣列
     const days = Object.keys(byDate).sort();
     const out: string[] = [];
     for (const day of days) {
       const segs = byDate[day]
-        .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''))
+        .sort((a, b) => (a.startTime ?? '').localeCompare(b.startTime ?? ''))
         .map(it => {
-          const s = (it.startTime || '').slice(0, 5);
-          let e = (it.endTime ?? it.end_time ?? '').slice(0, 5);
-          if (!e && s && it.leaveHours) {
-            const [sh, sm] = s.split(':').map(Number);
-            const start = new Date(`${day}T${pad(sh)}:${pad(sm)}:00`);
-            start.setMinutes(start.getMinutes() + Math.round(it.leaveHours * 60));
-            e = `${pad(start.getHours())}:${pad(start.getMinutes())}`;
-          }
-          return (s && e) ? `${s} ~ ${e}` : s ? s : '-';
+          const s = (it.startTime ?? '').slice(0, 5);
+          const e = (it.endTime ?? it.end_time ?? '').slice(0, 5);
+          return (s && e) ? (s + ' ~ ' + e) : (s ? s : '-');
         });
-      out.push(`${day.replaceAll('-', '/')} ${segs.join('；')}`);
+          //replaceAll字串裡所有的減號換成斜線
+      out.push(day.replaceAll('-', '/') + ' ' + segs.join('；'));
     }
     return out.join('\n');
   }
@@ -305,11 +276,16 @@ export class LeaveRequestsComponent implements OnInit {
     const start = new Date(y, m - 1, 1);
     const end = new Date(y, m, 0);
     const fmt = (d: Date) =>
-      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     return { start: fmt(start), end: fmt(end) };
   }
+
   private initMonth(): string {
     const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  }
+
+  private myId(): string {
+    return localStorage.getItem('employeeId') || '';
   }
 }

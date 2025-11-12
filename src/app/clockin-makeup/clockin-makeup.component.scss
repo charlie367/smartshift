@@ -2,9 +2,7 @@
 .makeup-root,
 .makeup-root *,
 .makeup-root *::before,
-.makeup-root *::after {
-  box-sizing: border-box;
-}
+.makeup-root *::after { box-sizing: border-box; }
 
 /* 外框 */
 .makeup-root {
@@ -13,6 +11,7 @@
   overflow: hidden;
   max-width: 760px;
 }
+.makeup-root.loading{ pointer-events: none; opacity: .98; }
 
 /* Header */
 .makeup-header{
@@ -37,35 +36,28 @@
 .form-item{ margin-bottom: 16px; }
 
 /* 上傳空狀態圖示 */
-.folder-icon {
-  width: 40px;      /* 圖示尺寸 */
-  height: 40px;
-  display: block;   /* 變區塊才能 margin: 0 auto 置中 */
-  margin: 0 auto;
-  opacity: .9;      /* 顏色深淺 */
-}
+.folder-icon { width: 40px; height: 40px; display: block; margin: 0 auto; opacity: .9; }
 .upload-text { color: #777; }
 
 /* 標題：統一字級與粗細 */
 .label{
-  display: block;
-  margin-bottom: 8px;
-  color: #374151;
-  font-weight: 600;
-  font-size: 16px; /* 統一標題字級 */
+  display: flex; align-items: center; gap: 8px;
+  min-height: 28px; margin-bottom: 8px;
+  color: #374151; font-weight: 600; font-size: 16px; white-space: nowrap;
 }
-.label-ic { font-size: 20px; vertical-align: -2px; }
+.label-ic { display:inline-block; line-height:1; font-size: 20px; vertical-align: middle; }
 .req{ color: #ef4444; margin-left: 4px; }
 
 /* 表單控制 */
 .input, .textarea{
   width: 100%; border: 1px solid #d1d5db; border-radius: 10px;
   padding: 10px 12px; outline: none; background: #fff; color: #111827;
-  transition: box-shadow .2s, border-color .2s, background .2s;
+  transition: box-shadow .2s, border-color .2s, background .2s;  resize: none !important;  
 }
 .input::placeholder, .textarea::placeholder{ color: #9ca3af; }
 .input:focus, .textarea:focus{ border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(59,130,246,.20); }
 
+/* 錯誤樣式 */
 .form-item.invalid .input,
 .form-item.invalid .textarea,
 .form-item.invalid .uploader{
@@ -97,8 +89,10 @@
 }
 .mini-btn:hover{ background: #f9fafb; }
 
-/* 兩欄網格 */
-.grid-2{ display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+/* 兩欄網格（列對齊頂端） */
+.grid-2{
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start;
+}
 
 /* 每組的小標＆右側清除 */
 .form-row-head{
@@ -142,7 +136,6 @@
 .btn.primary:hover{ background: #1d4ed8; }
 .btn.primary:active{ transform: translateY(1px); }
 .btn[disabled]{ opacity: .6; cursor: not-allowed; }
-.makeup-root.loading{ pointer-events: none; opacity: .98; }
 .spinner{ display: inline-block; width: 16px; height: 16px; border: 2px solid #fff; border-right-color: transparent; border-radius: 50%; margin-right: 6px; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -157,110 +150,81 @@
 /* ====== 右側小叉叉（輸入框清除） ====== */
 .input-with-x { position: relative; }
 .input-with-x > .input { padding-right: 44px; }
-
-/* 小叉叉按鈕：正方形 + Flex 置中 + 無內距 */
 .inline-x{
-  position: absolute;
-  top: 50%;
-  right: 8px;
-  transform: translateY(-50%);
-  width: 28px; height: 28px;
-  padding: 0;               /* 重要：避免把內容擠偏 */
-  border-radius: 999px;
-  border: 1px solid black;
-  background: #fff;
-  display: flex;            /* Flex 置中 */
-  align-items: center;      /* 垂直置中 */
-  justify-content: center;  /* 水平置中 */
-  cursor: pointer;
+  position: absolute; top: 50%; right: 8px; transform: translateY(-50%);
+  width: 28px; height: 28px; padding: 0;
+  border-radius: 999px; border: 1px solid #000; background: #fff;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
 }
 .inline-x:hover { background: #f3f4f6; }
-.inline-x mat-icon{
-  display: block;           /* 避免 baseline 影響 */
-  font-size: 18px;
-  line-height: 1;           /* 取消字體基線空隙 */
-  width: 18px; height: 18px;
+.inline-x mat-icon{ display: block; font-size: 18px; line-height: 1; width: 18px; height: 18px; }
+
+/* === 統一輸入框高度，避免左右欄高低不齊 === */
+.input { height: 44px; box-sizing: border-box; }
+
+/* =========================================================
+   🔥 新增時間段：固定右上、縮小尺寸、減少上方留白；兩邊標題仍對齊
+   ========================================================= */
+
+/* 有新增按鈕的這一整列，替兩邊標題都預留相同的上方空間（避免去卡上一列） */
+.grid-2:has(.label-with-btn .add-slot) {
+  --slotPad: 22px;                 /* 原 36px → 22px，更貼頂；可調 20~26 */
 }
 
-/* ====== 標題右側「新增時間段」按鈕 ====== */
+/* 兩邊的標題都下移同樣距離 → 基線對齊 */
+.grid-2:has(.label-with-btn .add-slot) .label,
+.grid-2:has(.label-with-btn .add-slot) .label-with-btn {
+  padding-top: var(--slotPad);
+}
+
+/* 右邊（含按鈕）的標題容器：作為定位點 */
 .label-with-btn{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  position: relative;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px;
 }
 .label-with-btn .label-left{
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 6px;
 }
 
-/* 新增時間段按鈕（右上） */
+/* 按鈕固定在標題容器的右上角（更小、更貼） */
 .add-slot{
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
+  position: absolute; top: -2px; right: 0;  /* 往上貼；可改 -3~-1 */
+  z-index: 1;
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px;                          /* 窄一點 */
+  font-size: 13px;                           /* 小一號 */
   border-radius: 9999px;
-  border: 1px solid #d0d7de;
-  background: #fff;
-  cursor: pointer;
-  font-size: 14px;
-  line-height: 1.2;
+  border: 1px solid #d0d7de; background: #fff;
+  cursor: pointer; line-height: 1.2; white-space: nowrap;
 }
 .add-slot mat-icon{ font-size: 18px; width: 18px; height: 18px; }
 .add-slot:hover{ background: #f6f8fa; border-color: #c3ccd5; }
 
-
-/* === 讓左右兩欄完全對齊（統一標題高度 & 不換行） === */
-
-/* 兩欄容器以頂對齊，避免右邊內容高把整列撐歪 */
-.grid-2 {
-  align-items: start;
+/* 窄螢幕再收一點空間 */
+@media (max-width: 640px){
+  .grid-2:has(.label-with-btn .add-slot){ --slotPad: 20px; }
+  .add-slot{ top: -1px; padding: 2px 8px; font-size: 13px; }
 }
 
-/* 所有標題行統一用 flex、垂直置中、固定最小高度 */
-.label {
-  display: flex;                 /* 原本是 block，改成 flex */
-  align-items: center;           /* 圖示與文字垂直置中 */
-  gap: 8px;
-  min-height: 28px;              /* 統一標題高度（可微調 26~32） */
-  margin-bottom: 8px;            /* 保留原本間距 */
-  white-space: nowrap;           /* 不要自動換行 */
+
+.grid-2:has(.label-with-btn .add-slot){
+  --slotPad: 28px;   /* 原 22px → 28px，給較大的按鈕一點空間（可調 26~30） */
 }
 
-/* 右側含按鈕的標題：左右分散，避免擠到換行 */
-.label-with-btn {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  white-space: nowrap;           /* 關鍵：避免「下班打卡時／間」被擠斷行 */
+.add-slot{
+  top: -15px;                 /* 保持貼頂、別壓到上面 */
+  font-size: 14px;         /* ≈ +0.15 cm */
+  padding: 6px 14px;         /* 跟著放大一點，外觀更均衡 */
+  border-radius: 9999px;
+  line-height: 1.1;
 }
 
-/* 左側文字容器允許縮，超出以省略號結束 */
-.label-with-btn .label-left {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.add-slot mat-icon{
+  font-size: 20px;           /* icon 跟著變大 */
+  width: 20px;
+  height: 20px;
 }
 
-/* 標題裡的圖示不要撐高行 */
-.label-ic {
-  display: inline-block;
-  line-height: 1;
-  vertical-align: middle;        /* 或保留你的 -2px 都可 */
-}
 
-/* 標題內的小按鈕不要有上外距，避免把整個標題往下推 */
-.label .mini-btn,
-.label-with-btn .add-slot {
-  margin-top: 0 !important;      /* 覆蓋原本 .mini-btn 的 margin-top: 8px; */
-  flex: 0 0 auto;
-}
-
-/* 時間輸入右側的「X」已絕對定位，不會再撐高；這裡補個保險的高度一致 */
-.input {
-  height: 44px;                  /* 視覺上讓左右輸入框高度一致 */
-  box-sizing: border-box;
-}

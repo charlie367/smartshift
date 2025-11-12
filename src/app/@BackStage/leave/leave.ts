@@ -48,6 +48,8 @@ export class BackLeave {
       .getApi(`http://localhost:8080/leave/getAllApplication`)
       .subscribe((res: any) => {
         this.dataSource.data = res;
+
+        // console.log('RESSSSS', this.dataSource.data);
       });
   }
 
@@ -55,15 +57,35 @@ export class BackLeave {
   changeType = false;
 
   //同意
-  approvedLeave(id: number) {
+  approvedLeave(element: any) {
+    // console.log(event.target);
     const data = {
-      leaveId: id,
+      leaveId: element.leaveId,
       approved: true,
     };
+    const notifyBody = {
+      employeeId: element.employeeId,
+      title: '請假申請成功',
+      message: `您的請假申請已核准`,
+      linkUrl: '',
+      createdDate: new Date(),
+    };
+    // console.log('DATA', data);
+    // console.log('NOTI', notifyBody);
     this.http
       .postApi(`http://localhost:8080/leave/leaveApproved`, data)
       .subscribe((res: any) => {
         if (res.code == 200) {
+          this.http
+            .postApi(`http://localhost:8080/add/employeeNotify`, notifyBody)
+            .subscribe((res: any) => {
+              if (res.code == 200) {
+                console.log('111');
+              } else {
+                console.warn(res.message);
+              }
+            });
+
           this.dialog.open(Success, { width: '150px' });
           this.ngOnInit();
         } else {
@@ -76,15 +98,31 @@ export class BackLeave {
   }
 
   //不同意
-  disagreeLeave(id: number) {
+  disagreeLeave(element: any) {
     const data = {
-      leaveId: id,
+      leaveId: element.leaveId,
       approved: false,
+    };
+    const notifyBody = {
+      employeeId: element.employeeId,
+      title: '請假申請失敗',
+      message: `您的請假申請未被核准`,
+      linkUrl: '',
+      createdDate: new Date(),
     };
     this.http
       .postApi(`http://localhost:8080/leave/leaveApproved`, data)
       .subscribe((res: any) => {
         if (res.code == 200) {
+          this.http
+            .postApi(`http://localhost:8080/add/employeeNotify`, notifyBody)
+            .subscribe((res: any) => {
+              if (res.code == 200) {
+                console.log('222');
+              } else {
+                console.warn(res.message);
+              }
+            });
           this.dialog.open(Success, { width: '150px' });
           this.ngOnInit();
         } else {

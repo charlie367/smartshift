@@ -1,7 +1,12 @@
 /* 📦 整體頁面容器 */
+*,
+*::before,
+*::after {
+  box-sizing: border-box !important;
+}
 .page-container {
   padding: 24px;
-  font-family: 'Noto Sans TC', sans-serif;
+  font-family: "Noto Sans TC", sans-serif;
 }
 
 /* 📌 頁面標題樣式 */
@@ -75,15 +80,17 @@ h2 {
   align-items: center;
   gap: 8px;
   font-weight: 600;
-  background: linear-gradient(to right, #42a5f5, #478ed1); // 漸層背景
+  background: linear-gradient(to right, #eeb8b3, #e8928a); // 漸層背景
   color: white;
   padding: 8px 20px;
   border-radius: 6px;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16); // 陰影效果
   transition: all 0.2s ease-in-out; // 滑鼠移入動畫
+  border: 2px solid #fff;
+  cursor: pointer;
 
   &:hover {
-    background: linear-gradient(to right, #2196f3, #1976d2);
+    // background: linear-gradient(to right, #2196f3, #1976d2);
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); // 增強陰影
   }
 
@@ -112,15 +119,55 @@ h2 {
 
 /* 🔵 可點擊文字樣式（如員工姓名） */
 .clickable-text {
-  color: blue;
+  color: #3f51b5;
   text-decoration: underline;
   cursor: pointer;
   transition: color 0.2s;
+  font-weight: 700;
 
   &:hover {
-    color: #1e40af; // 深藍色，增加可點擊感
+    color: #283593; // 深藍色，增加可點擊感
   }
 }
+.table-container {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  // padding-bottom: 8px;
 
+  .employee-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
 
+    th {
+      text-align: center;
+      font-weight: 600;
+      background-color: #f9fafb;
+      color: #444;
+      padding: 12px 8px;
+      border-bottom: 1px solid #e0e0e0;
+    }
 
+    td {
+      text-align: center;
+      padding: 10px 8px;
+      color: #333;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    tr:hover td {
+      background-color: #f6faff;
+    }
+  }
+
+  mat-paginator {
+    border-top: 1px solid #e0e0e0;
+    font-size: 0.85rem;
+    padding: 4px 8px;
+  }
+}
+.mat-mdc-paginator {
+  background-color: #8eb69bc6 !important;
+}
