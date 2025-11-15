@@ -13,7 +13,7 @@
   <div class="attendance-container">
     <!-- 標題 -->
     <div class="header">
-      <div class="company-name">🏢 公司考勤系統</div>
+      <div class="company-name">打卡系統</div>
       <div class="welcome-text">歡迎使用打卡系統</div>
     </div>
 
@@ -97,7 +97,7 @@
   @if (showModal) {
   <div class="modal-overlay" (click)="closeModal()">
     <div class="modal" (click)="$event.stopPropagation()">
-      <div class="success-icon">{{ modalData.icon }}</div>
+      <!-- <div class="success-icon">{{ modalData.icon }}</div> -->
       <div class="modal-title">{{ modalData.title }}</div>
       <div class="modal-content" [innerHTML]="modalData.content"></div>
       <button class="close-btn" (click)="closeModal()">確定</button>

@@ -134,7 +134,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     }];
 
     // // 立刻滾動讓 loading 可見
-    setTimeout(() => this.scrollChatToBottom('auto'), 0);
+    // setTimeout(() => this.scrollChatToBottom('auto'), 0);
 
   // 抓本週班表（非同步），拿到後 render 今天
   this.loadWeekSlotsForCurrentWeek().subscribe({
@@ -952,7 +952,7 @@ private onStorage = (e: StorageEvent) => {
     // 先顯示 loading 訊息
     this.messages = [{ sender: 'assistant', text: '正在查詢該天排班...' }];
     // 先滾一次讓 loading 可見（立即）
-    setTimeout(() => this.scrollChatToBottom('auto'), 0);
+    // setTimeout(() => this.scrollChatToBottom('auto'), 0);
 
     // 呼叫 fetch（非同步）
     this.loadWeekSlotsForCurrentWeek().subscribe({
@@ -985,13 +985,13 @@ private onStorage = (e: StorageEvent) => {
 
         // 4) 確保 Angular 更新 DOM 並滾到底
         try { this.cd.detectChanges(); } catch (e) { /* ignore */ }
-        setTimeout(() => this.scrollChatToBottom('smooth'), 40);
+        // setTimeout(() => this.scrollChatToBottom('smooth'), 40);
       },
       error: (err) => {
         console.error('[onDateSelected] fetch weekSlots error', err);
         this.messages[0] = { sender: 'assistant', text: '查詢班表失敗，請稍後再試' };
         try { this.cd.detectChanges(); } catch (e) { /* ignore */ }
-        setTimeout(() => this.scrollChatToBottom('smooth'), 40);
+        // setTimeout(() => this.scrollChatToBottom('smooth'), 40);
       }
     });
   }
@@ -1047,7 +1047,7 @@ private onStorage = (e: StorageEvent) => {
     const loadingIndex = this.messages.length - 1;
 
 
-    setTimeout(() => this.scrollChatToBottom('auto'), 0);
+    // setTimeout(() => this.scrollChatToBottom('auto'), 0);
 
 
     const employeeId = localStorage.getItem('employeeId') || '';
@@ -1132,7 +1132,7 @@ private onStorage = (e: StorageEvent) => {
 
     // 更新 view 並滾動到底
     try { this.cd.detectChanges(); } catch (e) { /* ignore */ }
-    setTimeout(() => this.scrollChatToBottom('smooth'), 40);
+    // setTimeout(() => this.scrollChatToBottom('smooth'), 40);
   }
 
 

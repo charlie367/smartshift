@@ -23,5 +23,10 @@ export class GeoInfoDialogComponent {
     public dialogRef: MatDialogRef<GeoInfoDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: GeoInfoData
   ) {}
+
+  onConfirm() {
+ 
+    this.dialogRef.close(true);
+  }
 }
 

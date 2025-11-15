@@ -199,55 +199,46 @@ $muted-bg: #f5f5f5;
 /* 每日槽位：垂直堆疊 */
 
 .chat-box {
-  @extend %mt-header;
-  @extend %offset-left;
-  padding: 12px;
-  border-radius: 8px;
-  max-height: 220px;      // 視需要調整高度
-  width: 920px;
-  overflow-y: auto;
-  background: #f9f9f9;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-
-  // 當在 dashboard-row 裡時，去掉偏移與寬度限制
-  .dashboard-row & {
-    margin: 0 !important;
-    max-width: none !important;
-  }
-
-  // 輸入群組（固定在底部，會跟訊息同在 chat-box 內）
-  &-input-group {
-    display: flex;
-    gap: 8px;
-    padding-top: 8px;
-    border-top: 1px solid rgba(0,0,0,0.04);
-    margin-top: 8px;
-    background: transparent;
-  }
-
-  &-input {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #cfcfcf;
-    border-radius: 8px;
-    font-size: 14px;
-    background: #fff;
-  }
-
-  .chat-send-btn {
-    background: transparent;
-    border: none;
-    padding: 6px 8px;
-    border-radius: 8px;
-    cursor: pointer;
-  }
+  position: relative;           //必要：input 會絕對定位於此容器內
+  display: block;               // 保持原本
+  height: 160px;                //你原本用 245px，按需求調整
+  padding: 2px;
+  padding-bottom: 88px;         //← 留出輸入欄高度（input 高度 + padding）
+  box-sizing: border-box;
+  overflow-y: auto;             //訊息可滾動
+  background-color: #f9f9f9;
+  border-radius: 8px 8px 0px 0px;
 }
 
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.input-area {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  padding: 10px;
+  border-top: 1px solid #ccc;
+  z-index: 1;
+}
+
+.chat-box > .chat-row {
+  flex: 0 0 auto; /* 不會在垂直方向被撐開 */
+  margin: 8px 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
 .chat-row {
   display: flex;
   align-items: flex-end;
   gap: 10px;
   margin: 8px 0;
+
+
 
   &.assistant {
     justify-content: flex-start;
@@ -257,30 +248,31 @@ $muted-bg: #f5f5f5;
   }
 }
 
-/* 訊息容器（泡泡 + 時間） */
+//訊息容器（泡泡 + 時間）
 .chat-ms {
   display: flex;
   flex-direction: column;
   gap: 4px;
 
-  // 預設最大寬度（相對 chat-box），不要太寬
+// 預設最大寬度（相對 chat-box），不要太寬
   max-width: 70%;
   min-width: 60px;
 }
 
-/* 右側（使用者）的訊息容器要靠右顯示 */
+//右側（使用者）的訊息容器要靠右顯示
 .chat-row.user .chat-ms {
   align-items: flex-end;
   text-align: right;
+
 }
 
-/* 左側（助理）的訊息容器靠左 */
+//左側（助理）的訊息容器靠左
 .chat-row.assistant .chat-ms {
   align-items: flex-start;
   text-align: left;
 }
 
-/* 泡泡 */
+//泡泡
 .chat-bubble {
   display: inline-block;
   padding: 10px 14px;
@@ -289,7 +281,7 @@ $muted-bg: #f5f5f5;
   white-space: pre-wrap;
   font-size: 14px;
   line-height: 1.3;
-  background: #f2f2f2;
+  background: #e6e6e6;
   color: #222;
   box-shadow: 0 2px 6px rgba(0,0,0,0.03);
   // 為了泡泡不超過整個 chat-box 的中間線，可進一步限制：
@@ -297,28 +289,28 @@ $muted-bg: #f5f5f5;
 }
 
 .chat-bubble h3{
-  margin: 0;         /* 關鍵：去掉上下 16px 的空白 */
-  line-height: 1.4;  /* 可選：讓行距舒服一點 */
+  margin: 0;         // 關鍵：去掉上下 16px 的空白
+  line-height: 1.4;  // 可選：讓行距舒服一點
 }
 
 .chat-time h5{
   margin: 0;
 }
-/* 使用者泡泡樣式（右邊、藍） */
+// 使用者泡泡樣式（右邊、藍）
 .chat-row.user .chat-bubble {
   background: linear-gradient(180deg,#88b7e0,#4790d4);
   color: white;
   border-bottom-right-radius: 4px;
 }
 
-/* 助理泡泡樣式（左邊、灰） */
+// 助理泡泡樣式（左邊、灰）
 .chat-row.assistant .chat-bubble {
   background: #dbd9d9;
   color: #1f1f1f;
   border-bottom-left-radius: 4px;
 }
 
-/* 時間文字（顯示在泡泡下方右側） */
+// 時間文字（顯示在泡泡下方右側）
 .chat-time {
   font-size: 11.5px;
   color: #8a8a8a;
@@ -344,16 +336,52 @@ $muted-bg: #f5f5f5;
     max-width: 80%;
   }
 }
-.chat-button{
-  background-color:#f9f9fb;
+
+
+//輸入群組：不會被捲動，固定顯示在底部
+.chat-box-input-group {
+  left: 12px;                   /* 與 .chat-box padding 對齊 */
+  right: 12px;
+  bottom: 12px;                 /* 距離 .chat-box 底部的間距 */
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 0px 0px 8px 8px;
+  z-index: 50;
+  background: linear-gradient(180deg, rgba(249,249,249,0.98), rgba(249,249,249,0.99));
+  margin-bottom: 20px;
+
+}
+
+
+
+
+
+// input 伸展
+.chat-box-input {
+  flex: 1 1 auto;
+  padding: 10px;
+  border: 1px solid #cfcfcf;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+//送出按鈕
+.chat-button {
+  background-color: #f9f9fb;
   border: 0;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
 }
+.chat-button:hover{ background-color: rgba(0,123,255,0.08); }
 
 
-.chat-button:hover{
-cursor: pointer;
-background-color: rgba(0, 123, 255, 0.1);
-}
+
+
 
 .user {
   text-align: right;
@@ -469,7 +497,7 @@ background-color: rgba(0, 123, 255, 0.1);
     background-color: rgba(0, 0, 0, 0.25); /* ← 灰圈更深一點 */
     transform: scale(1.05);
   }
-  
+
 
   &:active {
     transform: scale(0.95); /* 點擊時微縮 */
@@ -521,11 +549,12 @@ background-color: rgba(0, 123, 255, 0.1);
   align-items: center;
   padding: 16px;
   overflow: hidden;
+  height: 190px;
 }
 
 .clock-inline {
   width: var(--clock-w, 160px);
-  height: var(--clock-h, 160px);
+  height: var(--clock-h, 120px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -536,7 +565,7 @@ background-color: rgba(0, 123, 255, 0.1);
 .clock-inline svg,
 .clock-inline img {
   width: 100% !important;
-  height: 100% !important;
+  height: 120px !important;
   display: block;
 }
 
@@ -602,7 +631,7 @@ background-color: rgba(0, 123, 255, 0.1);
   @extend %offset-left;
   background: #fff;
   border-radius: $card-radius;
-  padding: 16px;
+  padding: 16px 0px 9px 0px;
   box-shadow: $shadow-1;
   max-width: 1000px;
   margin-top: 20px;
@@ -717,7 +746,7 @@ background-color: rgba(0, 123, 255, 0.1);
       ========================= */
 %dashboard-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
+  grid-template-columns: minmax(0, 1fr) 320px;
   /* left fluid, right fixed */
   gap: 20px;
   align-items: start;
@@ -735,7 +764,7 @@ background-color: rgba(0, 123, 255, 0.1);
 .left-col {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 0px;
 }
 
 .dashboard-layout {
@@ -761,6 +790,7 @@ background-color: rgba(0, 123, 255, 0.1);
   // border: 1px solid black;
   box-shadow: $shadow-2;
   overflow: hidden;
+  padding: 3px;
 }
 
 .widget-header {
@@ -771,6 +801,8 @@ background-color: rgba(0, 123, 255, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  grid-column: 2;
+   grid-row: 1;
 }
 
 .salary-value {
@@ -897,23 +929,35 @@ background-color: rgba(0, 123, 255, 0.1);
   opacity: 0 !important;
 }
 ////
-::ng-deep .shift-event {  /* 外層事件卡片的通用樣式 */
+/* 事件容器 */
+::ng-deep .shift-event {
   border: 1px solid #ddd;
   border-radius: 6px;
-  font-size: 14px;  
-  overflow: hidden;   /* 避免內部溢出 */
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  overflow: hidden;
 }
 
-::ng-deep .shift-event .shift-box {  /* 內層內容區（你塞的 html） */
+/* 事件內容（注意 ::ng-deep 後有空白） */
+::ng-deep .shift-box {
   width: 100%;
   height: 100%;
   display: flex;
-  align-items: center;      /* 垂直置中文字 */
-  justify-content: center;  /* 水平置中文字 */
-  font-weight: 500;
+  align-items: center;
+  justify-content: center;
   color: #333;
 }
 
+/* 你也可以保留這個縮寫，效果一樣 */
+.shift-event .shift-box{
+  height:24px; line-height:24px; text-align:center;
+  border-radius:6px; border:1px solid #ddd; font-weight:500;
+}
 
 :host {
   display: flex;
@@ -1010,7 +1054,7 @@ background-color: rgba(0, 123, 255, 0.1);
 ///////* 父：讓子元素可用 left/right 定位 */
 .widget-card .salary-body {
   position: relative;
-  min-height: 160px;   /* 讓容器有高度，可視情況調 */
+    /* 讓容器有高度，可視情況調 */
 }
 
 /* 左邊文字區 */
@@ -1023,9 +1067,10 @@ background-color: rgba(0, 123, 255, 0.1);
 
 /* 右邊水滴 */
 .widget-card .salary-body .drop {
-  width: 150px;       
+  width: 150px;
   height: 150px;
 }
+
 //
 /* 容器改名：backend-entry */
 .backend-entry {

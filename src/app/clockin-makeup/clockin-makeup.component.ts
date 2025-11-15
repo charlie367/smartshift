@@ -1,25 +1,38 @@
-import { Component, Inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, Inject, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { SuccessDialogComponent } from '../success-dialog/success-dialog.component';
+type ClockinErrors = Partial<Record<keyof ClockinMakeupForm, string>> & {
+  extraStart?: string[];  // 每組上班錯誤
+  extraEnd?: string[];    // 每組下班錯誤
+};
 
-/* ===== 型別 ===== */
+
+type Seg = { start: string; end: string };
+type ShiftDetail = {
+  shiftWorkId: number;
+  accept: boolean;
+  startTime: string | { hour?: number; minute?: number };
+  endTime: string | { hour?: number; minute?: number };
+};
+
+
 interface ApiRes<T> { data: T; message?: string; code?: number; success?: boolean; }
 interface ClockDate {
   employeeId: string;
   workDate: string;
-  clockOn?: string|null;
-  clockOff?: string|null;
-  restStart?: string|null;
-  restEnd?: string|null;
-  shiftWorkId?: number|null;
+  clockOn?: string | null;
+  clockOff?: string | null;
+  restStart?: string | null;
+  restEnd?: string | null;
+  shiftWorkId?: number | null;
 }
-interface ExtraShiftSE { startTime: string; endTime: string; _orig?: number; }
+interface ExtraShiftSE { startTime: string; endTime: string; groupNo?: number; }
 
 export interface ClockinMakeupForm {
   employeeId: string;
@@ -32,6 +45,7 @@ export interface ClockinMakeupForm {
   description: string;
   file: File | null;
   extraShifts?: ExtraShiftSE[];
+
 }
 
 @Component({
@@ -41,7 +55,7 @@ export interface ClockinMakeupForm {
   templateUrl: './clockin-makeup.component.html',
   styleUrls: ['./clockin-makeup.component.scss'],
 })
-export class ClockinMakeupComponent implements OnInit {
+export class ClockinMakeupComponent implements OnInit, OnDestroy {
 
   /* ===== 狀態 ===== */
   limitToToday = true;
@@ -53,15 +67,23 @@ export class ClockinMakeupComponent implements OnInit {
     file: null, extraShifts: [],
   };
 
-  errors: Partial<Record<keyof ClockinMakeupForm, string>> = {};
+
+  errors: ClockinErrors = {};
+
+
   fileName = ''; previewUrl = '';
   loading = false; showErrors = false; dragOver = false;
-  today = new Date().toISOString().slice(0,10);
-  stars = [1,2,3,4,5] as const;
 
-  private readonly API_BASE = 'http://localhost:8080';
-  private prefillToken = 0;
-  private lastSubmittedKey = '';
+  // 今天（yyyy-mm-dd）
+  today = (() => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  })();
+
+  stars = [1, 2, 3, 4, 5] as const;
 
   // 是否休假（沒有班表）
   private isRestDay = false;
@@ -70,12 +92,15 @@ export class ClockinMakeupComponent implements OnInit {
   promotedFromIndex: number | null = null;
 
   // 班別定義（可調）
-  private readonly SHIFT_TABLE: Record<number, {start:string; end:string}> = {
+  private readonly SHIFT_TABLE: Record<number, { start: string; end: string }> = {
     1: { start: '08:00', end: '12:00' },
     2: { start: '12:00', end: '16:00' },
     3: { start: '16:00', end: '20:00' },
     4: { start: '20:00', end: '00:00' },
   };
+
+  // 取消上一輪預填
+  private prefillSub?: Subscription;
 
   constructor(
     private dialogRef: MatDialogRef<ClockinMakeupComponent>,
@@ -83,130 +108,102 @@ export class ClockinMakeupComponent implements OnInit {
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
     private dialog: MatDialog,
-  ){
-    this.form.employeeId = (data.employeeId || '').toUpperCase();
-    this.form.date = data.date || '';
-  }
+  ) { }
 
   ngOnInit(): void {
+    // 初始化：系統帶入（不可編輯）
+    this.form.employeeId = (this.data.employeeId ?? '').trim().toUpperCase();
+    this.form.date = this.data.date || '';
+
+    // 預填
     if (this.form.employeeId && this.form.date) {
-      void this.prefillOnlyMissing(this.form.employeeId, this.form.date, { override: true });
+      this.prefillOnlyMissing(this.form.employeeId, this.form.date, { override: true });
     }
   }
 
-  /* ===== 工具 ===== */
-  private normDate(s?: string|null){ return s ? String(s).split('T')[0].replace(/[/.]/g,'-') : ''; }
-  private normEmp(s: string){ return (s||'').trim().toUpperCase(); }
-  private normTime(s?: string|null){
-    if (!s) return '';
-    const [h='0', m='0'] = String(s).trim().split(':');
-    return `${h.padStart(2,'0')}:${(m ?? '00').padStart(2,'0').slice(0,2)}`;
+  ngOnDestroy(): void {
+    if (this.prefillSub) this.prefillSub.unsubscribe();
   }
 
-  private minToHHMM(min: number){
-    min = ((min % (24*60)) + (24*60)) % (24*60);
-    const h = Math.floor(min/60), m = min%60;
-    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-  }
-  /** 驗證比較用：把 "00:00" 視為 24:00 */
-  private toMinForValidation(t?: string): number {
-    if (!t) return NaN;
-    return t === '00:00' ? 24*60 : this.toMin(t);
+  private minToHHMM(min: number) {
+    //如果說有個人上夜班但是他加班到凌晨四點這時候我的這個方法就會出動因為取中間值會是00所以會是0分鐘
+    //那麼往前三十分鐘不就是-30這時候就把 1440 加回來再算其餘的也照舊._.
+    min = ((min % (24 * 60)) + (24 * 60)) % (24 * 60);
+    const h = Math.floor(min / 60), m = min % 60;
+    return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');;
   }
 
-  /** 把 '12:00' 依情境矯正成 午夜(00:00) 或 中午(12:00) */
-  private normalizeNoonMidnight(start?: string, end?: string): string | undefined {
-    if (!end || end !== '12:00') return end;
-    if (!start) return end;
-    const s = this.toMin(start);
-    if (!Number.isFinite(s)) return end;
-    // 晚上 >= 18:00 開始到「12:00」→ 視為跨日至 00:00
-    return s >= 18 * 60 ? '00:00' : '12:00';
-  }
-
-  private inferEndFromStart(start?: string): string {
-    const s = this.toMin(this.normTime(start)); if (!Number.isFinite(s)) return '';
-    for (const id of Object.keys(this.SHIFT_TABLE)){
-      const seg = this.SHIFT_TABLE[+id];
-      let a = this.toMin(seg.start), b = this.toMin(seg.end);
-      if (b < a) b += 24*60;
-      if (s >= a && s < b) return this.normTime(seg.end);
-    }
-    return '';
-  }
-
-  /* ===== 午休規則 ===== */
-  private autoLunchByMidpoint(start: string, end: string){
+  private autoLunchByMidpoint(start: string, end: string) {
     if (this.form.lunchStartTime || this.form.lunchEndTime) return;
     const s = this.toMin(start); let e = this.toMin(end);
+    //如果不是一個正常的數字我就return，像我在toMin回傳的NaN就是其中一種
     if (!Number.isFinite(s) || !Number.isFinite(e)) return;
-    if (e <= s) e += 24*60;
+    if (e <= s) e = e + 24 * 60;
     const mid = Math.floor((s + e) / 2);
     this.form.lunchStartTime = this.minToHHMM(mid - 30);
-    this.form.lunchEndTime   = this.minToHHMM(mid + 30);
+    this.form.lunchEndTime = this.minToHHMM(mid + 30);
   }
+
   private applyAutoLunchAfterMerge(merged: Array<{ startTime: string; endTime: string }>, hadAdjacent: boolean) {
     this.form.lunchStartTime = '';
-    this.form.lunchEndTime   = '';
+    this.form.lunchEndTime = '';
     if (!hadAdjacent) return;
     if (!merged.length) return;
     const main = merged[0];
     if (main.startTime && main.endTime) this.autoLunchByMidpoint(main.startTime, main.endTime);
   }
 
-  /* ===== 事件 ===== */
-  touch(_field: keyof ClockinMakeupForm){ this.validate(); this.showErrors = true; }
-
-  onStartTimeChange(val: string){
+  onStartTimeChange(val: string) {
     this.promotedFromIndex = null;
     this.form.startTime = this.normTime(val);
-    if (!this.form.endTime){
+    if (!this.form.endTime) {
       const infer = this.inferEndFromStart(this.form.startTime);
       if (infer) this.form.endTime = infer;
     }
     this.validate();
   }
 
-  onEndTimeChange(val: string){
+  onEndTimeChange(val: string) {
     this.promotedFromIndex = null;
     const v = this.normTime(val);
-    this.form.endTime = this.normalizeNoonMidnight(this.form.startTime, v) || v;
+    this.form.endTime = v;
     this.validate();
   }
 
-  onExtraStartChange(i: number, val: string){
+  onExtraEndChange(i: number, val: string) {
+    const seg = (this.form.extraShifts ?? [])[i]; if (!seg) return;
+    const v = this.normTime(val);
+    seg.endTime = v;
+    this.validate();
+  }
+
+
+  onExtraStartChange(i: number, val: string) {
     const seg = (this.form.extraShifts ?? [])[i]; if (!seg) return;
     seg.startTime = this.normTime(val);
-    if (!seg.endTime){
+    if (!seg.endTime) {
       const infer = this.inferEndFromStart(seg.startTime);
       if (infer) seg.endTime = infer;
     }
     this.validate();
   }
 
-  onExtraEndChange(i: number, val: string){
-    const seg = (this.form.extraShifts ?? [])[i]; if (!seg) return;
-    const v = this.normTime(val);
-    seg.endTime = this.normalizeNoonMidnight(seg.startTime, v) || v;
-    this.validate();
-  }
-
-  onLunchStartChange(val: string){
+  onLunchStartChange(val: string) {
     this.form.lunchStartTime = this.normTime(val);
-    if (this.form.lunchStartTime && !this.form.lunchEndTime){
+    if (this.form.lunchStartTime && !this.form.lunchEndTime) {
       const s = this.toMin(this.form.lunchStartTime);
       this.form.lunchEndTime = this.minToHHMM(s + 60);
     }
     this.validate();
   }
 
-  /** 點主段的 ✕：用下一組頂上來，並標註「第 X 組」 */
-  removeMainShift(){
-    if (this.form.extraShifts && this.form.extraShifts.length){
+
+  removeMainShift() {
+    if (this.form.extraShifts && this.form.extraShifts.length) {
       const next = this.form.extraShifts.shift()!;
       this.form.startTime = next.startTime || '';
-      this.form.endTime   = next.endTime   || '';
-      this.promotedFromIndex = next._orig ?? 2; // 顯示（第 X 組）
+      this.form.endTime = next.endTime || '';
+      this.promotedFromIndex = next.groupNo ?? 2;
     } else {
       this.form.startTime = '';
       this.form.endTime = '';
@@ -215,66 +212,63 @@ export class ClockinMakeupComponent implements OnInit {
     this.errors.startTime = undefined; this.errors.endTime = undefined;
     this.validate();
   }
-  removeShift(i: number){
-    (this.form.extraShifts ??= []).splice(i,1);
+  removeShift(i: number) {
+    (this.form.extraShifts ??= []).splice(i, 1);
     this.validate();
   }
 
-  /* ===== 預填 ===== */
-  private async fetchScheduleSegments(emp: string, ymd: string){
-    type ShiftDetail = { shiftWorkId:number; accept:boolean; startTime:any; endTime:any; };
-    type Res = { shiftDetailList: ShiftDetail[] };
-    const r = await this.tryGet<Res>(`${this.API_BASE}/PreSchedule/selectScheduleByIdAndDate`,
-      { employeeId: emp, date: ymd });
-    const list = r?.shiftDetailList ?? [];
-    return list
-      .filter(x => x.accept && x.shiftWorkId !== 0)
-      .map(x => {
-        const s = typeof x.startTime === 'string'
-          ? x.startTime.slice(0,5)
-          : `${String(x.startTime?.hour ?? 0).padStart(2,'0')}:${String(x.startTime?.minute ?? 0).padStart(2,'0')}`;
-        const e = typeof x.endTime === 'string'
-          ? x.endTime.slice(0,5)
-          : `${String(x.endTime?.hour ?? 0).padStart(2,'0')}:${String(x.endTime?.minute ?? 0).padStart(2,'0')}`;
-        return { start: this.normTime(s), end: this.normTime(e) };
-      })
-      .sort((a,b)=> this.toMin(a.start) - this.toMin(b.start));
+  private normTime(s?: string | null) {
+    if (!s) return '';
+    const [h = '0', m = '0'] = s.split(':');
+    return h.padStart(2, '0') + ':' + m.padStart(2, '0');
   }
 
-  private buildPunchSegmentsAllowSingle(rows: ClockDate[], schedule: Array<{start:string; end:string}>): ExtraShiftSE[] {
-    const inSpan = (t: string, seg: {start:string; end:string}) => {
-      const x = this.toMin(t), s = this.toMin(seg.start); let e = this.toMin(seg.end);
-      if (e <= s) e += 24*60; let xx = x; if (xx < s) xx += 24*60;
-      return xx >= s && xx <= e;
+  private toMin(t?: string): number {
+    //Not a Number 一個無效數值
+    if (!t) return NaN;
+    const [h, m] = t.split(':').map(Number);
+    return h * 60 + m;
+  }
+
+  private buildPunchSegmentsAllowSingle = (rows: ClockDate[], schedule: Array<{ start: string; end: string }>): ExtraShiftSE[] => {
+    const inSpan = (t: string, seg: { start: string; end: string }) => {
+      const x = this.toMin(t);
+      let s = this.toMin(seg.start);
+      let e = this.toMin(seg.end);
+      s = s - 30;
+      if (e <= s) e = e + 24 * 60;
+      return x >= s && x <= e;
     };
 
     const segs: ExtraShiftSE[] = [];
     for (const r of rows) {
-      const on  = this.normTime(r.clockOn);
+      const on = this.normTime(r.clockOn);
       const off = this.normTime(r.clockOff);
 
       if (on && off) { segs.push({ startTime: on, endTime: off }); continue; }
 
       if (on && !off) {
+        // find 陣列的方法
         const host = schedule.find(seg => inSpan(on, seg));
-        const end  = host ? host.end : this.inferEndFromStart(on);
-        segs.push({ startTime: on, endTime: end || '' });
+        if (host) {
+          segs.push({ startTime: on, endTime: host.end });
+        }
+        else {
+          this.clearTimes();
+          this.dialog.open(ErrorDialogComponent, {
+            width: '360px',
+            data: { message: '打卡時間未匹配到班表，請確認資料。', autoCloseMs: 2500 },
+          });
+        }
         continue;
-      }
-
-      if (!on && off) {
-        const host = schedule.find(seg => inSpan(off, seg));
-        const start = host ? host.start : '';
-        if (start) segs.push({ startTime: start, endTime: off });
       }
     }
     return segs
-      .filter(s => !!s.startTime)
-      .sort((a,b)=> this.toMin(a.startTime) - this.toMin(b.startTime));
-  }
+      .sort((a, b) => this.toMin(a.startTime) - this.toMin(b.startTime));
+  };
 
-  private mergeByOverlap(schedule: Array<{start:string; end:string}>, punches: ExtraShiftSE[]): ExtraShiftSE[] {
-    const schMerged: Array<{start:string; end:string}> = [];
+  private mergeByOverlap = (schedule: Array<{ start: string; end: string }>, punches: ExtraShiftSE[]): ExtraShiftSE[] => {
+    const schMerged: Array<{ start: string; end: string }> = [];
     for (const seg of schedule) {
       const last = schMerged[schMerged.length - 1];
       if (last && last.end === seg.start) last.end = seg.end;
@@ -282,13 +276,16 @@ export class ClockinMakeupComponent implements OnInit {
     }
 
     const used = new Set<number>(); const out: ExtraShiftSE[] = [];
-    for (const sch of schMerged){
+    for (const sch of schMerged) {
+      //班表的時間s1、e1
       const s1 = this.toMin(sch.start); const e1 = this.toMin(sch.end);
       let pick = -1, bestOL = 0;
       punches.forEach((p, i) => {
         if (used.has(i)) return;
-        const s2 = this.toMin(p.startTime), e2 = this.toMin(p.endTime || '');
-        const ee = Number.isFinite(e2) ? e2 : s2;
+        //打卡的時間s2、e2、ee
+        //重疊區間演算法?-?難死了，這個公式主要是再算你的打卡時間有沒有落在這個班裡，ol重疊分鐘數，簡單來說這一段打卡 p，跟目前這一段班表 sch 的重疊時間有多少分鐘？
+        const s2 = this.toMin(p.startTime), e2 = this.toMin(p.endTime);
+        const ee = e2 ? e2 : s2;
         const ol = Math.max(0, Math.min(e1, ee) - Math.max(s1, s2));
         if (ol > bestOL) { bestOL = ol; pick = i; }
       });
@@ -296,70 +293,108 @@ export class ClockinMakeupComponent implements OnInit {
       if (pick >= 0 && bestOL >= 1) {
         used.add(pick);
         const p = punches[pick];
-        out.push({ startTime: p.startTime, endTime: p.endTime || sch.end });
+        out.push({ startTime: p.startTime, endTime: p.endTime });
       } else {
         out.push({ startTime: sch.start, endTime: sch.end });
       }
     }
     return out;
-  }
+  };
 
-  private async prefillOnlyMissing(employeeId: string, ymd: string, opt: { override?: boolean } = {}){
-    const emp = this.normEmp(employeeId); const dateKey = this.normDate(ymd);
+  private prefillOnlyMissing(employeeId: string, ymd: string, opt: { override?: boolean } = {}): void {
+    const emp = employeeId || '';
+    const dateKey = ymd || '';
     if (!emp || !dateKey) return;
-    this.loading = true; const token = ++this.prefillToken;
 
-    // 1) 班表
-    const schedule = await this.fetchScheduleSegments(emp, dateKey);
-    if (token !== this.prefillToken) return;
-
-    // 休假判斷
-    this.isRestDay = schedule.length === 0;
-
-    if (this.isRestDay) {
-      if (opt.override) this.clearTimes();
-      this.loading = false; this.cdr.detectChanges(); return;
+    // 取消上一輪請求
+    if (this.prefillSub) {
+      this.prefillSub.unsubscribe();
     }
 
-    const hasAdjacent = schedule.some((seg, i) => i > 0 && schedule[i-1].end === seg.start);
+    this.loading = true;
 
-    // 2) 打卡 rows
-    const r = await this.tryGet<ApiRes<ClockDate[]>>(`${this.API_BASE}/single/date`, { employeeId: emp, workDate: dateKey });
-    if (token !== this.prefillToken) return;
-    const rows = r?.data ?? [];
+    this.prefillSub = this.http.get<any>('http://localhost:8080/PreSchedule/selectScheduleByIdAndDate',
+      { params: { employeeId: emp, date: dateKey } }
+    ).subscribe({
+      next: (res) => {
+        const list: any[] = res?.shiftDetailList ?? [];
 
-    // 3) rows → 打卡段（允許單邊）→ 覆蓋班表
-    const punches = this.buildPunchSegmentsAllowSingle(rows, schedule);
-    const merged = this.mergeByOverlap(schedule, punches);
+        const schedule: Seg[] =
+          list.filter(x => x.accept && x.shiftWorkId !== 0)
+            .map(x => ({
+              start: this.normTime(x.startTime),
+              end: this.normTime(x.endTime),
+            }))
+            .sort((a, b) => this.toMin(a.start) - this.toMin(b.start));
 
-    // 4) 寫回表單（把原始序號寫進 _orig：第二段從 2 開始）
-    this.form.startTime  = merged[0]?.startTime ?? '';
-    this.form.endTime    = merged[0]?.endTime   ?? '';
-    this.form.extraShifts = merged.slice(1).map((s, i) => ({ ...s, _orig: i + 2 }));
-    this.promotedFromIndex = null;
+        // 休假：沒班表
+        this.isRestDay = schedule.length === 0;
+        if (this.isRestDay) {
+          if (opt.override) this.clearTimes();
+          this.loading = false;
+          //Angular 內建的一種「手動刷新畫面資料綁定」的方法，用來預防非同步沒有刷新
+          this.cdr.detectChanges();
+          return;
+        }
+        //查看有沒有午休
+        const hasAdjacent = schedule.some(
+          (seg, i) => i > 0 && schedule[i - 1].end === seg.start
+        );
 
-    // 5) 只有「相接班」才帶午休（主段正中間 1hr）
-    this.applyAutoLunchAfterMerge(merged, hasAdjacent);
 
-    this.validate(); this.loading = false; this.cdr.detectChanges();
+        this.http.get<ApiRes<ClockDate[]>>('http://localhost:8080/single/date',
+          { params: { employeeId: emp, workDate: dateKey } }
+        ).subscribe({
+          next: (r2) => {
+            const rows = r2?.data ?? [];
+
+            const punches = this.buildPunchSegmentsAllowSingle(rows, schedule);
+            const merged = this.mergeByOverlap(schedule, punches);
+
+            // 主段
+            this.form.startTime = merged[0]?.startTime ?? '';
+            this.form.endTime = merged[0]?.endTime ?? '';
+
+            // 其它段（第 2 組開始）
+            this.form.extraShifts = merged
+              .slice(1)
+              .map((s, i) => ({ ...s, groupNo: i + 2 }));
+
+            this.promotedFromIndex = null;
+
+            // 自動帶午休
+            this.applyAutoLunchAfterMerge(merged, hasAdjacent);
+            this.validate();
+          },
+          error: () => {
+            this.clearTimes();
+          },
+          //RxJS是專門處理「非同步＋資料流」的工具包，不管成功還是失敗都會執行
+          complete: () => {
+            this.loading = false;
+            this.cdr.detectChanges();
+          }
+        });
+      },
+      error: () => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
-  /* ===== 其它：I/O、驗證、送出 ===== */
 
-  onEmpChange(v: string|null){
-    this.form.employeeId = (v ?? '').trim().toUpperCase();
-    this.isRestDay = false;     // 等待查班表再決定
-    this.clearTimes();
-    if (this.form.employeeId && this.form.date) void this.prefillOnlyMissing(this.form.employeeId, this.form.date);
-  }
-  onDateChange(v: string|null){
-    this.form.date = (v ?? '').trim();
+  touch(_field: keyof ClockinMakeupForm) { this.validate(); this.showErrors = true; }
+
+  onDateChange(_v: string | null) {
     this.isRestDay = false;
     this.clearTimes();
-    if (this.form.employeeId && this.form.date) void this.prefillOnlyMissing(this.form.employeeId, this.form.date);
+    if (this.form.employeeId && this.form.date) {
+      this.prefillOnlyMissing(this.form.employeeId, this.form.date);
+    }
   }
 
-  private clearTimes(){
+  private clearTimes() {
     this.form.startTime = ''; this.form.endTime = '';
     this.form.lunchStartTime = ''; this.form.lunchEndTime = '';
     this.form.extraShifts = [];
@@ -367,92 +402,121 @@ export class ClockinMakeupComponent implements OnInit {
     this.errors = {};
   }
 
-  private async tryGet<T>(url: string, params?: Record<string,string>): Promise<T | null> {
-    try {
-      const httpParams = params ? new HttpParams({ fromObject: params }) : undefined;
-      return await firstValueFrom(this.http.get<T>(url, { params: httpParams }));
-    } catch { return null; }
-  }
-
   // ---- 檔案 ----
-  onDragOver(e: DragEvent){ e.preventDefault(); this.dragOver = true; }
-  onDragLeave(e: DragEvent){ e.preventDefault(); this.dragOver = false; }
-  onDrop(e: DragEvent){ e.preventDefault(); this.dragOver = false;
-    const f = e.dataTransfer?.files?.[0]; if (f) this.setFile(f); }
-  onFileChange(e: Event){ const f = (e.target as HTMLInputElement).files?.[0]; if (f) this.setFile(f); }
-  removeFile(ev?: Event){ ev?.stopPropagation(); this.form.file = null; this.fileName=''; this.previewUrl=''; this.errors.file = undefined; }
+  onDragOver(e: DragEvent) { e.preventDefault(); this.dragOver = true; }
+  onDragLeave(e: DragEvent) { e.preventDefault(); this.dragOver = false; }
+  onDrop(e: DragEvent) {
+    e.preventDefault(); this.dragOver = false;
+    const f = e.dataTransfer?.files?.[0]; if (f) this.setFile(f);
+  }
+  onFileChange(e: Event) { const f = (e.target as HTMLInputElement).files?.[0]; if (f) this.setFile(f); }
+  removeFile(ev?: Event) { ev?.stopPropagation(); this.form.file = null; this.fileName = ''; this.previewUrl = ''; this.errors.file = undefined; }
 
-  private readonly MAX_SIZE = 10*1024*1024;
-  private readonly ALLOW_EXTS = ['pdf','doc','docx']; // 其他交給 MIME
+  private readonly MAX_SIZE = 10 * 1024 * 1024;
+  private readonly ALLOW_EXTS = ['pdf', 'doc', 'docx'];
   private readonly ALLOW_TYPES = [
     'application/pdf',
     'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
   ];
-  
-  private setFile(file: File){
-    const isImage = file.type.startsWith('image/');  // 接受所有 image/*
+  private setFile(file: File) {
+    const isImage = file.type.startsWith('image/');
     const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
     const ok = isImage || this.ALLOW_EXTS.includes(ext) || this.ALLOW_TYPES.includes(file.type);
-    if (!ok){ this.errors.file='不支援的檔案格式'; this.showErrors = true; return; }
-    if (file.size > this.MAX_SIZE){ this.errors.file='檔案超過 10MB 上限'; this.showErrors = true; return; }
+    if (!ok) { this.errors.file = '不支援的檔案格式'; this.showErrors = true; return; }
+    if (file.size > this.MAX_SIZE) { this.errors.file = '檔案超過 10MB 上限'; this.showErrors = true; return; }
     this.form.file = file; this.fileName = file.name; this.errors.file = undefined;
-    if (file.type.startsWith('image/') || ['jpg','jpeg','png'].includes(ext)){
-      const reader = new FileReader(); reader.onloadend = () => this.previewUrl = String(reader.result || '');
+    if (isImage || ['jpg', 'jpeg', 'png'].includes(ext)) {
+      const reader = new FileReader();
+      reader.onloadend = () => this.previewUrl = String(reader.result || '');
       reader.readAsDataURL(file);
-    } else { this.previewUrl = ''; }
+    } else {
+      this.previewUrl = '';
+    }
   }
 
-  reset(){
-    this.form = { ...this.form, startTime:'', endTime:'', lunchStartTime:'', lunchEndTime:'', rating:0, description:'', file:null, extraShifts:[] };
-    this.fileName=''; this.previewUrl=''; this.errors={}; this.showErrors=false;
+  reset() {
+    this.form = { ...this.form, startTime: '', endTime: '', lunchStartTime: '', lunchEndTime: '', rating: 0, description: '', file: null, extraShifts: [] };
+    this.fileName = ''; this.previewUrl = ''; this.errors = {}; this.showErrors = false;
     this.promotedFromIndex = null;
   }
 
+  private inferEndFromStart(start?: string): string {
+    const s = this.toMin(this.normTime(start)); if (!Number.isFinite(s)) return '';
+    for (const id of Object.keys(this.SHIFT_TABLE)) {
+      const seg = this.SHIFT_TABLE[+id];
+      let a = this.toMin(seg.start), b = this.toMin(seg.end);
+      if (b < a) b += 24 * 60;
+      if (s >= a && s < b) return this.normTime(seg.end);
+    }
+    return '';
+  }
+
+  private toMinForValidation(t?: string): number {
+    if (!t) return NaN;
+    return t === '00:00' ? 24 * 60 : this.toMin(t);
+  }
+
   private validate(): boolean {
-    const e: typeof this.errors = {};
-  
-    // 基本欄位
-    if (!this.form.employeeId?.trim()) e.employeeId = '員工編號為必填';
-    else if (!/^[A-Za-z0-9-]{3,20}$/.test(this.form.employeeId.trim())) e.employeeId = '格式不正確（英數/連字號 3~20 字）';
-  
+    const e: ClockinErrors = {};
+
+    if (!this.form.employeeId?.trim()) e.employeeId = '系統未取得員工編號，請重新登入或聯絡管理員';
+
     if (!this.form.date) e.date = '日期為必填';
     else if (this.form.date > this.today) e.date = '日期不可晚於今天';
-  
-    // 上下班：休假或兩個都空 → 不必填；有填一邊就檢查另一邊；時間需遞增
+
     const hasStart = !!this.form.startTime;
-    const hasEnd   = !!this.form.endTime;
-  
+    const hasEnd = !!this.form.endTime;
+
     if (!this.isRestDay) {
-      if (hasStart && !hasEnd) e.endTime   = '結束時間為必填';
+      if (hasStart && !hasEnd) e.endTime = '結束時間為必填';
       if (!hasStart && hasEnd) e.startTime = '開始時間為必填';
-  
+
       if (hasStart && hasEnd) {
-        const s  = this.toMinForValidation(this.form.startTime);
+        const s = this.toMinForValidation(this.form.startTime);
         const ed = this.toMinForValidation(this.form.endTime);
+        //檢查看是不是不是數字
         if (Number.isFinite(s) && Number.isFinite(ed) && ed <= s) {
           e.endTime = '下班打卡時間需晚於上班打卡時間';
         }
       }
     }
-  
-    // 其它段：只在「填一半」或「時間顛倒」時提示
+
+
+    const extraStart: string[] = [];
+    const extraEnd: string[] = [];
+
     (this.form.extraShifts ?? []).forEach((seg, idx) => {
-      const a = !!seg.startTime, b = !!seg.endTime;
-      if (a && !b) e.endTime   ||= `第 ${idx+2} 組：結束時間為必填`;
-      if (!a && b) e.startTime ||= `第 ${idx+2} 組：開始時間為必填`;
+      const a = !!seg.startTime;
+      const b = !!seg.endTime;
+
+      if (a && !b) {
+        extraEnd[idx] = '結束時間為必填';
+      }
+
+      if (!a && b) {
+        extraStart[idx] = '開始時間為必填';
+      }
+
       if (a && b) {
         const ss = this.toMinForValidation(seg.startTime);
         const ee = this.toMinForValidation(seg.endTime);
+        //檢查看是不是不是數字
         if (Number.isFinite(ss) && Number.isFinite(ee) && ee <= ss) {
-          e.endTime ||= `第 ${idx+2} 組：結束需晚於開始`;
+          extraEnd[idx] = '結束需晚於開始';
         }
       }
     });
-  
+
+    if (extraStart.length) {
+      e.extraStart = extraStart;
+    }
+    if (extraEnd.length) {
+      e.extraEnd = extraEnd;
+    }
     const hasLunchS = !!this.form.lunchStartTime;
     const hasLunchE = !!this.form.lunchEndTime;
-    if (hasLunchS && !hasLunchE) e.lunchEndTime   = '午休結束為必填';
+    if (hasLunchS && !hasLunchE) e.lunchEndTime = '午休結束為必填';
     if (!hasLunchS && hasLunchE) e.lunchStartTime = '午休開始為必填';
     if (hasLunchS && hasLunchE) {
       const ls = this.toMinForValidation(this.form.lunchStartTime);
@@ -461,203 +525,146 @@ export class ClockinMakeupComponent implements OnInit {
         e.lunchEndTime = '午休結束需晚於午休開始';
       }
     }
-  
-    // 評分必填（至少 1 顆）
-    if (!Number.isFinite(this.form.rating) || this.form.rating < 1) {
-      e.rating = '請選擇重要程度評分';
+
+    if (this.form.rating < 1) {
+      e.rating = '請選擇心情評分';
     }
-  
-    // 原因說明必填
     if (!this.form.description?.trim()) e.description = '請填寫補打卡原因說明';
-  
+
     this.errors = e;
+    // e 是物件而 Object.key(e) 是陣列
     return Object.keys(e).length === 0;
   }
-  
+
   addEmptyShift(): void {
     if ((this.form.extraShifts?.length ?? 0) >= 1) return;
     (this.form.extraShifts ??= []).push({
       startTime: '',
       endTime: '',
-      _orig: (this.form.extraShifts?.length ?? 0) + 2,
+      groupNo: (this.form.extraShifts?.length ?? 0) + 2,
     });
     this.promotedFromIndex = null;
     this.validate();
   }
 
-  setRating(n: number){
+  setRating(n: number) {
     this.form.rating = n;
     this.validate();
   }
-  
-  /** 將 "HH:mm" 轉成 "HH:mm:ss" */
-  private asHHMMSS(t?: string): string|null {
+
+  private asHHMMSS(t?: string): string | null {
     if (!t) return null;
-    const [h='00', m='00'] = String(t).split(':');
-    return `${h.padStart(2,'0')}:${m.padStart(2,'0')}:00`;
+    const [h = '00', m = '00'] = t.split(':');
+    return h.padStart(2, '0') + ':' + m.padStart(2, '0') + ':00';
   }
 
-  /** 檔案轉 base64（字串）；不是圖片也能轉 */
-  private fileToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const r = new FileReader();
-      r.onload = () => resolve(String(r.result || ''));
-      r.onerror = reject;
-      r.readAsDataURL(file);
-    });
-  }
-
-  async submit() {
+  submit() {
     this.showErrors = true;
     if (!this.validate()) return;
 
-    // 1) 蒐集所有時間段（主段 + 其它段）並矯正 12:00
     const rawSegments = [
       { start: this.form.startTime, end: this.form.endTime },
       ...(this.form.extraShifts ?? []).map(s => ({ start: s.startTime, end: s.endTime })),
     ];
-
-    const segments = rawSegments
-      .map(seg => ({
-        start: seg.start,
-        end: this.normalizeNoonMidnight(seg.start, seg.end) || seg.end,
-      }))
-      .filter(seg => !!seg.start && !!seg.end);
+    const segments = rawSegments.filter(seg => !!seg.start && !!seg.end);
 
     if (!segments.length) {
       this.errors.endTime = '請至少填寫一組完整的上/下班時間';
       this.dialog.open(ErrorDialogComponent, {
-        width: '360px',
-        panelClass: 'error-dialog-panel',
+        width: '360px', panelClass: 'error-dialog-panel',
         data: { message: this.errors.endTime, autoCloseMs: 2000 },
       });
       return;
     }
 
-    // 2) 檔案轉 base64（可選）
-    let proveBase64: string | null = null;
-    if (this.form.file) {
-      try {
-        proveBase64 = await this.fileToBase64(this.form.file);
-      } catch {
-        proveBase64 = null;
-      }
-    }
-
-    // 3) 依「是否連續」分組
     const lunchStart = this.form.lunchStartTime || undefined;
-    const lunchEnd   = this.form.lunchEndTime   || undefined;
-    const GAP_TOLERANCE_MIN = 0;
+    const lunchEnd = this.form.lunchEndTime || undefined;
 
-    const isLunchGap = (prevEnd: string, nextStart: string) =>
-      !!lunchStart && !!lunchEnd &&
-      this.toMin(prevEnd) === this.toMin(lunchStart) &&
-      this.toMin(nextStart) === this.toMin(lunchEnd);
 
-    const groups = [...segments]
-      .sort((a, b) => this.toMin(a.start)! - this.toMin(b.start)!)
-      .reduce((acc: { start: string; end: string }[][], cur) => {
-        const lastGroup = acc[acc.length - 1];
-        if (!lastGroup || !lastGroup.length) {
-          acc.push([cur]);
-        } else {
-          const prev = lastGroup[lastGroup.length - 1];
-          const gap = this.toMin(cur.start)! - this.toMin(prev.end)!;
-          const contiguous = gap >= 0 && (gap <= GAP_TOLERANCE_MIN || isLunchGap(prev.end, cur.start));
-          contiguous ? lastGroup.push(cur) : acc.push([cur]);
-        }
-        return acc;
-      }, []);
+    const ordered = [...segments].sort(
+      (a, b) => this.toMin(a.start)! - this.toMin(b.start)!
+    );
 
-    // 4) 每一組輸出「一筆」DTO
-    const payload = groups.map((g, gi) => ({
-      employeeId : this.form.employeeId.trim(),
-      workDate   : this.form.date,
-      clockOn    : this.asHHMMSS(g[0].start),
-      clockOff   : this.asHHMMSS(g[g.length - 1].end),
-      restStart  : gi === 0 ? this.asHHMMSS(lunchStart) : null,
-      restEnd    : gi === 0 ? this.asHHMMSS(lunchEnd)   : null,
-      score      : this.form.rating,
+
+    const payload = ordered.map((seg, idx) => ({
+      employeeId: this.form.employeeId.trim(),
+      workDate: this.form.date,
+      clockOn: this.asHHMMSS(seg.start),
+      clockOff: this.asHHMMSS(seg.end),
+      restStart: idx === 0 ? this.asHHMMSS(lunchStart) : null,
+      restEnd: idx === 0 ? this.asHHMMSS(lunchEnd) : null,
+      score: this.form.rating,
       description: (this.form.description || '').trim(),
-      prove      : proveBase64,
+      //這個型別現在是 null 可是我等等可能會給他字串或 null
+      prove: null as string | null,
     }));
+    //宣告一個方法函式跑完照片再跑你
+    const proceedSend = (proveBase64: string | null) => {
+      if (payload.length) payload[0].prove = proveBase64;
 
-    // 5) 去重（全部成功後才記 key）
-    const key = JSON.stringify(payload);
-    if (key === this.lastSubmittedKey) return;
+      this.loading = true;
 
-    this.loading = true;
-    try {
-      // 6) 後端規則：一班一筆 -> 逐筆送出
-      for (const dto of payload) {
-        const res = await firstValueFrom(
-          this.http.post<{ code: number; message: string }>(
-            `${this.API_BASE}/clock/missClockApply`,
-            [dto] // 若後端改成吃單筆 DTO，將 [dto] 改成 dto
-          )
-        );
-        if (res?.code !== 200) throw new Error(res?.message || '送出失敗，請稍後再試');
-      }
+      const sendNext = (i: number) => {
+        if (i >= payload.length) {
+          this.loading = false;
 
-      this.lastSubmittedKey = key;
+          const sref = this.dialog.open(SuccessDialogComponent, {
+            width: '360px', panelClass: 'success-dialog-panel', disableClose: true,
+          });
+          sref.afterClosed().subscribe(() => {
+            this.dialogRef.close({ ok: true, message: '補打卡申請已送出！' });
+          });
+          return;
+        }
 
-      const sref = this.dialog.open(SuccessDialogComponent, {
-        width: '360px',
-        panelClass: 'success-dialog-panel',
-        disableClose: true,
-      });
-      sref.afterClosed().subscribe(() => {
-        this.dialogRef.close({ ok: true, message: '補打卡申請已送出！' });
-      });
+        this.http.post<{ code: number; message: string }>(
+          'http://localhost:8080/clock/missClockApply',
+          [payload[i]]
+        ).subscribe({
+          next: (res) => {
+            if (res.code !== 200) {
+              this.loading = false;
+              this.dialog.open(ErrorDialogComponent, {
+                width: '360px', panelClass: 'error-dialog-panel',
+                data: { message: res?.message || '送出失敗，請稍後再試', autoCloseMs: 2200 },
+              });
+            } else {
+              sendNext(i + 1);
+            }
+          },
+          error: () => {
+            this.loading = false;
+            this.dialog.open(ErrorDialogComponent, {
+              width: '360px', panelClass: 'error-dialog-panel',
+              data: { message: '連線失敗或伺服器錯誤，請稍後再試', autoCloseMs: 2200 },
+            });
+          }
+        });
+      };
 
-    } catch (err: any) {
-      this.lastSubmittedKey = '';
-      this.dialog.open(ErrorDialogComponent, {
-        width: '360px',
-        panelClass: 'error-dialog-panel',
-        data: { message: err?.message || '連線失敗或伺服器錯誤，請稍後再試', autoCloseMs: 2200 },
-      });
-    } finally {
-      this.loading = false;
+      sendNext(0);
+    };
+
+    if (this.form.file) {
+      //檔案讀取器 API把檔案讀成可用的資料格式
+      const reader = new FileReader();
+      //讀完檔案 - 自動觸發這裡
+      reader.onload = () => {
+        //讀完加非同步轉換成字串之後reader.result存在這裡然後要告訴編譯器這是字串
+        const result = reader.result as string;
+        proceedSend(result);
+      };
+      //讀失敗要做的事情
+      reader.onerror = () => {
+        proceedSend(null);
+      };
+      //readAsDataURL這個是把把 File/Blob 非同步讀成 Data URL 字串+讀檔器reader=開始讀檔
+      reader.readAsDataURL(this.form.file);
+    } else {
+      proceedSend(null);
     }
   }
 
-  private toMin(t?: string){
-    if (!t) return NaN;
-    const [h,m] = t.split(':'); const hh = +h, mm = +m;
-    return Number.isFinite(hh)&&Number.isFinite(mm) ? hh*60+mm : NaN;
-  }
 
-  private groupByContiguity(
-    segs: { start: string; end: string }[],
-    lunchStart?: string,
-    lunchEnd?: string,
-    gapToleranceMin = 0
-  ){
-    const isLunchGap = (prevEnd: string, nextStart: string) =>
-      !!lunchStart && !!lunchEnd &&
-      this.toMin(prevEnd) === this.toMin(lunchStart) &&
-      this.toMin(nextStart) === this.toMin(lunchEnd);
-
-    const arr = [...segs].sort((a, b) => this.toMin(a.start) - this.toMin(b.start));
-    const groups: { start: string; end: string }[][] = [];
-    let cur: { start: string; end: string }[] = [];
-
-    for (const s of arr) {
-      if (!cur.length) { cur.push(s); continue; }
-      const prev = cur[cur.length - 1];
-      const gap = this.toMin(s.start) - this.toMin(prev.end);
-
-      const contiguous = gap >= 0 && (
-        gap <= gapToleranceMin || isLunchGap(prev.end, s.start)
-      );
-
-      if (contiguous) cur.push(s);
-      else { groups.push(cur); cur = [s]; }
-    }
-    if (cur.length) groups.push(cur);
-    return groups;
-  }
-
-  close(){ this.dialogRef.close({ ok:false }); }
+  close() { this.dialogRef.close({ ok: false }); }
 }

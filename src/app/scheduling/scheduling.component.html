@@ -31,7 +31,7 @@
     <label>班表總覽
     </label>
   </div>
-  <div class="menu-item" (click)="goLeave()"style="cursor:pointer;">
+  <div class="menu-item" routerLink="/leave" style="cursor: pointer;">
     <mat-icon>text_snippet</mat-icon>
     <label>請假申請</label>
   </div>
@@ -80,14 +80,19 @@
         </div>
 
 
+         </div>
+
+
         <!-- 輸入區 -->
-        <div class="chat-box-input-group"> <input class="chat-box-input" type="text" placeholder="我有話想說 ..."
+        <div class="chat-box-input-group">
+           <input class="chat-box-input" type="text" placeholder="我是你的AI助理，有什麼想問嗎 ? 我可以為您提供協助"
             [(ngModel)]="userInput" (keyup.enter)="sendMessage()" />
           <button (click)="sendMessage()" class="chat-button">
             <img src="send.png" alt="" width="28px">
           </button>
         </div>
-      </div>
+
+
 
       <main class="calendar-container">
 
@@ -162,7 +167,7 @@
           <span class="salary-value">本月總時數 {{ monthQuotaHours }} 小時</span>
         </div>
 
-        <div class="widget-body salary-body" style="display:flex;align-items:center;">
+        <div class="widget-body salary-body" style="display:flex;align-items:center;height: 200px;">
           <div class="left-stats" style="min-width:120px;text-align:center;">
             <div class="label">已上時數</div>
             <div class="value" style="font-size:36px;font-weight:700">{{ workedHours }}</div>
@@ -279,15 +284,15 @@
 </div>
 
 @if (viewMode === 'schedule') {
-<div class="schedule-wrapper">
+  <div class="schedule-wrapper">
   <div class="month-nav">
-    <button class="nav" (click)="prevMonth()">
+    <button class="nav" (click)="prevMonth()" aria-label="上一月">
       <mat-icon>chevron_left</mat-icon>
     </button>
 
     <div class="month-nav-title">{{ scheduleMonthLabel }}</div>
 
-    <button class="nav" (click)="nextMonth()">
+    <button class="nav" (click)="nextMonth()" aria-label="下一月">
       <mat-icon>chevron_right</mat-icon>
     </button>
   </div>

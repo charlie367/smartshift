@@ -181,7 +181,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
       // Step: 處理中（改密碼）
       if (goingTo.id === 'passwordSuccess') {
         // 想至少轉圈多久（避免太快就變成功）
-        const MIN_SPIN_MS = 1000;   // 至少顯示「處理中」1秒
+        const MIN_SPIN_MS = 2000;   // 至少顯示「處理中」1秒
         const HOLD_SUCCESS_MS = 900; // 成功字樣停留多久再切下一步
         const startedAt = Date.now();
 

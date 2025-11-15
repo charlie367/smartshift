@@ -31,7 +31,7 @@ export class ReclockinComponent implements OnInit, OnDestroy {
   ) {}
 
   // ===== UI 狀態 =====
-  leftLabel = '🕐 上班打卡';
+  leftLabel = '上班打卡';
   rightLabel = '---';
   leftDisabled = false;
   rightDisabled = true;
@@ -48,7 +48,7 @@ export class ReclockinComponent implements OnInit, OnDestroy {
   showModal = false;
   moodRating = 0;
   hoveredStar = 0;
-  modalData = { icon: '✅', title: '', content: '' };
+  modalData = { title: '', content: '' };
   private timerId: any;
   private isBusy = false;             // 防重複點擊
 
@@ -60,8 +60,8 @@ export class ReclockinComponent implements OnInit, OnDestroy {
 
   
     private HOME = {
-      lat:22.60420809143353,         // 你的家：22.618540...
-      lng:120.29850544793425,       //        120.294441...
+      lat: 22.604220768282108,        // 你的家：22.618540...
+      lng: 120.29851699531139,       //        120.294441...
       radiusM: 200,          // 允許半徑（公尺）
       accuracyMax: 150       // 接受的最大精度（公尺）
     };
@@ -152,8 +152,8 @@ export class ReclockinComponent implements OnInit, OnDestroy {
       height: '95vh',
       panelClass: 'makeup-dialog-panel',
       data: {
-        employeeId: this.data?.employeeId || localStorage.getItem('employeeId') || '',
-        date: this.data?.workDate || new Date().toISOString().slice(0, 10),
+        employeeId: this.data?.employeeId ||  '',
+        date: this.data?.workDate ||'',
       }
     });
 
@@ -180,44 +180,44 @@ export class ReclockinComponent implements OnInit, OnDestroy {
 
   private updateSingleButtons() {
     if (!this.clockInTime) {
-      this.leftLabel = '🕐 上班打卡';
+      this.leftLabel = ' 上班打卡';
       this.rightLabel = '---';
       this.leftDisabled = false;
       this.rightDisabled = true;
     } else if (!this.clockOutTime) {
-      this.leftLabel = '✅ 已完成';
-      this.rightLabel = '🕕 下班打卡';
+      this.leftLabel = '已完成';
+      this.rightLabel = '下班打卡';
       this.leftDisabled = true;
       this.rightDisabled = false;
     } else {
-      this.leftLabel = this.rightLabel = '✅ 已完成';
+      this.leftLabel = this.rightLabel = '已完成';
       this.leftDisabled = this.rightDisabled = true;
     }
   }
 
   private updateLunchButtons() {
     if (!this.clockInTime) {
-      this.leftLabel = '🕐 上班打卡';
+      this.leftLabel = '上班打卡';
       this.rightLabel = '---';
       this.leftDisabled = false;
       this.rightDisabled = true;
     } else if (!this.restStart) {
-      this.leftLabel = '☕ 午休開始';
+      this.leftLabel = '午休開始';
       this.rightLabel = '---';
       this.leftDisabled = false;
       this.rightDisabled = true;
     } else if (!this.restEnd) {
-      this.leftLabel = '✅ 已完成';
-      this.rightLabel = '🍱 午休結束';
+      this.leftLabel = '已完成';
+      this.rightLabel = '午休結束';
       this.leftDisabled = true;
       this.rightDisabled = false;
     } else if (!this.clockOutTime) {
-      this.leftLabel = '✅ 已完成';
-      this.rightLabel = '🕕 下班打卡';
+      this.leftLabel = '已完成';
+      this.rightLabel = '下班打卡';
       this.leftDisabled = true;
       this.rightDisabled = false;
     } else {
-      this.leftLabel = this.rightLabel = '✅ 已完成';
+      this.leftLabel = this.rightLabel = '已完成';
       this.leftDisabled = this.rightDisabled = true;
     }
   }
@@ -225,13 +225,13 @@ export class ReclockinComponent implements OnInit, OnDestroy {
   private updateMultiButtons() {
     if (this.round === 1) {
       if (!this.clockInTime) {
-        this.leftLabel = '🕐 第一段上班';
+        this.leftLabel = '第一段上班';
         this.rightLabel = '---';
         this.leftDisabled = false;
         this.rightDisabled = true;
       } else if (!this.clockOutTime) {
-        this.leftLabel = '✅ 已完成';
-        this.rightLabel = '🕕 第一段下班';
+        this.leftLabel = '已完成';
+        this.rightLabel = '第一段下班';
         this.leftDisabled = true;
         this.rightDisabled = false;
       } else {
@@ -243,17 +243,17 @@ export class ReclockinComponent implements OnInit, OnDestroy {
       }
     } else if (this.round === 2) {
       if (!this.clockInTime) {
-        this.leftLabel = '🕐 第二段上班';
+        this.leftLabel = '第二段上班';
         this.rightLabel = '---';
         this.leftDisabled = false;
         this.rightDisabled = true;
       } else if (!this.clockOutTime) {
-        this.leftLabel = '✅ 已完成';
-        this.rightLabel = '🕕 第二段下班';
+        this.leftLabel = '已完成';
+        this.rightLabel = '第二段下班';
         this.leftDisabled = true;
         this.rightDisabled = false;
       } else {
-        this.leftLabel = this.rightLabel = '✅ 已完成';
+        this.leftLabel = this.rightLabel = '已完成';
         this.leftDisabled = this.rightDisabled = true;
       }
     }
@@ -364,7 +364,7 @@ endLunch() {
         this.setBusy(false);
       },
       error: (err) => {
-        console.error('❌ 午休結束錯誤:', err);
+        console.error(' 午休結束錯誤:', err);
         this.setBusy(false);
       }
     });
@@ -483,7 +483,6 @@ endLunch() {
         }
       }      
       this.modalData = {
-        icon: '✅',
         title: '下班打卡成功！',
         content: `
           <div style="text-align:center;">
@@ -500,7 +499,6 @@ endLunch() {
     }
     else if (type === 'clockIn') {
       this.modalData = {
-        icon: '✅',
         title: '上班打卡成功！',
         content: `
           <div style="text-align:center;">
@@ -514,7 +512,6 @@ endLunch() {
     }
     else if (type === 'restStart') {
       this.modalData = {
-        icon: '☕',
         title: '午休開始！',
         content: `
           <div style="text-align:center;">
@@ -526,7 +523,6 @@ endLunch() {
     }
     else if (type === 'restEnd') {
       this.modalData = {
-        icon: '🍱',
         title: '午休結束！',
         content: `
           <div style="text-align:center;">
@@ -547,6 +543,7 @@ endLunch() {
   closeMoodRating() { this.showMoodRating = false; }
 
   private async showLocationDialog(): Promise<void> {
+
     const g = await this.getSmartGeo();
     const distM = Math.round(
       this.distanceMeters(g.latitude, g.longitude, this.HOME.lat, this.HOME.lng)
@@ -556,22 +553,15 @@ endLunch() {
       width: '360px',
       panelClass: 'geo-dialog-panel',
       autoFocus: false,
-      disableClose: true,            // 防止 2 秒內被點掉
+      disableClose: true,
       data: { lat: g.latitude, lng: g.longitude, distM }
     });
-  
-    // 等對話框動畫「開啟完成」
-    await firstValueFrom(ref.afterOpened());
-  
-    // 顯示至少 2 秒
-    await new Promise(r => setTimeout(r, 2000));
-  
-    // 手動關閉
-    ref.close();
-  
-    // 等關閉動畫完成
+
     await firstValueFrom(ref.afterClosed());
+  
+
   }
+  
 
   private getPosition(): Promise<GeolocationPosition> {
     //Promise 是 JavaScript 內建的物件，用來處理需要時間的工作

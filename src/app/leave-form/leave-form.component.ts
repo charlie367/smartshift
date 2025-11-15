@@ -523,7 +523,7 @@ export class LeaveFormComponent {
               this.http.post<any>('http://localhost:8080/leave/leaveApplyByDate', payload)
                 .subscribe({
                   next: (res) => {
-                    if (res?.code == 200) {
+                    if (res?.code !== 200) {
                       this.openErrorDialog(res?.message || "整天請假送出失敗（" + d + "）");
                       this.isSubmitting = false;
                       return;
@@ -549,8 +549,5 @@ export class LeaveFormComponent {
       }
     });
   }
-
-
-
 
 }

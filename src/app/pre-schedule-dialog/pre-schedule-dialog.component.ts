@@ -50,8 +50,16 @@ export class PreScheduleDialogComponent implements OnInit {
 
   ngOnInit(): void {
     const today = new Date();
-    const thirdSunday = this.getThirdSunday(today.getFullYear(), today.getMonth());
-    const unlockTime = new Date(today.getFullYear(), today.getMonth(), thirdSunday, 0, 0, 0);
+    // const thirdSunday = this.getThirdSunday(today.getFullYear(), today.getMonth());
+    // const unlockTime = new Date(today.getFullYear(), today.getMonth(), thirdSunday, 0, 0, 0);
+
+
+const unlockTime = new Date(
+  today.getFullYear(),
+  today.getMonth(),
+  today.getDate() - 1
+);
+
 
     if (today >= unlockTime) {
       this.setMonth(today.getFullYear(), today.getMonth() + 2);
