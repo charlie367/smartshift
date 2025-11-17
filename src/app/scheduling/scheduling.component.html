@@ -56,6 +56,7 @@
 <div *ngIf="viewMode === 'dashboard'">
   <div class="dashboard-row" style="margin-top: 100px !important">
     <div class="left-col">
+      <div class="chat-card"> 
       <div class="chat-box" #chatBox>
 
         <div *ngFor="let msg of messages; let i = index" class="chat-row" [ngClass]="msg.sender">
@@ -73,39 +74,27 @@
             </div>
             <div class="chat-time">
               <h5 style="color: gray;  margin-left: 10px;
-                     margin-right: 10px;">{{ msg.time }}</h5>
+                    margin-right: 10px;">{{ msg.time }}</h5>
             </div>
-
           </div>
         </div>
-
-
-         </div>
-
-
-        <!-- 輸入區 -->
-        <div class="chat-box-input-group">
-           <input class="chat-box-input" type="text" placeholder="我是你的AI助理，有什麼想問嗎 ? 我可以為您提供協助"
-            [(ngModel)]="userInput" (keyup.enter)="sendMessage()" />
-          <button (click)="sendMessage()" class="chat-button">
-            <img src="send.png" alt="" width="28px">
-          </button>
-        </div>
-
-
+      </div>
+      
+      <div class="chat-box-input-group">
+        <input class="chat-box-input" type="text" placeholder="我是你的AI助理，有什麼想問嗎 ? 我可以為您提供協助" [(ngModel)]="userInput"
+          (keyup.enter)="sendMessage()" />
+        <button (click)="sendMessage()" class="chat-button">
+          <img src="send.png" alt="" width="28px">
+        </button>
+      </div>
+    </div>
 
       <main class="calendar-container">
-
-
         <div class="left-calendar">
           <app-test-need1 [(selected)]="selectedDate" (dateClick)="onDateSelected($event)"
             (rangeChange)="onRangeChange($event)">
           </app-test-need1>
-
         </div>
-
-
-
         <div class="right-week">
           <div class="week-header">
             <button mat-icon-button (click)="prevWeek()">
@@ -137,17 +126,12 @@
                     </div>
                   </div>
                 </ng-container>
-
                 <ng-template #_noSlots>—</ng-template>
               </div>
-
-
-
             </div>
           </div>
         </div>
       </main>
-
     </div>
 
 
@@ -158,26 +142,18 @@
           <app-clock class="clock-inline"></app-clock>
         </div>
       </div>
-
-
-
       <div class="widget-card">
         <div class="widget-header">
           <span>本月上班時數</span>
           <span class="salary-value">本月總時數 {{ monthQuotaHours }} 小時</span>
         </div>
-
         <div class="widget-body salary-body" style="display:flex;align-items:center;height: 200px;">
           <div class="left-stats" style="min-width:120px;text-align:center;">
             <div class="label">已上時數</div>
             <div class="value" style="font-size:36px;font-weight:700">{{ workedHours }}</div>
             <div class="sub">小時</div>
           </div>
-
-          <!-- 就用你的水滴樣式 -->
           <app-water-drop class="drop" [level]="uiLevel"></app-water-drop>
-
-
         </div>
       </div>
 
@@ -186,10 +162,9 @@
   </div>
 
   <div class="dashboard-layout">
-
     <div class="month-container">
-
       <div class="month-header">
+
         <button class="arrow" (click)="prevDashboardMonth()">
           <img src="arrow-left.png" alt="" style="width: 24px;" />
         </button>
@@ -203,7 +178,6 @@
         </button>
       </div>
 
-
       <div class="stats-row">
         <div class="stat-card green">
           <mat-icon>login</mat-icon>
@@ -212,7 +186,6 @@
             <div class="label">平均上班打卡時間</div>
           </div>
         </div>
-
         <div class="stat-card orange">
           <mat-icon>logout</mat-icon>
           <div>
@@ -237,8 +210,6 @@
           </div>
         </div>
       </div>
-
-
       <!-- 出勤紀錄表格 -->
       <div class="work-log-table-wrapper">
         <table class="work-log-table">
@@ -251,12 +222,14 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let record of workLogs">
+            @for (record of workLogs; track record.rawDate) {
+            <tr>
               <td>{{ record.date }}</td>
               <td class="checkin">{{ record.checkIn }}</td>
               <td class="checkout">{{ record.checkOut }}</td>
               <td>{{ record.hours }}</td>
             </tr>
+            }
           </tbody>
         </table>
       </div>
@@ -284,7 +257,7 @@
 </div>
 
 @if (viewMode === 'schedule') {
-  <div class="schedule-wrapper">
+<div class="schedule-wrapper">
   <div class="month-nav">
     <button class="nav" (click)="prevMonth()" aria-label="上一月">
       <mat-icon>chevron_left</mat-icon>

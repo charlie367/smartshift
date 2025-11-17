@@ -159,7 +159,10 @@ export class BackShift {
   autoShiftCheck() {
     this.dialog.open(Check, {
       width: '150px',
-      height: '150px',
+      height: '180px',
+      data:{
+        title:"自動產生排班"
+      }
     });
   }
   // 自動排班

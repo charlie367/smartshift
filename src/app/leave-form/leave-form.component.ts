@@ -8,6 +8,7 @@ import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { MatIconModule } from '@angular/material/icon';
 
 
 interface LeavePeriod {
@@ -29,7 +30,7 @@ interface WholeDay {
 @Component({
   selector: 'app-leave-form',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MatIconModule],
   templateUrl: './leave-form.component.html',
   styleUrl: './leave-form.component.scss',
 })

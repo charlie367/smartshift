@@ -66,8 +66,16 @@ body.cdk-global-scrollblock {
 
 // 以下國恆的後端設定
 
-.daypilot-scheduler-wrapper *,*::after,*::before {
+/* DayPilot 區塊統一 box-sizing（只影響 DayPilot，不影響整站）*/
+.daypilot-scheduler-wrapper *,
+.daypilot-scheduler-wrapper *::before,
+.daypilot-scheduler-wrapper *::after {
   box-sizing: border-box !important;
+}
+
+/* DayPilot: 隱藏 event 上方那條 bar */
+.daypilot-scheduler-wrapper .scheduler_default_event_bar {
+  display: none !important;
 }
 
 

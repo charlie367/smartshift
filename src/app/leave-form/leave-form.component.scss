@@ -2,7 +2,7 @@
   display: flex;
   justify-content: center;
   padding: 30px;
-  background-color: #fff8f7;
+  background-color:  #f9f1f0;
   min-height: 100vh;
 
   .form-container {
@@ -27,6 +27,31 @@
       background-color: #21467a;
       color: #fff;
       &:hover { background-color: #1a3861; }
+    }
+
+    .btn-add {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      line-height: 1;
+  
+      /* 方方的、有底色 */
+      background-color: #f1f5ff;          // 淺藍底
+      color: #1f2933;
+      border: 1px solid #d0ddff;
+      border-radius: 8px;                 // 不再是膠囊
+      padding: 8px 20px;
+      min-width: 140px;                   // 看起來比較像一塊「方形按鈕」
+  
+      &:hover {
+        background-color: #e0e9ff;        // 滑過去變深一點
+        border-color: #becdfb;
+      }
+    }
+  
+    .btn-add-icon {
+      font-size: 18px;
     }
 
     /* 頂部列 */
@@ -152,6 +177,29 @@
         align-items: center;
         h3 { color: #2b4c7e; }
       }
+
+      // .btn-add {
+      //   display: inline-flex;          // icon + 文字並排
+      //   align-items: center;           // 垂直置中
+      //   gap: 3px;                      // icon 跟文字的距離
+      //   line-height: 1;
+    
+      //   background-color: #f3f4f6;     // 原本的淺灰
+      //   color: #111827;
+      //   border: 1px solid #e5e7eb;
+      //   padding: 8px 18px;
+      //   border-radius: 999px;          // 跟下面那兩顆一樣圓角感
+    
+      //   transition: background-color .15s ease;
+        
+      //   &:hover {
+      //     background-color: #e0e0e0;   // 滑鼠移上來變深一點
+      //   }
+      // }
+    
+      // .btn-add-icon {
+      //   font-size: 20px;               // icon 大小
+      // }
 
       /* 既有四欄（其他頁面/情境用） */
       .period-header {

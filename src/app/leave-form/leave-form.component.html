@@ -88,7 +88,10 @@
       @if (leave.isWholeDay === '整天') {
       <div class="section-header">
         <h3>請假日期與班別</h3>
-        <button class="btn btn-add" (click)="addWholeDay()">＋ 新增天數</button>
+        <button class="btn btn-add" type="button" (click)="addWholeDay()">
+          <mat-icon class="btn-add-icon">add</mat-icon>
+          <span>新增天數</span>
+        </button>
       </div>
 
       <div class="period-header">
@@ -113,7 +116,11 @@
       <!-- 非整天 -->
       <div class="section-header">
         <h3>請假時間段</h3>
-        <button class="btn btn-add" (click)="addPeriod()">＋ 新增時間段</button>
+        <button class="btn btn-add" type="button" (click)="addPeriod()">
+          <mat-icon class="btn-add-icon">add</mat-icon>
+          <span>新增時間段</span>
+        </button>
+        
       </div>
 
       <div class="period-header period-header--with-shift">
