@@ -1,11 +1,14 @@
-import { Component, EventEmitter, Output,  } from '@angular/core';
+import { Component, EventEmitter, Inject, Output,  } from '@angular/core';
 import { HttpClientService } from '../../../@Service/HttpClientService';
 import { addMonths, format, getDaysInMonth, startOfMonth } from 'date-fns';
 import { DayPilot, DayPilotModule } from '@daypilot/daypilot-lite-angular';
-import { MatDialog } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AcceptComponent } from '../accept/accept.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from "@angular/material/icon";
+import { Check } from '../../check/check';
+import { Success } from '../../success/success';
+import { Fail } from '../../fail/fail';
 
 @Component({
   selector: 'app-accept-shift',
@@ -17,8 +20,9 @@ export class AcceptShiftComponent {
 
   //建構式
   constructor(
+
     private http:HttpClientService,
-    private dialog:MatDialog
+    private dialog:MatDialog,
   ){}
 
   //班表初始化
@@ -169,4 +173,78 @@ export class AcceptShiftComponent {
       }
     })
   }
+
+acceptAllPending() {
+  // 取得所有 localStorage key 開頭為 preSchedule_
+  const allKeys = Object.keys(localStorage).filter(k => k.startsWith('preSchedule_'));
+
+  const allShiftData: any[] = [];
+  const allLocalData: any[] = [];
+
+  const todayStr = format(new Date(), 'yyyy-MM-dd'); // 取得今天日期字串
+
+  allKeys.forEach(key => {
+    const preList = JSON.parse(localStorage.getItem(key) || '[]');
+    preList.forEach((item: any) => {
+      // 只處理今天或未來日期
+      if (item.applyDate >= todayStr) {
+        allShiftData.push({
+          employeeId: item.employeeId,
+          applyDate: item.applyDate,
+          shiftWorkId: this.getShiftId(item.shift), // 根據 localStorage 的 shift 轉換
+          accept: true
+        });
+        allLocalData.push(item);
+      }
+    });
+  });
+
+  if (allShiftData.length === 0) {
+    this.dialog.open(Fail, { width: '150px', data: { message: '沒有待同意的班表' } });
+    return;
+  }
+
+  // 組成 API 物件
+  const payload = { preSchduleUpdateVo: allShiftData };
+
+  // 呼叫一次 API 同意全部
+  this.http.postApi(`http://localhost:8080/PreSchedule/addSchedule`, payload).subscribe((res: any) => {
+    if (res.code === 200) {
+      // 更新 localStorage: 移動到 confirmedSchedule_
+      allLocalData.forEach(item => {
+        const preKey = `preSchedule_${item.employeeId}`;
+        const confirmedKey = `confirmedSchedule_${item.employeeId}`;
+
+        // 移除 preSchedule
+        let preData = JSON.parse(localStorage.getItem(preKey) || '[]');
+        preData = preData.filter((x: any) => !(x.applyDate === item.applyDate && x.shift === item.shift));
+        localStorage.setItem(preKey, JSON.stringify(preData));
+
+        // 加入 confirmedSchedule
+        const confirmed = JSON.parse(localStorage.getItem(confirmedKey) || '[]');
+        confirmed.push(item);
+        localStorage.setItem(confirmedKey, JSON.stringify(confirmed));
+      });
+
+      this.dialog.open(Success, { width: '150px' });
+      this.ngOnInit(); // 重新載入班表
+    } else {
+      this.dialog.open(Fail, { width: '150px', data: { message: res.message } });
+    }
+  });
+}
+
+// 輔助方法：將班別文字轉成 shiftWorkId
+private getShiftId(shift: string): number {
+  switch (shift) {
+    case '早班': return 1;
+    case '中班': return 2;
+    case '晚班': return 3;
+    case '夜班': return 4;
+    case '休': return 0;
+    default: return 0;
+  }
+}
+
+
 }

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { ElementRef, ChangeDetectorRef, Component, OnInit , OnDestroy} from '@angular/core';
+import { ElementRef, ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { MatButtonModule } from '@angular/material/button';
@@ -136,21 +136,21 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     // // 立刻滾動讓 loading 可見
     // setTimeout(() => this.scrollChatToBottom('auto'), 0);
 
-  // 抓本週班表（非同步），拿到後 render 今天
-  this.loadWeekSlotsForCurrentWeek().subscribe({
-    next: (map) => {
-      this.weekSlots = map || {};
-      // 用 map 去 render 今天（把結果放到 messages[0]）
-      this.renderScheduleForDate(today, this.weekSlots);
+    // 抓本週班表（非同步），拿到後 render 今天
+    this.loadWeekSlotsForCurrentWeek().subscribe({
+      next: (map) => {
+        this.weekSlots = map || {};
+        // 用 map 去 render 今天（把結果放到 messages[0]）
+        this.renderScheduleForDate(today, this.weekSlots);
 
 
-    },
-    error: (err) => {
-      console.error('[ngOnInit] loadWeekSlotsForCurrentWeek error', err);
-      // 即使失敗，也嘗試用現有資料 render（可能是空）
-      this.renderScheduleForDate(today, this.weekSlots || {});
-    }
-  });
+      },
+      error: (err) => {
+        console.error('[ngOnInit] loadWeekSlotsForCurrentWeek error', err);
+        // 即使失敗，也嘗試用現有資料 render（可能是空）
+        this.renderScheduleForDate(today, this.weekSlots || {});
+      }
+    });
 
     this.monthQuotaReady = false;//分母
     this.workLogsReady = false;//分子
@@ -160,42 +160,154 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     this.loadWeekSlotsForCurrentWeek();
     this.recountUnread();
 
-  
-document.addEventListener('visibilitychange', this.onVisibility);
-window.addEventListener('focus', this.onFocus);
-window.addEventListener('storage', this.onStorage);
 
-try {
-  this.bc = new BroadcastChannel('notify-updates');
-  this.bc.onmessage = () => this.runRefresh();
-} catch {}
+    document.addEventListener('visibilitychange', this.onVisibility);
+    window.addEventListener('focus', this.onFocus);
+    window.addEventListener('storage', this.onStorage);
+
+    try {
+      this.bc = new BroadcastChannel('notify-updates');
+      this.bc.onmessage = () => this.runRefresh();
+    } catch { }
 
     this.loadLeaveHours();
 
     this.dayTickTimer = setInterval(() => this.ensureNewDay(), 60_000);
   }
 
-  // ======== 新增：跨分頁與事件處理 ========
-private bc?: BroadcastChannel;
+  openAnnouncementDialog() {
+    const dialogRef = this.dialog.open(AnnouncementDialogComponent, {
+      width: '800px',
+      height: '600px',
+      panelClass: ['no-scroll', 'ann-dialog'],
+      disableClose: true,
+    });
 
-goLeave() { this.router.navigate(['/leave']); }
 
-private runRefresh = () => {
-  this.recountUnread();               // 你的既有方法：重算徽章
-  try { this.cd.detectChanges(); } catch {}
-};
+    dialogRef.afterClosed().subscribe(() => {
+      this.recountUnread();
+    });
+  }
 
-private onVisibility = () => {
-  if (!document.hidden) this.runRefresh();   // 分頁切回前景時刷新
-};
+  private recountUnread() {
+    const employeeId = (localStorage.getItem('employeeId') || '').trim();
 
-private onFocus = () => {
-  this.runRefresh();                         // 視窗取得焦點時也刷新（補強）
-};
+    // 讀取本地已讀清單
+    const readPublic = new Set<number>(
+      JSON.parse(localStorage.getItem('readNotices') || '[]').map((x: any) => Number(x))
+    );
+    const readPersonal = new Set<number>(
+      JSON.parse(localStorage.getItem('readPersonalNotices_' + employeeId) || '[]').map((x: any) => Number(x))
+    );
 
-private onStorage = (e: StorageEvent) => {
-  if (e.key === 'notifyDirtyAt') this.runRefresh();  // 後台分頁寫入 dirty key 時刷新
-};
+    // 內建在 RxJS裡的功能，常用於 Angular 裡把多個 Observable（例如多個 HttpClient.get(...)）同時發出，並在全部完成後才回傳一次結果。
+    forkJoin({
+      pub: this.http.get<any>('http://localhost:8080/notify/searchTrueAll'),
+      per: this.http.get<any>('http://localhost:8080/get/employeeNotify', { params: { employeeId } }),
+    }).subscribe(({ pub, per }) => {
+      const pubIds = (pub?.notifyList ?? []).map((n: any) => Number(n.id));
+      const perIds = (per?.employeeNotifyList ?? []).map((n: any) => Number(n.id));
+      const publicUnread = pubIds.filter((id: number) => !readPublic.has(id)).length;
+      const personalUnread = perIds.filter((id: number) => !readPersonal.has(id)).length;
+
+      this.unreadCount = publicUnread + personalUnread;
+    });
+  }
+
+  private todayLocal(): string {
+    const n = new Date(), p = (x: number) => x.toString().padStart(2, '0');
+    return n.getFullYear() + "-" + p(n.getMonth() + 1) + "-" + p(n.getDate());
+    ;
+  }
+
+  punchIn(): void {
+    const employeeId = String(localStorage.getItem('employeeId') ?? '').trim();
+    if (!employeeId) {
+      this.dialog.open(ErrorDialogComponent, { data: { message: '尚未登入員工帳號，無法打卡' } });
+      return;
+    }
+    const workDate = this.todayLocal();
+    //toTimeString()取當下時間
+    const nowTime = new Date().toTimeString().slice(0, 8);
+
+    const normalize = (t: string) => {
+      if (!t) return '';
+      const p = t.trim().split(':').map(Number);
+      const [hh, mm, ss] = p.length === 2 ? [p[0], p[1], 0] : p;
+      const pad = (n: number) => n.toString().padStart(2, '0');
+      return `${pad(hh)}:${pad(mm)}:${pad(ss)}`;
+    };
+
+    const openDialog = (shifts: any[]) => {
+      const dialogRef = this.dialog.open(ReclockinComponent, {
+        width: '600px',
+        height: '650px',
+        data: { employeeId, workDate, shifts, nowTime }
+      });
+      dialogRef.afterClosed().subscribe((refresh) => {
+        if (refresh) this.loadClockData();
+      });
+    };
+
+    // 先用本地快取（若當週剛好不是今天所在週，就會拿不到）
+    const rawLocal = this.weekSlots[workDate] || [];
+    let shifts = this.acceptedSlots(rawLocal)
+      .map(s => ({
+        start_time: normalize(String(s.startTime || '')),
+        end_time: normalize(String(s.endTime || '')),
+        shift_work_id: Number(s.shiftWorkId ?? 0)
+      }))
+      .filter(s => s.start_time && s.end_time);
+
+    if (shifts.length) {
+      openDialog(shifts);
+      return;
+    }
+
+    this.http.get<any>('http://localhost:8080/PreSchedule/getAcceptScheduleByEmployeeId', {
+      params: { employeeId }
+    }).subscribe({
+      next: (res) => {
+
+        const list: any[] = res?.preScheduleList ?? [];
+        const todays = list.filter(s =>
+          String(s.applyDate).slice(0, 10) === workDate &&
+          (Number(s.shiftWorkId ?? 0) > 0) &&
+          (s.accept === true)
+        );
+        shifts = todays.map(s => ({
+          start_time: normalize(String(s.startTime || '')),
+          end_time: normalize(String(s.endTime || '')),
+          shift_work_id: Number(s.shiftWorkId ?? 0)
+        })).filter(s => s.start_time && s.end_time);
+  
+        openDialog(shifts);
+      },
+      error: () => openDialog([])   // 後端掛了就用空資料，至少不擋流程
+    });
+  }
+
+
+  private bc?: BroadcastChannel;
+
+  goLeave() { this.router.navigate(['/leave']); }
+
+  private runRefresh = () => {
+    this.recountUnread();               // 你的既有方法：重算徽章
+    try { this.cd.detectChanges(); } catch { }
+  };
+
+  private onVisibility = () => {
+    if (!document.hidden) this.runRefresh();   // 分頁切回前景時刷新
+  };
+
+  private onFocus = () => {
+    this.runRefresh();                         // 視窗取得焦點時也刷新（補強）
+  };
+
+  private onStorage = (e: StorageEvent) => {
+    if (e.key === 'notifyDirtyAt') this.runRefresh();  // 後台分頁寫入 dirty key 時刷新
+  };
 
 
   private recalcMonthQuotaHours() {
@@ -262,26 +374,6 @@ private onStorage = (e: StorageEvent) => {
     }
   }
 
-  openAnnouncementDialog() {
-    const dialogRef = this.dialog.open(AnnouncementDialogComponent, {
-      width: '800px',
-      height: '600px',
-      panelClass: ['no-scroll', 'ann-dialog'],
-      disableClose: true,
-    });
-
-    // 不管子層回什麼，關閉後一律「重算徽章」
-    dialogRef.afterClosed().subscribe(() => {
-      this.recountUnread();
-    });
-  }
-
-  private todayLocal(): string {
-    const n = new Date(), p = (x: number) => x.toString().padStart(2, '0');
-    return n.getFullYear() + "-" + p(n.getMonth() + 1) + "-" + p(n.getDate());
-    ;
-  }
-
   dateKey(d: Date): string {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -295,77 +387,7 @@ private onStorage = (e: StorageEvent) => {
     return (list || []).filter(s => s.isWorking && s.isAccept);
   }
 
-  punchIn(): void {
-    const employeeId = String(localStorage.getItem('employeeId') ?? '').trim();
-    if (!employeeId) {
-      this.dialog.open(ErrorDialogComponent, { data: { message: '尚未登入員工帳號，無法打卡' } });
-      return;
-    }
-    const workDate = this.todayLocal();
-    const nowTime = new Date().toTimeString().slice(0, 8);
-
-    const normalize = (t: string) => {
-      if (!t) return '';
-      const p = t.trim().split(':').map(Number);
-      const [hh, mm, ss] = p.length === 2 ? [p[0], p[1], 0] : p;
-      const pad = (n: number) => n.toString().padStart(2, '0');
-      return `${pad(hh)}:${pad(mm)}:${pad(ss)}`;
-    };
-
-    const openDialog = (shifts: any[]) => {
-      const dialogRef = this.dialog.open(ReclockinComponent, {
-        width: '600px',
-        height: '650px',
-        data: { employeeId, workDate, shifts, nowTime }
-      });
-      dialogRef.afterClosed().subscribe((refresh) => {
-        if (refresh) this.loadClockData();
-      });
-    };
-
-    // 先用本地快取（若當週剛好不是今天所在週，就會拿不到）
-    const rawLocal = this.weekSlots[workDate] || [];
-    let shifts = this.acceptedSlots(rawLocal)
-      .map(s => ({
-        start_time: normalize(String(s.startTime || '')),
-        end_time: normalize(String(s.endTime || '')),
-        shift_work_id: Number(s.shiftWorkId ?? 0)
-      }))
-      .filter(s => s.start_time && s.end_time);
-
-    if (shifts.length) {
-      openDialog(shifts);
-      return;
-    }
-
-
-
-    this.http.get<any>('http://localhost:8080/PreSchedule/getAcceptScheduleByEmployeeId', {
-      params: { employeeId }
-    }).subscribe({
-      next: (res) => {
-
-        const list: any[] = res?.preScheduleList ?? [];
-        const todays = list.filter(s =>
-          String(s.applyDate).slice(0, 10) === workDate &&
-          (Number(s.shiftWorkId ?? 0) > 0) &&
-          (s.accept === true)
-        );
-        shifts = todays.map(s => ({
-          start_time: normalize(String(s.startTime || '')),
-          end_time: normalize(String(s.endTime || '')),
-          shift_work_id: Number(s.shiftWorkId ?? 0)
-        })).filter(s => s.start_time && s.end_time);
-  
-        openDialog(shifts);
-      },
-      error: () => openDialog([])   // 後端掛了就用空資料，至少不擋流程
-    });
-  }
-
-
   currentMonth = new Date();
-
 
   private parseYMD(s: string): Date {
     // 避免 new Date('YYYY-MM-DD') 的 UTC 偏移
@@ -606,36 +628,6 @@ private onStorage = (e: StorageEvent) => {
     const h12 = ((h + 11) % 12) + 1;
     return `${isAM ? '上午' : '下午'} ${h12}:${String(m).padStart(2, '0')}`;
   }
-
-  private recountUnread() {
-    const employeeId = (localStorage.getItem('employeeId') || '').trim();
-
-    // 讀取本地已讀清單
-    const readPublic = new Set<number>(
-      JSON.parse(localStorage.getItem('readNotices') || '[]').map((x: any) => Number(x))
-    );
-    const readPersonal = new Set<number>(
-      JSON.parse(localStorage.getItem(`readPersonalNotices_${employeeId}`) || '[]').map((x: any) => Number(x))
-    );
-
-    // 內建在 RxJS裡的功能，常用於 Angular 裡把多個 Observable（例如多個 HttpClient.get(...)）同時發出，並在全部完成後才回傳一次結果。
-    forkJoin({
-      pub: this.http.get<any>('http://localhost:8080/notify/searchTrueAll'),
-      per: this.http.get<any>('http://localhost:8080/get/employeeNotify', { params: { employeeId } }),
-    }).subscribe(({ pub, per }) => {
-      const pubIds = (pub?.notifyList ?? []).map((n: any) => Number(n.id));
-      const perRaw = Array.isArray(per?.employeeNotifyList) ? per.employeeNotifyList : [];
-      //as any[]我確定她是陣列
-      const perIds = perRaw.map((n: any) => Number(n.id));
-      // set 和 map 的特定用法
-      const publicUnread = pubIds.filter((id: number) => !readPublic.has(id)).length;
-      const personalUnread = perIds.filter((id: number) => !readPersonal.has(id)).length;
-
-
-      this.unreadCount = publicUnread + personalUnread;
-    });
-  }
-
 
   getStartOfWeek(date: Date): Date {
     const d = new Date(date);
@@ -918,31 +910,31 @@ private onStorage = (e: StorageEvent) => {
     this.startOfWeek.setDate(this.startOfWeek.getDate() - 7);
     this.startOfWeek.setHours(0, 0, 0, 0);
     this.startOfWeek = new Date(this.startOfWeek);
-  
+
     this.loadWeekSlotsForCurrentWeek().subscribe({
       next: (map) => {
         this.weekSlots = map || {};
-        try { this.cd.detectChanges(); } catch {}
+        try { this.cd.detectChanges(); } catch { }
       },
       error: (err) => console.error('[prevWeek] load error', err)
     });
   }
-  
+
   nextWeek() {
     this.startOfWeek.setDate(this.startOfWeek.getDate() + 7);
     this.startOfWeek.setHours(0, 0, 0, 0);
     this.startOfWeek = new Date(this.startOfWeek);
-  
+
     this.loadWeekSlotsForCurrentWeek().subscribe({
       next: (map) => {
         this.weekSlots = map || {};
-        try { this.cd.detectChanges(); } catch {}
+        try { this.cd.detectChanges(); } catch { }
       },
       error: (err) => console.error('[nextWeek] load error', err)
     });
   }
 
-  
+
 
   onDateSelected(date: Date) {
     console.log("onDateSelected", date);
@@ -1097,9 +1089,9 @@ private onStorage = (e: StorageEvent) => {
   openFeedbackDialog() {
     const dialogRef = this.dialog.open(FeedbackDialogComponent, {
       width: '600px',      // 你要固定寬
-  height: '510px',     // 你要固定高
-  maxWidth: '600px',   // 避免被預設 80vw 限制
-  panelClass: 'feedback-panel'
+      height: '510px',     // 你要固定高
+      maxWidth: '600px',   // 避免被預設 80vw 限制
+      panelClass: 'feedback-panel'
     });
   }
 

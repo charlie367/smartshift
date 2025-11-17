@@ -18,10 +18,9 @@
     >
       返回
     </button>
+    <button class="btn-bg-secondary" mat-button (click)="acceptAllPending()">一鍵同意</button>
+
   </div>
 </div>
-<!-- ????? -->
-<div class="daypilot-scheduler-wrapper">
 
-  <daypilot-scheduler [config]="config" [events]="events"></daypilot-scheduler>
-</div>
+<daypilot-scheduler [config]="config" [events]="events"></daypilot-scheduler>

@@ -12,15 +12,7 @@ type ClockinErrors = Partial<Record<keyof ClockinMakeupForm, string>> & {
   extraEnd?: string[];    // 每組下班錯誤
 };
 
-
 type Seg = { start: string; end: string };
-type ShiftDetail = {
-  shiftWorkId: number;
-  accept: boolean;
-  startTime: string | { hour?: number; minute?: number };
-  endTime: string | { hour?: number; minute?: number };
-};
-
 
 interface ApiRes<T> { data: T; message?: string; code?: number; success?: boolean; }
 interface ClockDate {
@@ -57,7 +49,7 @@ export interface ClockinMakeupForm {
 })
 export class ClockinMakeupComponent implements OnInit, OnDestroy {
 
-  /* ===== 狀態 ===== */
+
   limitToToday = true;
   form: ClockinMakeupForm = {
     employeeId: '', date: '',
@@ -67,20 +59,18 @@ export class ClockinMakeupComponent implements OnInit, OnDestroy {
     file: null, extraShifts: [],
   };
 
-
   errors: ClockinErrors = {};
-
 
   fileName = ''; previewUrl = '';
   loading = false; showErrors = false; dragOver = false;
 
-  // 今天（yyyy-mm-dd）
+  // 函式記住最後面()，立即呼叫函式
   today = (() => {
     const d = new Date();
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
+    return y + '-' + m + '-' + day;
   })();
 
   stars = [1, 2, 3, 4, 5] as const;
@@ -90,14 +80,6 @@ export class ClockinMakeupComponent implements OnInit, OnDestroy {
 
   // 主段是否由其他段頂上來（顯示「第 X 組」）
   promotedFromIndex: number | null = null;
-
-  // 班別定義（可調）
-  private readonly SHIFT_TABLE: Record<number, { start: string; end: string }> = {
-    1: { start: '08:00', end: '12:00' },
-    2: { start: '12:00', end: '16:00' },
-    3: { start: '16:00', end: '20:00' },
-    4: { start: '20:00', end: '00:00' },
-  };
 
   // 取消上一輪預填
   private prefillSub?: Subscription;
@@ -120,7 +102,7 @@ export class ClockinMakeupComponent implements OnInit, OnDestroy {
       this.prefillOnlyMissing(this.form.employeeId, this.form.date, { override: true });
     }
   }
-
+  // 防呆，預防資料回來沒地方接，所以要把它取消，停止接收這個 Observable 之後的任何 next / error / complete 回呼
   ngOnDestroy(): void {
     if (this.prefillSub) this.prefillSub.unsubscribe();
   }
@@ -155,41 +137,36 @@ export class ClockinMakeupComponent implements OnInit, OnDestroy {
 
   onStartTimeChange(val: string) {
     this.promotedFromIndex = null;
-    this.form.startTime = this.normTime(val);
-    if (!this.form.endTime) {
-      const infer = this.inferEndFromStart(this.form.startTime);
-      if (infer) this.form.endTime = infer;
-    }
+    this.form.startTime = val || '';
     this.validate();
   }
 
   onEndTimeChange(val: string) {
     this.promotedFromIndex = null;
-    const v = this.normTime(val);
-    this.form.endTime = v;
-    this.validate();
-  }
-
-  onExtraEndChange(i: number, val: string) {
-    const seg = (this.form.extraShifts ?? [])[i]; if (!seg) return;
-    const v = this.normTime(val);
-    seg.endTime = v;
+    this.form.endTime = val || '';
     this.validate();
   }
 
 
   onExtraStartChange(i: number, val: string) {
-    const seg = (this.form.extraShifts ?? [])[i]; if (!seg) return;
-    seg.startTime = this.normTime(val);
-    if (!seg.endTime) {
-      const infer = this.inferEndFromStart(seg.startTime);
-      if (infer) seg.endTime = infer;
-    }
+    const seg = (this.form.extraShifts ?? [])[i];
+    if (!seg) return;
+
+    seg.startTime = val;   // 直接用原始字串
     this.validate();
   }
 
+  onExtraEndChange(i: number, val: string) {
+    const seg = (this.form.extraShifts ?? [])[i];
+    if (!seg) return;
+
+    seg.endTime = val;     // 直接用原始字串
+    this.validate();
+  }
+
+
   onLunchStartChange(val: string) {
-    this.form.lunchStartTime = this.normTime(val);
+    this.form.lunchStartTime = val;
     if (this.form.lunchStartTime && !this.form.lunchEndTime) {
       const s = this.toMin(this.form.lunchStartTime);
       this.form.lunchEndTime = this.minToHHMM(s + 60);
@@ -200,6 +177,7 @@ export class ClockinMakeupComponent implements OnInit, OnDestroy {
 
   removeMainShift() {
     if (this.form.extraShifts && this.form.extraShifts.length) {
+      // shift()這是陣列取物件的方法會取第一個，因為不會超過兩個班所以取第一個就好!我肯定這個數不會是NULL或undefind
       const next = this.form.extraShifts.shift()!;
       this.form.startTime = next.startTime || '';
       this.form.endTime = next.endTime || '';
@@ -209,7 +187,6 @@ export class ClockinMakeupComponent implements OnInit, OnDestroy {
       this.form.endTime = '';
       this.promotedFromIndex = null;
     }
-    this.errors.startTime = undefined; this.errors.endTime = undefined;
     this.validate();
   }
   removeShift(i: number) {
@@ -357,6 +334,7 @@ export class ClockinMakeupComponent implements OnInit, OnDestroy {
 
             // 其它段（第 2 組開始）
             this.form.extraShifts = merged
+              //擷取第一個以後的所有物件
               .slice(1)
               .map((s, i) => ({ ...s, groupNo: i + 2 }));
 
@@ -402,55 +380,52 @@ export class ClockinMakeupComponent implements OnInit, OnDestroy {
     this.errors = {};
   }
 
-  // ---- 檔案 ----
+  // 當有檔案被拖拽到這上面時會觸發 e.preventDefault()阻止瀏覽器預設行為
   onDragOver(e: DragEvent) { e.preventDefault(); this.dragOver = true; }
+  // 離開時會觸發
   onDragLeave(e: DragEvent) { e.preventDefault(); this.dragOver = false; }
+  // 把檔案放到這個input後發生的事(用滑的)
   onDrop(e: DragEvent) {
     e.preventDefault(); this.dragOver = false;
     const f = e.dataTransfer?.files?.[0]; if (f) this.setFile(f);
   }
+  //用選的//e.target(input)告訴angular這是as HTMLInputElement(input)
   onFileChange(e: Event) { const f = (e.target as HTMLInputElement).files?.[0]; if (f) this.setFile(f); }
-  removeFile(ev?: Event) { ev?.stopPropagation(); this.form.file = null; this.fileName = ''; this.previewUrl = ''; this.errors.file = undefined; }
+  //stopPropagation這個 click 事件只在這個按鈕上結束不要往外面的div跑，為了不要讓我在點刪除的時候然後馬上又跳出選檔視窗
+  removeFile(ev?: Event) { ev?.stopPropagation(); this.form.file = null; this.fileName = ''; this.previewUrl = ''; }
 
-  private readonly MAX_SIZE = 10 * 1024 * 1024;
-  private readonly ALLOW_EXTS = ['pdf', 'doc', 'docx'];
-  private readonly ALLOW_TYPES = [
-    'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-  ];
   private setFile(file: File) {
-    const isImage = file.type.startsWith('image/');
+    //pop()取最後一個元素
     const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
-    const ok = isImage || this.ALLOW_EXTS.includes(ext) || this.ALLOW_TYPES.includes(file.type);
-    if (!ok) { this.errors.file = '不支援的檔案格式'; this.showErrors = true; return; }
-    if (file.size > this.MAX_SIZE) { this.errors.file = '檔案超過 10MB 上限'; this.showErrors = true; return; }
-    this.form.file = file; this.fileName = file.name; this.errors.file = undefined;
-    if (isImage || ['jpg', 'jpeg', 'png'].includes(ext)) {
+
+    //判斷是不是照片 file.type會秀出image/+類型這時startsWith會判斷是不是image開頭
+    const isImage =
+      file.type.startsWith('image/') ||
+      ['jpg', 'jpeg', 'png'].includes(ext);
+
+    this.form.file = file;
+    this.fileName = file.name;
+    //送出跟請假我有注釋自己去看
+    if (isImage) {
       const reader = new FileReader();
-      reader.onloadend = () => this.previewUrl = String(reader.result || '');
+      reader.onloadend = () => {
+        this.previewUrl = String(reader.result || '');
+      };
       reader.readAsDataURL(file);
     } else {
+
       this.previewUrl = '';
     }
   }
 
+
   reset() {
+    //後蓋前
     this.form = { ...this.form, startTime: '', endTime: '', lunchStartTime: '', lunchEndTime: '', rating: 0, description: '', file: null, extraShifts: [] };
     this.fileName = ''; this.previewUrl = ''; this.errors = {}; this.showErrors = false;
     this.promotedFromIndex = null;
   }
 
-  private inferEndFromStart(start?: string): string {
-    const s = this.toMin(this.normTime(start)); if (!Number.isFinite(s)) return '';
-    for (const id of Object.keys(this.SHIFT_TABLE)) {
-      const seg = this.SHIFT_TABLE[+id];
-      let a = this.toMin(seg.start), b = this.toMin(seg.end);
-      if (b < a) b += 24 * 60;
-      if (s >= a && s < b) return this.normTime(seg.end);
-    }
-    return '';
-  }
 
   private toMinForValidation(t?: string): number {
     if (!t) return NaN;

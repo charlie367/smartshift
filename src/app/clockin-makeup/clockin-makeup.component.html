@@ -45,8 +45,7 @@
             }
           </span>
         </label>
-        <input class="input" type="time" [(ngModel)]="form.startTime" (ngModelChange)="onStartTimeChange($event)"
-          (blur)="touch('startTime')" lang="en-GB" />
+        <input class="input" type="time" [(ngModel)]="form.startTime" (ngModelChange)="onStartTimeChange($event)"/>
 
         @if (showErrors && errors.startTime) {
         <div class="err">{{ errors.startTime }}</div>
@@ -71,8 +70,7 @@
         </label>
 
         <div class="input-with-x">
-          <input class="input" type="time" [(ngModel)]="form.endTime" (ngModelChange)="onEndTimeChange($event)"
-            (blur)="touch('endTime')" lang="en-GB" />
+          <input class="input" type="time" [(ngModel)]="form.endTime" (ngModelChange)="onEndTimeChange($event)"/>
           <button class="inline-x" type="button" (click)="removeMainShift()">
             <mat-icon>close</mat-icon>
           </button>
@@ -93,8 +91,7 @@
           <mat-icon class="label-ic">schedule</mat-icon>
           <span>上班打卡時間（第 {{ i + 2 }} 組）</span>
         </label>
-        <input class="input" type="time" [(ngModel)]="seg.startTime" (ngModelChange)="onExtraStartChange(i, $event)"
-          (blur)="touch('startTime')" lang="en-GB" />
+        <input class="input" type="time" [(ngModel)]="seg.startTime" (ngModelChange)="onExtraStartChange(i, $event)" />
 
         @if (showErrors && errors.extraStart?.[i]) {
         <div class="err">
@@ -110,8 +107,7 @@
         </label>
 
         <div class="input-with-x">
-          <input class="input" type="time" [(ngModel)]="seg.endTime" (ngModelChange)="onExtraEndChange(i, $event)"
-            (blur)="touch('endTime')" lang="en-GB" />
+          <input class="input" type="time" [(ngModel)]="seg.endTime" (ngModelChange)="onExtraEndChange(i, $event)" />
           <button type="button" class="inline-x" (click)="removeShift(i)">
             <mat-icon>close</mat-icon>
           </button>
@@ -133,8 +129,7 @@
           <mat-icon class="label-ic">free_breakfast</mat-icon>
           <span>午休開始</span>
         </label>
-        <input class="input" type="time" [(ngModel)]="form.lunchStartTime" (ngModelChange)="onLunchStartChange($event)"
-          (blur)="touch('lunchStartTime')" lang="en-GB" />
+        <input class="input" type="time" [(ngModel)]="form.lunchStartTime" (ngModelChange)="onLunchStartChange($event)" />
 
         @if (showErrors && errors.lunchStartTime) {
         <div class="err">{{ errors.lunchStartTime }}</div>
@@ -146,7 +141,7 @@
           <mat-icon class="label-ic">free_breakfast</mat-icon>
           <span>午休結束</span>
         </label>
-        <input class="input" type="time" [(ngModel)]="form.lunchEndTime" (blur)="touch('lunchEndTime')" lang="en-GB" />
+        <input class="input" type="time" [(ngModel)]="form.lunchEndTime" />
 
         @if (showErrors && errors.lunchEndTime) {
         <div class="err">{{ errors.lunchEndTime }}</div>
@@ -192,18 +187,17 @@
     </div>
 
 
-    <div class="form-item" [class.invalid]="showErrors && errors.file">
+    <div class="form-item">
       <label class="label">
         <mat-icon class="label-ic">upload</mat-icon>
         <span>上傳證明文件</span>
       </label>
-
+<!--  #fileInput 模板參考變數當使用這點即這個div會接到fileInput.click() -->
       <div class="uploader" [class.dragover]="dragOver" (click)="fileInput.click()" (dragover)="onDragOver($event)"
-        (dragleave)="onDragLeave($event)" (drop)="onDrop($event)" role="button" tabindex="0">
+        (dragleave)="onDragLeave($event)" (drop)="onDrop($event)"  >
         <input #fileInput type="file" class="hidden" accept="*/*" (change)="onFileChange($event)" />
 
         @if (previewUrl) {
-
         <img [src]="previewUrl" alt="預覽" class="preview-img" />
         <p class="file-name">{{ fileName }}</p>
         <p class="hint">點擊可更換檔案</p>
@@ -226,10 +220,6 @@
         }
         }
       </div>
-
-      @if (showErrors && errors.file) {
-      <div class="err">{{ errors.file }}</div>
-      }
     </div>
   </div>
 
