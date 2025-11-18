@@ -91,6 +91,7 @@
 
       <main class="calendar-container">
         <div class="left-calendar">
+          <!-- (dateClick)這個事件會帶出我選的日期，因為@Output()元件，所以才可以帶出來 -->
           <app-test-need1 [(selected)]="selectedDate" (dateClick)="onDateSelected($event)"
             (rangeChange)="onRangeChange($event)">
           </app-test-need1>

@@ -1,17 +1,12 @@
-/* ========== 全域基底（僅限此元件樹） ========== */
-/* 放在這個 dialog 的 .scss 最上面就可以 */
 // ::ng-deep .mat-mdc-dialog-surface {
 //   height: 97% !important;
 // }
-
 .makeup-root,
 .makeup-root *,
 .makeup-root *::before,
 .makeup-root *::after { box-sizing: border-box; }
 
-/* 外框 */
 .makeup-root {
-  /* 原本 #fff → 改成淡粉米色底 */
   background: #f9f1f0;
   border-radius: 16px;
   overflow: hidden;
@@ -19,11 +14,9 @@
 }
 .makeup-root.loading{ pointer-events: none; opacity: .98; }
 
-/* Header */
 .makeup-header{
   display: flex; align-items: center; justify-content: space-between;
   padding: 14px 20px;
-  /* 藍色改成咖啡色漸層 */
   background: linear-gradient(to right, #ba9b86, #a88978);
   color: #fff;
 }
@@ -37,48 +30,38 @@
 .icon-btn:hover{ background: rgba(255,255,255,.25); border-color: rgba(255,255,255,.35); }
 .icon-btn:active{ transform: translateY(1px); }
 
-/* Body */
 .makeup-body{
   padding: 16px 24px 24px 24px;
-  /* 內容區也是淡粉底，跟 React 那張一樣 */
   background: #f9f1f0;
 }
 .scroll-body{ max-height: min(70vh, 560px); overflow-y: auto; padding-bottom: 12px; }
 .form-item{ margin-bottom: 16px; }
 
-/* 上傳空狀態圖示 */
 .folder-icon { width: 40px; height: 40px; display: block; margin: 0 auto; opacity: .9; }
 .upload-text { color: #777; }
 
-/* 標題：統一字級與粗細 */
 .label{
   display: flex; align-items: center; gap: 8px;
   min-height: 28px; margin-bottom: 8px;
-  /* 深咖啡色文字 */
   color: #6b5548; font-weight: 600; font-size: 16px; white-space: nowrap;
 }
 .label-ic { display:inline-block; line-height:1; font-size: 20px; vertical-align: middle; color: #ba9b86; }
 .req{ color: #ef4444; margin-left: 4px; }
 
-/* 表單控制 */
 .input, .textarea{
   width: 100%;
-  /* 灰色邊改成帶點咖啡的米色 */
   border: 1px solid #d4c4bb; border-radius: 10px;
   padding: 10px 12px; outline: none;
   background: #fff;
-  /* 文字改成咖啡色系 */
   color: #6b5548;
   transition: box-shadow .2s, border-color .2s, background .2s;  resize: none !important;  
 }
 .input::placeholder, .textarea::placeholder{ color: #b39a8d; }
-/* Focus 藍色高亮改成咖啡色高亮 */
 .input:focus, .textarea:focus{
   border-color: #ba9b86;
   box-shadow: 0 0 0 2px rgba(186, 155, 134, .25);
 }
 
-/* 錯誤樣式 */
 .form-item.invalid .input,
 .form-item.invalid .textarea,
 .form-item.invalid .uploader{
@@ -86,16 +69,13 @@
 }
 .err{ margin-top: 6px; color: #ef4444; font-size: 12px; }
 
-/* 上傳 */
 .uploader{
   width: 100%;
-  /* 邊框改成咖啡米色 */
   border: 2px dashed #d4c4bb; border-radius: 12px;
   padding: 20px; text-align: center; cursor: pointer;
   background: #fff;
   transition: border-color .2s, background .2s;
 }
-/* Hover / dragover 都走咖啡色調 */
 .uploader:hover{
   border-color: #ba9b86;
   background: #faf7f6;
@@ -106,15 +86,12 @@
 }
 .hidden{ display: none; }
 .preview-img{ max-height: 200px; width: auto; border-radius: 10px; border: 1px solid #e5e7eb; display: block; margin: 0 auto 8px; }
-/* 檔名顏色改成咖啡色，不用綠色 */
 .file-name{ color: #6b5548; font-weight: 600; font-size: 14px; margin: 4px 0; }
 .hint{ color: #8b7465; font-size: 12px; }
-/* 檔案 icon 也用咖啡色 */
 .file-ic{ font-size: 40px; color: #ba9b86; display: block; margin: 0 auto 6px; }
 .upload-ic{ font-size: 40px; color: #b39a8d; display: block; margin: 0 auto 6px; }
 .empty-text{ color: #6b5548; }
 
-/* 小按鈕（一般用途） */
 .mini-btn{
   margin-top: 8px; display: inline-flex; align-items: center; gap: 4px;
   padding: 4px 8px; border-radius: 8px;
@@ -124,12 +101,10 @@
 }
 .mini-btn:hover{ background: #f9f1f0; }
 
-/* 兩欄網格（列對齊頂端） */
 .grid-2{
   display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start;
 }
 
-/* 每組的小標＆右側清除 */
 .form-row-head{
   display: flex; align-items: center; justify-content: space-between;
   margin: 8px 0 6px;
@@ -142,11 +117,9 @@
 }
 .row-x:hover{ background: #f5ebe6; }
 
-/* 24h：隱藏 WebKit 的 AM/PM 欄位 */
 .input.h24::-webkit-datetime-edit-ampm-field{ display: none; }
 .input.h24::-webkit-calendar-picker-indicator{ cursor: pointer; }
 
-/* 星等（維持原本黃色） */
 .stars{ display: flex; align-items: center; gap: 8px; }
 .star-btn{ border: 0; background: transparent; cursor: pointer; padding: 2px; }
 .star{ font-size: 28px; color: #d1d5db; transition: transform .1s, color .15s; }
@@ -154,11 +127,9 @@
 .star-btn:hover .star{ transform: scale(1.08); }
 .rating-text{ color: #8b7465; font-weight: 600; }
 
-/* Footer */
 .btn-row{ display: flex; gap: 12px; padding-top: 8px; }
 .sticky-footer{
   position: sticky; bottom: 0;
-  /* Footer 白底＋淡咖啡上邊線，跟 React 一樣 */
   background: #ffffff;
   padding: 12px 24px 20px 24px;
   box-shadow: 0 -6px 12px -8px rgba(0,0,0,.12);
@@ -170,7 +141,6 @@
   transition: background .15s, color .15s, border-color .15s, box-shadow .15s, transform .02s;
 }
 
-/* 左邊「清除」按鈕：白底＋咖啡字＋米色邊 */
 .btn.ghost{
   background: #ffffff;
   border-color: #d4c4bb;
@@ -179,7 +149,6 @@
 }
 .btn.ghost:hover{ background: #f9f1f0; }
 
-/* 右邊「送出申請」按鈕：咖啡漸層＋白字 */
 .btn.primary{
   background: linear-gradient(to right, #ba9b86, #a88978);
   color: #ffffff;
@@ -194,7 +163,6 @@
 .spinner{ display: inline-block; width: 16px; height: 16px; border: 2px solid #fff; border-right-color: transparent; border-radius: 50%; margin-right: 6px; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* 手機 */
 @media (max-width: 420px){
   .makeup-body{ padding: 12px 16px 16px 16px; }
   .btn-row{ flex-direction: column; }
@@ -202,14 +170,12 @@
   .grid-2{ grid-template-columns: 1fr; }
 }
 
-/* ====== 右側小叉叉（輸入框清除） ====== */
 .input-with-x { position: relative; }
 .input-with-x > .input { padding-right: 44px; }
 .inline-x{
   position: absolute; top: 50%; right: 8px; transform: translateY(-50%);
   width: 28px; height: 28px; padding: 0;
   border-radius: 999px;
-  /* 邊框改成米色咖啡 */
   border: 1px solid #d4c4bb;
   background: #fff;
   display: flex; align-items: center; justify-content: center; cursor: pointer;
@@ -217,25 +183,17 @@
 .inline-x:hover { background: #f5ebe6; }
 .inline-x mat-icon{ display: block; font-size: 18px; line-height: 1; width: 18px; height: 18px; }
 
-/* === 統一輸入框高度，避免左右欄高低不齊 === */
 .input { height: 44px; box-sizing: border-box; }
 
-/* =========================================================
-   🔥 新增時間段：固定右上、縮小尺寸、減少上方留白；兩邊標題仍對齊
-   ========================================================= */
-
-/* 有新增按鈕的這一整列，替兩邊標題都預留相同的上方空間（避免去卡上一列） */
 .grid-2:has(.label-with-btn .add-slot) {
-  --slotPad: 22px;                 /* 原 36px → 22px，更貼頂；可調 20~26 */
+  --slotPad: 22px;
 }
 
-/* 兩邊的標題都下移同樣距離 → 基線對齊 */
 .grid-2:has(.label-with-btn .add-slot) .label,
 .grid-2:has(.label-with-btn .add-slot) .label-with-btn {
   padding-top: var(--slotPad);
 }
 
-/* 右邊（含按鈕）的標題容器：作為定位點 */
 .label-with-btn{
   position: relative;
   display: flex; align-items: center; justify-content: space-between;
@@ -246,13 +204,12 @@
   display: inline-flex; align-items: center; gap: 6px;
 }
 
-/* 按鈕固定在標題容器的右上角（更小、更貼） */
 .add-slot{
-  position: absolute; top: -2px; right: 0;  /* 往上貼；可改 -3~-1 */
+  position: absolute; top: -2px; right: 0;
   z-index: 1;
   display: inline-flex; align-items: center; gap: 4px;
-  padding: 2px 8px;                          /* 窄一點 */
-  font-size: 13px;                           /* 小一號 */
+  padding: 2px 8px;
+  font-size: 13px;
   border-radius: 9999px;
   border: 1px solid #d0d7de; background: #fff;
   cursor: pointer; line-height: 1.2; white-space: nowrap;
@@ -261,27 +218,25 @@
 .add-slot mat-icon{ font-size: 18px; width: 18px; height: 18px; }
 .add-slot:hover{ background: #f9f1f0; border-color: #c3ccd5; }
 
-/* 窄螢幕再收一點空間 */
 @media (max-width: 640px){
   .grid-2:has(.label-with-btn .add-slot){ --slotPad: 20px; }
   .add-slot{ top: -1px; padding: 2px 8px; font-size: 13px; }
 }
 
-
 .grid-2:has(.label-with-btn .add-slot){
-  --slotPad: 28px;   /* 原 22px → 28px，給較大的按鈕一點空間（可調 26~30） */
+  --slotPad: 28px;
 }
 
 .add-slot{
-  top: -15px;                 /* 保持貼頂、別壓到上面 */
-  font-size: 14px;         /* ≈ +0.15 cm */
-  padding: 6px 14px;         /* 跟著放大一點，外觀更均衡 */
+  top: -15px;
+  font-size: 14px;
+  padding: 6px 14px;
   border-radius: 9999px;
   line-height: 1.1;
 }
 
 .add-slot mat-icon{
-  font-size: 20px;           /* icon 跟著變大 */
+  font-size: 20px;
   width: 20px;
   height: 20px;
 }

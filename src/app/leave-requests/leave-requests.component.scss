@@ -1,4 +1,3 @@
-/* ================== 基礎：Material Symbols ================== */
 .material-symbols-rounded{
   font-family: 'Material Symbols Rounded';
   font-weight: normal;
@@ -12,7 +11,6 @@
   font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
 }
 
-/* ================== 背景與容器 ================== */
 .page {
   min-height: 100vh;
   background: #f9f1f0;
@@ -25,12 +23,11 @@
 .card {
   background:#ffffff;
   border-radius:16px;
-  box-shadow: 0 8px 24px rgba(186,155,134,.18); /* 奶茶陰影 */
+  box-shadow: 0 8px 24px rgba(186,155,134,.18);
   padding: 24px;
 }
 .header { margin-bottom: 12px; }
 
-/* ================== 舊版：標題置中（保留） ================== */
 .title-block{
   margin-bottom: 12px;
   display:flex;
@@ -43,10 +40,9 @@
   margin:0;
   font-size:24px;
   font-weight:800;
-  color:#5d4a3d; /* 奶茶標題色 */
+  color:#5d4a3d;
 }
 
-/* ================== 舊版：月份列（保留） ================== */
 .header-row{
   display:flex;
   align-items:center;
@@ -83,7 +79,6 @@
   display:inline-flex;
 }
 
-/* 舊版：較大的箭頭按鈕（保留） */
 .icon-btn.nav-btn{
   width: 40px;
   height: 40px;
@@ -106,7 +101,6 @@
   font-variation-settings:'FILL' 0,'wght' 600,'GRAD' 0,'opsz' 24;
 }
 
-/* ================== KPI ================== */
 .kpi-grid{
   display:grid;
   grid-template-columns: repeat(2,minmax(0,1fr));
@@ -139,7 +133,6 @@
   color:#5d4a3d;
 }
 
-/* 列表筆數：中性色奶茶卡 */
 .kpi-blue{
   background:#fefbf9;
   border-color:#e5d5ce;
@@ -149,7 +142,6 @@
   color:#ba9b86;
 }
 
-/* 待審核：偏黃橘 */
 .kpi-yellow{
   background:#fef5ed;
   border-color:#e8c4a0;
@@ -160,7 +152,6 @@
 }
 .kpi-yellow-txt{ color:#c89960; }
 
-/* 已核准：偏綠 */
 .kpi-green{
   background:#e8f5e3;
   border-color:#a8c4a0;
@@ -171,7 +162,6 @@
 }
 .kpi-green-txt{ color:#5a8a4d; }
 
-/* 已駁回：偏紅 */
 .kpi-red{
   background:#fde9e8;
   border-color:#d4a4a0;
@@ -182,7 +172,6 @@
 }
 .kpi-red-txt{ color:#c4635a; }
 
-/* ================== Tabs ================== */
 .tabbar{
   display:grid;
   grid-template-columns: repeat(4,minmax(0,1fr));
@@ -199,7 +188,6 @@
   transition: background .15s ease, color .15s ease, box-shadow .15s ease, border-color .15s ease;
 }
 
-/* 全部（第一顆）預設主色 */
 .tab.active{
   background:#ba9b86;
   color:#ffffff;
@@ -207,7 +195,6 @@
   box-shadow:0 8px 20px rgba(186,155,134,.25);
 }
 
-/* 第二顆：待審核 */
 .tabbar .tab:nth-child(2).active{
   background:#fef5ed;
   color:#c89960;
@@ -215,7 +202,6 @@
   box-shadow:0 8px 20px rgba(200,153,96,.18);
 }
 
-/* 第三顆：已核准 */
 .tabbar .tab:nth-child(3).active{
   background:#e8f5e3;
   color:#5a8a4d;
@@ -223,7 +209,6 @@
   box-shadow:0 8px 20px rgba(90,138,77,.18);
 }
 
-/* 第四顆：已駁回 */
 .tabbar .tab:nth-child(4).active{
   background:#fde9e8;
   color:#c4635a;
@@ -231,7 +216,6 @@
   box-shadow:0 8px 20px rgba(196,99,90,.18);
 }
 
-/* ================== 表格 ================== */
 .table-card{ overflow:hidden; }
 .table-wrap{ overflow-x:auto; }
 table{
@@ -241,7 +225,7 @@ table{
 }
 thead th{
   text-align:left;
-  background:#f9f1f0; /* 淡奶茶表頭 */
+  background:#f9f1f0;
   color:#5d4a3d;
   font-weight:700;
   font-size:14px;
@@ -252,12 +236,10 @@ tbody td{
   border-top:1px solid #f3e4dc;
 }
 
-/* 交錯列底色（柔和） */
 tbody tr:nth-child(even){
   background:#fefcfb;
 }
 
-/* hover 改成淡奶茶，不要亮藍 */
 .row:hover{
   background:#f5e6dd;
 }
@@ -288,7 +270,6 @@ tbody tr:nth-child(even){
   font-weight:600;
 }
 
-/* ================== 標籤/膠囊 ================== */
 .pill{
   display:inline-block;
   padding:4px 10px;
@@ -297,7 +278,7 @@ tbody tr:nth-child(even){
   font-size:12px;
   font-weight:700;
 }
-.pill--blue{    background:#ba9b86; }  /* 主色作為一般膠囊 */
+.pill--blue{    background:#ba9b86; }
 .pill--purple{  background:#a888b5; }
 .pill--emerald{ background:#6b9460; }
 .pill--pink{    background:#c97d6f; }
@@ -315,7 +296,6 @@ tbody tr:nth-child(even){
   font-weight:700;
 }
 
-/* 對應三種狀態：用奶茶版 pending / approved / rejected */
 .chip--green{
   background:#e8f5e3;
   border-color:#a8c4a0;
@@ -341,7 +321,6 @@ tbody tr:nth-child(even){
 }
 .link:hover{ text-decoration:underline; }
 
-/* ================== 詳情浮層 ================== */
 .overlay{
   position:fixed;
   inset:0;
@@ -457,7 +436,6 @@ tbody tr:nth-child(even){
 }
 .btn:hover{ background:#f9f1f0; }
 
-/* ================== 空狀態 & 訊息 ================== */
 .empty{
   text-align:center;
   color:#8d7a6a;
@@ -466,14 +444,12 @@ tbody tr:nth-child(even){
 
 .empty-ic{
   margin-bottom: 8px;
-  /* 讓圖片置中 */
   display: flex;
   justify-content: center;
 }
 
-/* 這裡才是控制圖片尺寸的地方 */
 .empty-ic img{
-  width: 57px;   /* 想多大就改這裡 */
+  width: 57px;
   height: auto;
   object-fit: contain;
   display: block;
@@ -488,16 +464,12 @@ tbody tr:nth-child(even){
   margin: 8px 0 16px;
 }
 
-/* =========================================================
-   外框 lr-wrap（標題/返回、月份Bar、KPI、Tabs 外圍）
-   ========================================================= */
 :host {
   --lr-primary: #ba9b86;
   --lr-primary-700: #a88977;
   --lr-surface: #ffffff;
 }
 
-/* 外層奶茶邊框 */
 .lr-wrap{
   border-radius: 20px;
   border: 1px solid transparent;
@@ -508,27 +480,22 @@ tbody tr:nth-child(even){
   padding: 16px;
 }
 
-/* 內部：標題區 */
 .lr-wrap__head{
   background: rgba(255,255,255,.75);
   border-radius: 16px;
   padding: 12px 0px;
 }
 
-/* 內部：月份列 */
 .lr-wrap__rail{ margin-top: 6px; }
 
-/* 內部：KPI + Tabs */
 .lr-wrap__body{ margin-top: 8px; }
 
-/* 讓 page-head 在框內外觀更貼合 */
 .lr-wrap .page-head{
   background: transparent;
   box-shadow: none;
   padding: 0;
 }
 
-/* ================== 頂部：page-head / 返回 ================== */
 .page-head{
   display:flex;
   align-items:center;
@@ -565,7 +532,6 @@ tbody tr:nth-child(even){
 .btn-back .material-symbols-rounded{ font-size:18px; }
 .btn-back:hover{ filter: brightness(1.06); }
 
-/* ================== 月份 Bar（month-rail） ================== */
 .month-rail{
   position: relative;
   height: 56px;
@@ -614,7 +580,6 @@ tbody tr:nth-child(even){
 }
 .rail-nav .material-symbols-rounded{ font-size:22px; }
 
-/* ================== RWD ================== */
 @media (max-width: 640px){
   .lr-wrap{ padding:12px; border-radius:16px; }
   .lr-wrap__head{ border-radius:14px; padding:10px 12px; }
@@ -623,7 +588,6 @@ tbody tr:nth-child(even){
   .head-title{ font-size:18px; }
 }
 
-/* 列表「請假時間」的顯示樣式 */
 .period{
   color:#8d7a6a;
   display:inline-block;

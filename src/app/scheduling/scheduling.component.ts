@@ -609,6 +609,25 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     return y + '-' + m + '-' + da;
   }
 
+  toHM(t?: string | null): string {
+    if (!t) return '—';
+    const [h = '00', m = '00'] = t.split(':');
+    return h.toString().padStart(2, '0') + ':' + m.toString().padStart(2, '0');
+  }
+
+ // 接住 testneed1 的區間事件；需要時再做事
+ onRangeChange(evt: { start: Date | null; end: Date | null }) {
+  console.log('[rangeChange]', evt);
+
+  // 如果你想在選到區間時，也觸發既有流程，可以用 start 當代表：
+  if (evt.start) {
+    this.onDateSelected(evt.start);
+  }
+}
+
+
+  messages: { sender: 'user' | 'assistant'; text: string; time?: string }[] = [];
+
   onDateSelected(date: Date) {
     this.selectedDate = date;
     this.startOfWeek = this.getStartOfWeek(date);
@@ -622,32 +641,28 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         const slots = map[key] ?? [];
         let replyText = '';
         if (!slots.length) {
-          replyText = `${date.toLocaleDateString('zh-TW')} 沒有排班紀錄`;
+          replyText = date.toLocaleDateString('zh-TW') + ' 沒有排班紀錄';
         } else {
-          replyText = `${date.toLocaleDateString('zh-TW')} 排班如下：\n`;
+          replyText = date.toLocaleDateString('zh-TW') + ' 排班如下：\n';
           slots.forEach((s, i) => {
             if (!s.isWorking || !s.isAccept) {
-              replyText += `第${i + 1}班：休假\n`;
+              replyText = replyText + '第' + (i + 1) + '班：休假\n';
             } else {
               const start = this.toHM(s.startTime);
               const end = this.toHM(s.endTime);
-              replyText += `第${i + 1}班：${start} - ${end}\n`;
+              replyText = replyText + '第' + (i + 1) + '班：' + start + ' - ' + end + '\n';
             }
           });
         }
-
-        // 3) 用 reply 替換 loading（保持順序）
         this.messages[0] = { sender: 'assistant', text: replyText };
-
-        // 4) 確保 Angular 更新 DOM 並滾到底
-        try { this.cd.detectChanges(); } catch (e) { /* ignore */ }
-        // setTimeout(() => this.scrollChatToBottom('smooth'), 40);
+        //ChangeDetectorRef 這是 angular 提供的套件用來及時刷新方法的套件
+        try { this.cd.detectChanges(); } catch (e) { }
+   
       },
       error: (err) => {
-        console.error('[onDateSelected] fetch weekSlots error', err);
         this.messages[0] = { sender: 'assistant', text: '查詢班表失敗，請稍後再試' };
-        try { this.cd.detectChanges(); } catch (e) { /* ignore */ }
-        // setTimeout(() => this.scrollChatToBottom('smooth'), 40);
+        try { this.cd.detectChanges(); } catch (e) {  }
+
       }
     });
   }
@@ -728,16 +743,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     if (e.key === 'notifyDirtyAt') this.runRefresh();  // 後台分頁寫入 dirty key 時刷新
   };
 
-  // 接住 testneed1 的區間事件；需要時再做事
-  onRangeChange(evt: { start: Date | null; end: Date | null }) {
-    console.log('[rangeChange]', evt);
-
-    // 如果你想在選到區間時，也觸發既有流程，可以用 start 當代表：
-    if (evt.start) {
-      this.onDateSelected(evt.start);
-    }
-  }
-
   // 篩掉非上班或未核准的資料
   acceptedSlots(list?: WeekSlot[]): WeekSlot[] {
     return (list || []).filter(s => s.isWorking && s.isAccept);
@@ -798,12 +803,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     '七月', '八月', '九月', '十月', '十一月', '十二月'
   ];
 
-  toHM(t?: string | null): string {
-    if (!t) return '—';
-    const [h = '00', m = '00'] = t.split(':');
-    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-  }
-
   ampm(t?: string | null): string {
     if (!t) return '';
     const [h, m] = t.split(':').map(Number);
@@ -824,8 +823,8 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
   selectedDate: Date | null = null;
 
-  messages: { sender: 'user' | 'assistant'; text: string; time?: string }[] = [];
   userInput = "";
+
   sending = false;
 
   trackBySlot = (_: number, s: WeekSlot) => `${s.startTime ?? ''}-${s.endTime ?? ''}`;

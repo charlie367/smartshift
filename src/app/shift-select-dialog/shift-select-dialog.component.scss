@@ -309,8 +309,6 @@
   box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
 }
 
-/* ========= Dialog ========= */
-
 .dialog-overlay {
   position: fixed;
   top: 0;
@@ -331,13 +329,13 @@
 }
 
 .dialog-content {
-  background: #f9f1f0; /* 奶茶卡片底 */
+  background: #f9f1f0;
   border-radius: 16px;
   padding: 30px;
   width: 90%;
   max-width: 450px;
   position: relative;
-  box-shadow: 0 25px 50px rgba(186, 155, 134, 0.32); /* 奶茶陰影 */
+  box-shadow: 0 25px 50px rgba(186, 155, 134, 0.32);
   animation: slideIn 0.3s ease;
 }
 
@@ -352,7 +350,6 @@
   }
 }
 
-/* 關閉按鈕：改成奶茶色圓形 */
 .dialog-close {
   position: absolute;
   top: 15px;
@@ -385,9 +382,9 @@
   border-radius: 20px;
   height: 32px;
 
-  border: 1px solid #ba9b86;      /* 顯眼一點的框 */
-  background: #e8dcd5;            /* 比卡片深一階的奶茶色 */
-  color: #6b5547;                 /* 深咖啡字 */
+  border: 1px solid #ba9b86;
+  background: #e8dcd5;
+  color: #6b5547;
 
   font-size: 14px;
   font-weight: 600;
@@ -402,11 +399,10 @@
 }
 
 .dialog-add:hover {
-  background: #d8c0b1;            /* 再深一點的 hover 色 */
+  background: #d8c0b1;
   transform: scale(1.05);
 }
 
-/* active = 移除班別：維持主按鈕風格 */
 .dialog-add.active {
   border-color: transparent;
   background: linear-gradient(135deg, #ba9b86 0%, #a88977 100%);
@@ -417,8 +413,6 @@
   background: #a88977;
 }
 
-
-/* 標題字（漸層改為奶茶） */
 .dialog-header {
   font-size: 1.5em;
   font-weight: 700;
@@ -430,7 +424,6 @@
   background-clip: text;
 }
 
-/* 日期文字 */
 .dialog-date {
   font-size: 0.9em;
   color: #8b7263;
@@ -441,7 +434,6 @@
   margin-bottom: 20px;
 }
 
-/* label 顏色 */
 .form-label {
   display: block;
   font-weight: 600;
@@ -450,7 +442,6 @@
   font-size: 0.95em;
 }
 
-/* select：奶茶邊框與文字 */
 .form-select {
   width: 100%;
   padding: 12px 15px;
@@ -463,7 +454,6 @@
   color: #6b5547;
 }
 
-/* 聚焦效果 */
 .form-select:focus {
   outline: none;
   border-color: #ba9b86;
@@ -483,7 +473,6 @@
   cursor: pointer;
 }
 
-/* checkbox 勾選色改奶茶 */
 .checkbox-item input[type="checkbox"] {
   width: 20px;
   height: 20px;
@@ -498,7 +487,6 @@
   user-select: none;
 }
 
-/* 送出按鈕：奶茶主色漸層 */
 .dialog-submit {
   width: 100%;
   padding: 14px 20px;

@@ -1,7 +1,3 @@
-/* ------------------------------------
-   全局
------------------------------------- */
-
 .all-flex {
   display: flex;
   flex-direction: column;
@@ -10,7 +6,6 @@
   min-height: auto;
   padding: 20px;
   position: relative;
-  /* 整體淡粉底 */
   background: #f9f1f0;
 }
 
@@ -19,24 +14,23 @@
   padding: 0;
   box-sizing: border-box;
 }
-/* 讓 X 的位置跟打卡那顆一樣靠邊 */
+
 .dialog-header {
   position: absolute;
   top: 10px;
-  right: 10px;   /* 原本是 20px，改成 10px 更貼邊 */
+  right: 10px;
   z-index: 10;
 }
 
-/* 改成跟打卡一樣的顏色 / 大小 */
 .dialog-header .mat-mdc-icon-button {
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
 
-  background: #ba9b86;          /* 和打卡一樣的淺咖啡色 */
-  color: #ffffff;               /* X 白色 */
+  background: #ba9b86;
+  color: #ffffff;
   border-radius: 999px;
-  width: 40px;                  /* 放大一點 */
+  width: 40px;
   height: 40px;
   padding: 0;
 
@@ -48,25 +42,19 @@
 }
 
 .dialog-header .mat-mdc-icon-button:hover {
-  background: #a88978;          /* 跟打卡 hover 色一樣 */
+  background: #a88978;
 }
 
-/* 如果覺得 X 太小，可以順便調整 icon 大小 */
 .dialog-header .mat-mdc-icon-button mat-icon {
   font-size: 28px;
   width: 26px;
   height: 26px;
 }
 
-
-/* 把 focus 的外框圈圈關掉，避免多一層邊 */
 :host ::ng-deep .dialog-header .mat-mdc-focus-indicator {
   display: none !important;
 }
 
-
-
-/* 主標題：咖啡漸層字 */
 .main-title {
   text-align: center;
   font-size: 2.5em;
@@ -90,9 +78,6 @@
 
 .calendar-wrapper { flex: 0 0 auto; }
 
-/* ------------------------------------
-   左側：Calendar 卡片
------------------------------------- */
 .shell {
   position: relative;
   width: 400px;
@@ -100,7 +85,6 @@
   box-shadow: 0 19px 38px rgba(0, 0, 0, 0.12), 0 15px 12px rgba(0, 0, 0, 0.12);
 }
 
-/* 與右側面板等高 */
 .calendar-wrapper .shell {
   min-height: 553px;
   height: 100%;
@@ -115,7 +99,6 @@
   height: 230px;
   position: relative;
   overflow: hidden;
-  /* 改成咖啡漸層 */
   background: linear-gradient(135deg, #9d8269 0%, #ba9b86 50%, #c9ad96 100%);
 }
 
@@ -159,7 +142,6 @@
   font-weight: 600;
 }
 
-/* Calendar 表格 */
 .calender {
   width: 100%;
   background: #ffffff;
@@ -207,7 +189,6 @@
   cursor: not-allowed !important;
 }
 
-/* 綁在 header 下方裝飾的白色柱柱 */
 .ring-left, .ring-right { position: absolute; top: 205px; }
 .ring-left { left: 1.5em; }
 .ring-right { right: 1.5em; }
@@ -222,9 +203,6 @@
   width: 6px;
 }
 
-/* ------------------------------------
-   圓形日期（共用）
------------------------------------- */
 .calender td .clickable-date,
 .calender td .clickable-date:hover,
 .calender td .clickable-date.selected-date {
@@ -241,12 +219,10 @@
   user-select: none;
 }
 
-/* 一般可選日期：文字咖啡色 */
 .calender td .clickable-date {
   color: #5c4a3d;
 }
 
-/* hover（未選中時）：淺咖啡底 + 白字 */
 .calender td:not(.prev-month):not(.next-month)
   .clickable-date:not(.selected-date):hover {
   background: #c9b5a6 !important;
@@ -254,7 +230,6 @@
   font-weight: 700 !important;
 }
 
-/* 選中：深咖啡底 + 白字 */
 .calender .clickable-date.selected-date {
   background: #8b7355 !important;
   color: #ffffff !important;
@@ -262,22 +237,17 @@
   border: none;
 }
 
-/* 空白格 */
 .empty-date { opacity: .35; pointer-events: none; }
 
-/* 不可選日期：只把字變灰，不要背景、不要圓形 */
 .calender td .disabled-date {
-  background: transparent; 
-  border-radius: 0;        
-  color: #b8a79e;        
-  opacity: 0.8;            
+  background: transparent;
+  border-radius: 0;
+  color: #b8a79e;
+  opacity: 0.8;
   cursor: not-allowed;
   pointer-events: none;
 }
 
-/* ------------------------------------
-   右側：選擇的日期面板
------------------------------------- */
 .selected-dates-panel {
   flex: 0 0 400px;
   background: #f9f1f0;
@@ -325,7 +295,6 @@
   justify-items: center;
 }
 
-/* 已選日期小卡 */
 .selected-item {
   background: #ba9b86;
   color: white;
@@ -361,7 +330,6 @@
   font-weight: 700;
 }
 
-/* 線畫在「早班」上方，不影響其他排版 */
 .selected-item .shift::before {
   content: "";
   position: absolute;
@@ -386,7 +354,6 @@
   margin-bottom: 20px;
 }
 
-/* 底部兩顆按鈕 */
 .button-group {
   display: flex;
   gap: 15px;
@@ -409,7 +376,6 @@
   letter-spacing: 0.5px;
 }
 
-/* 左：清除所有選擇 → 白底 + 咖啡邊 */
 .btn-clear {
   flex: 1;
   background: #ffffff;
@@ -423,7 +389,6 @@
   background: #f9f1f0;
 }
 
-/* 右：送出 → 咖啡漸層 */
 .btn-submit {
   flex: 1;
   background: linear-gradient(135deg, #8b7355 0%, #ba9b86 50%, #c9ad96 100%);
@@ -438,21 +403,14 @@
 
 .btn:active { transform: translateY(0); }
 
-/* 響應式 */
 @media (max-width: 768px) {
   .main-title { font-size: 2em; margin-bottom: 20px; }
   .shell { width: 100%; max-width: 400px; margin: 0 auto; }
   .button-group { flex-direction: column; }
 }
 
-/* ------------------------------------
-   左右切月按鈕（保持原本位置，只改色）
------------------------------------- */
-
-/* 只針對左側卡片的 header 做定位 */
 .shell > header { position: relative; }
 
-/* 左右切月按鈕 */
 .shell > header .only-nav {
   position: absolute;
   top: 10px;
@@ -475,7 +433,6 @@
 .shell > header .only-nav:hover  { background: rgba(255,255,255,.35); transform: translateY(-1px); }
 .shell > header .only-nav:active { transform: translateY(0); }
 
-/* chevron 顏色維持白色 */
 .shell > header .only-nav mat-icon {
   color: #fff;
   font-size: 20px;
@@ -483,18 +440,17 @@
   height: 20px;
   line-height: 20px;
 }
-/* 讓這顆 dialog 的外殼跟裡面一樣粉色，並拿掉多餘 padding */
+
 .schedule-dialog-panel .mat-mdc-dialog-surface {
-  background: #f9f1f0;          /* 跟 .all-flex 一樣的底色 */
+  background: #f9f1f0;
   padding: 0 !important;
 }
 
 .schedule-dialog-panel .mat-mdc-dialog-content {
   padding: 0 !important;
-  background: transparent;      /* 不要再多一層白底 */
+  background: transparent;
 }
 
-/* 讓內容撐滿整個 surface，高度不留縫隙 */
 :host {
   display: block;
   height: 100%;
@@ -503,15 +459,15 @@
 .all-flex {
   min-height: 100%;
 }
-/* 讓這顆 dialog 的外殼跟裡面一樣粉色，並拿掉多餘 padding */
+
 .schedule-dialog-panel .mat-mdc-dialog-surface {
-  background: #f9f1f0;          /* 跟 .all-flex 一樣的底色 */
+  background: #f9f1f0;
   padding: 0 !important;
 }
 
 .schedule-dialog-panel .mat-mdc-dialog-container {
-  --mdc-dialog-container-color: #f9f1f0;  /* MDC 用這個變數當底色 */
-  background: #f9f1f0;                    /* 保險再設一次 */
+  --mdc-dialog-container-color: #f9f1f0;
+  background: #f9f1f0;
   padding: 0 !important;
-  border-radius: 24px;                    /* 想跟現在一樣圓角就留著，可調 */
+  border-radius: 24px;
 }

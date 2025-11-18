@@ -1,4 +1,3 @@
-/* ===== 移除對話框水平滾輪（保留原本設定） ===== */
 :host ::ng-deep .mat-mdc-dialog-surface {
   overflow: hidden !important;
   max-width: 100vw !important;
@@ -16,12 +15,10 @@
   box-sizing: border-box;
 }
 
-/* 開 Dialog 時 CDK 會鎖捲動，這裡把水平捲軸關掉，避免底部滑桿 */
 :host ::ng-deep body.cdk-global-scrollblock {
   overflow-x: hidden !important;
 }
 
-/* ===== 卡片樣式：改成奶茶風 ===== */
 .dialog-container {
   padding: 24px;
   background: #ffffff;
@@ -34,18 +31,16 @@
   font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
 }
 
-/* 標題 */
 .dialog-title {
   margin: 0 0 20px 0;
   font-size: 20px;
   font-weight: 700;
-  color: #ba9b86; /* 奶茶主色 */
+  color: #ba9b86;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-/* 內容區 */
 .dialog-content {
   display: flex;
   flex-direction: column;
@@ -53,31 +48,27 @@
   margin-bottom: 20px;
 }
 
-/* 每一塊資訊 */
 .info-field {
   padding: 14px 16px;
-  background: #f9f1f0;              /* 淺奶茶底 */
+  background: #f9f1f0;
   border-radius: 14px;
-  border: 1px solid #ecdcd3;        /* 淺框 */
+  border: 1px solid #ecdcd3;
 }
 
 .info-field + .info-field {
   margin-top: 6px;
 }
 
-/* 公司名那塊 */
 .company-name {
   letter-spacing: 0.3px;
 }
 
-/* 高亮那塊（距離公司） */
 .info-field.highlight {
   background: linear-gradient(135deg, #ba9b86 0%, #a88977 100%);
   border: 2px solid rgba(186, 155, 134, 0.35);
   box-shadow: 0 6px 18px rgba(186, 155, 134, 0.35);
 }
 
-/* label 標籤文字 */
 .info-field label {
   display: block;
   font-size: 14px;
@@ -86,40 +77,34 @@
   color: #8b7567;
 }
 
-/* 高亮區塊的 label 改白字 */
 .info-field.highlight label {
   color: #f9f1f0;
   opacity: 0.9;
 }
 
-/* 顯示值 */
 .info-field .value {
   font-size: 18px;
   font-weight: 600;
   color: #5a4a3f;
-  white-space: nowrap;      /* 避免「公尺」掉行 */
+  white-space: nowrap;
 }
 
-/* 高亮區塊的數值白字 */
 .info-field.highlight .value {
   color: #ffffff;
 }
 
-/* 單位字稍微小一點 */
 .info-field .unit {
   font-size: 14px;
   font-weight: 400;
   margin-left: 2px;
 }
 
-/* ===== 底部按鈕區 ===== */
 .dialog-actions {
   display: flex;
   justify-content: flex-end;
   margin-top: 4px;
 }
 
-/* 確定按鈕：改成奶茶漸層 */
 .btn-confirm {
   padding: 10px 32px;
   background: linear-gradient(135deg, #ba9b86 0%, #a88977 100%);

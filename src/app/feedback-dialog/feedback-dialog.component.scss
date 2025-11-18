@@ -1,100 +1,86 @@
-/* ==============================
-   可調參數（上方漸層與整體縮放）
-   ============================== */
-   :host {
-    --hdr-h: 56px;               /* 標題高度 */
-    --hdr-px: 20px;              /* 標題左右內距 */
-    --hdr-radius: 16px;          /* 卡片圓角（含上緣） */
-  
-    /* 奶茶色漸層 */
-    --hdr-from: #ba9b86;
-    --hdr-to:   #a88977;
-  
-    --body-pad-y: 20px;          /* 內容上下內距 */
-    --body-pad-x: 24px;          /* 內容左右內距 */
-    --font: 14px;                /* 欄位文字大小 */
-    --label-font: 15px;          /* 標籤大小 */
-    --line: 1.5;                 /* 行高 */
-  }
-  
-  /* ==============================
-     MatDialog 外層（建議 panelClass: 'feedback-panel'）
-     ============================== */
-  .feedback-panel .mdc-dialog__surface {
-    padding: 0 !important;
-    border-radius: var(--hdr-radius) !important;
-    overflow: hidden !important;
-  }
-  
-  /* ==============================
-     卡片本體
-     ============================== */
-  .card {
-    width: 100%;
-    height: 100%;
-    max-width: none;
-    background: #f9f1f0; /* 奶茶面板 */
-    border-radius: var(--hdr-radius);
-    box-shadow: 0 20px 45px rgba(186, 155, 134, 0.35);
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
-  }
-  
-  /* ==============================
-     標題列（奶茶漸層）
-     ============================== */
-  .card__header {
-    height: var(--hdr-h);
-    padding: 0 var(--hdr-px);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: linear-gradient(90deg, var(--hdr-from) 0%, var(--hdr-to) 100%);
-    border-top-left-radius: var(--hdr-radius);
-    border-top-right-radius: var(--hdr-radius);
-  }
-  
-  .card__header-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  
-  .card__header-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 10px;
-    background: rgba(249, 241, 240, 0.3); /* 比原本純白更柔和一點 */
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .card__header-icon img {
-    width: 20px;
-    height: 20px;
-  }
-  
-  .card__title {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 800;
-    color: #f9f1f0;
-  }
-  
-/* 標題列右上角的關閉 X：改成跟打卡/排班一樣的圓形奶茶色 */
+:host {
+  --hdr-h: 56px;
+  --hdr-px: 20px;
+  --hdr-radius: 16px;
+
+  --hdr-from: #ba9b86;
+  --hdr-to:   #a88977;
+
+  --body-pad-y: 20px;
+  --body-pad-x: 24px;
+  --font: 14px;
+  --label-font: 15px;
+  --line: 1.5;
+}
+
+.feedback-panel .mdc-dialog__surface {
+  padding: 0 !important;
+  border-radius: var(--hdr-radius) !important;
+  overflow: hidden !important;
+}
+
+.card {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  background: #f9f1f0;
+  border-radius: var(--hdr-radius);
+  box-shadow: 0 20px 45px rgba(186, 155, 134, 0.35);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.card__header {
+  height: var(--hdr-h);
+  padding: 0 var(--hdr-px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(90deg, var(--hdr-from) 0%, var(--hdr-to) 100%);
+  border-top-left-radius: var(--hdr-radius);
+  border-top-right-radius: var(--hdr-radius);
+}
+
+.card__header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card__header-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: rgba(249, 241, 240, 0.3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card__header-icon img {
+  width: 20px;
+  height: 20px;
+}
+
+.card__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #f9f1f0;
+}
+
 .card__close {
   border: none;
   outline: none;
   padding: 0;
 
-  width: 30px;          /* 跟前面那顆一樣大小 */
+  width: 30px;
   height: 30px;
   border-radius: 999px;
 
-  background: #ba9b86;  /* 奶茶色底 */
-  color: #ffffff;       /* X 白色 */
+  background: #ba9b86;
+  color: #ffffff;
 
   display: inline-flex;
   align-items: center;
@@ -105,207 +91,179 @@
   transition: background .15s ease, box-shadow .15s ease, transform .05s ease;
 }
 
-/* hover 效果：顏色稍微變深一點 */
 .card__close:hover {
   background: #a88978;
   box-shadow: 0 3px 10px rgba(0,0,0,.22);
   transform: translateY(1px);
 }
 
-/* 把裡面的 mat-icon 放大一點，看起來跟其他 dialog 一樣 */
 .card__close mat-icon {
   font-size: 23px;
   width: 22px;
   height: 22px;
 }
 
-  /* ==============================
-     內容區（可滾動）
-     ============================== */
-  .card__body {
-    padding: var(--body-pad-y) var(--body-pad-x);
-    flex: 1 1 auto;
-    overflow-y: auto;
-    overflow-x: hidden; /* 避免 focus ring 觸發水平捲軸 */
-    box-sizing: border-box;
-  }
-  
-  /* ==============================
-     欄位與標籤
-     ============================== */
-  .form-row {
-    margin-bottom: 14px;
-  }
-  
-  .label {
-    display: block;
-    font-size: var(--label-font);
-    font-weight: 700;
-    color: #6b5447; /* 奶茶系標籤色 */
-    margin-bottom: 6px;
-  }
-  
-  .req {
-    color: #c17b5e; /* 必填星號 */
-  }
-  
-  /* ==============================
-     輸入框 / Textarea
-     ============================== */
-  .input,
-  .textarea {
-    display: block;
-    width: 100%;
-    max-width: 100%;
-    border: 2px solid #d9c4ba;     /* 奶茶邊框 */
-    border-radius: 10px;
-    padding: 8px 12px;
-    background: #ffffff;
-    outline: none;
-    font-size: var(--font);
-    line-height: var(--line);
-    box-sizing: border-box;
-    color: #4a3f37;                /* 主要文字色 */
-    transition: border-color 0.15s, box-shadow 0.15s, background 0.2s;
-  }
-  
-  .input {
-    height: 40px;
-    line-height: 22px;
-  }
-  
-  .textarea {
-    min-height: 150px;
-    resize: none;
-  }
-  
-  .input::placeholder,
-  .textarea::placeholder {
-    color: #b8a89d; /* 奶茶 placeholder */
-  }
-  
-  /* 聚焦 ring（外擴） */
-  .input:focus,
-  .textarea:focus {
-    border-color: #ba9b86;
-    box-shadow: 0 0 0 6px rgba(186, 155, 134, 0.16);
-  }
-  
-  /* 唯讀員工編號（灰咖背景） */
-  .input.display[readonly] {
-    background: #eae0db;
-    border-color: #d9c4ba;
-    color: #6b5447;
-    font-weight: 600;
-    cursor: default;
-  }
-  
-  /* 字數計數 */
-  .counter {
-    margin-top: 4px;
-    font-size: 11px;
-    color: #9a8579;
-  }
-  
-  /* ==============================
-     按鈕區共用間距（原排版保留）
-     ============================== */
+.card__body {
+  padding: var(--body-pad-y) var(--body-pad-x);
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.form-row {
+  margin-bottom: 14px;
+}
+
+.label {
+  display: block;
+  font-size: var(--label-font);
+  font-weight: 700;
+  color: #6b5447;
+  margin-bottom: 6px;
+}
+
+.req {
+  color: #c17b5e;
+}
+
+.input,
+.textarea {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  border: 2px solid #d9c4ba;
+  border-radius: 10px;
+  padding: 8px 12px;
+  background: #ffffff;
+  outline: none;
+  font-size: var(--font);
+  line-height: var(--line);
+  box-sizing: border-box;
+  color: #4a3f37;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.2s;
+}
+
+.input {
+  height: 40px;
+  line-height: 22px;
+}
+
+.textarea {
+  min-height: 150px;
+  resize: none;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: #b8a89d;
+}
+
+.input:focus,
+.textarea:focus {
+  border-color: #ba9b86;
+  box-shadow: 0 0 0 6px rgba(186, 155, 134, 0.16);
+}
+
+.input.display[readonly] {
+  background: #eae0db;
+  border-color: #d9c4ba;
+  color: #6b5447;
+  font-weight: 600;
+  cursor: default;
+}
+
+.counter {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #9a8579;
+}
+
+.card__btns {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.card__btns > .button {
+  width: auto;
+  min-width: 120px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 10px;
+}
+
+@media (max-width: 768px) {
   .card__btns {
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end; /* 靠右 */
-    align-items: center;
-    margin-top: 8px;
+    justify-content: stretch;
   }
-  
+
   .card__btns > .button {
-    width: auto;
-    min-width: 120px;
-    height: 36px;
-    padding: 0 16px;
-    border-radius: 10px;
+    flex: 1 1 0;
+    min-width: 0;
+    height: 40px;
   }
-  
-  /* 手機時：兩顆拉滿寬 */
-  @media (max-width: 768px) {
-    .card__btns {
-      justify-content: stretch;
-    }
-  
-    .card__btns > .button {
-      flex: 1 1 0;
-      min-width: 0;
-      height: 40px;
-    }
+}
+
+.button {
+  display: inline-flex;
+  width: 80px;
+  border: 2px solid #ba9b86;
+  color: #a88977;
+  text-transform: uppercase;
+  text-decoration: none;
+  letter-spacing: 1.5px;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.3s ease-in-out;
+  font-weight: 600;
+}
+
+.card__btns > .button:first-child {
+  background: #f9f1f0;
+}
+
+.card__btns > .button:last-child {
+  background: linear-gradient(135deg, #ba9b86 0%, #a88977 100%);
+  border-color: transparent;
+  color: #f9f1f0;
+}
+
+.card__btns > .button:last-child[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.card__btns > .button:last-child:not([disabled]):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(186, 155, 134, 0.4);
+}
+
+#arrow-hover {
+  width: 12px;
+  height: 12px;
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  opacity: 0;
+  transform: translateX(8px);
+  transition: all 0.25s cubic-bezier(.14, .59, 1, 1.01);
+}
+
+#button-1:hover #arrow-hover {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+@media (max-width: 768px) {
+  :host {
+    --body-pad-y: 16px;
+    --body-pad-x: 18px;
   }
-  
-  /* ==============================
-     按鈕樣式（共用 + 奶茶調色）
-     ============================== */
-  .button {
-    display: inline-flex;
-    width: 80px; /* 原排版寬度保留，實際會被 card__btns 覆蓋 */
-    border: 2px solid #ba9b86;
-    color: #a88977;
-    text-transform: uppercase;
-    text-decoration: none;
-    letter-spacing: 1.5px;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    cursor: pointer;
-    background: transparent;
-    transition: all 0.3s ease-in-out;
-    font-weight: 600;
-  }
-  
-  /* 取消：左邊那顆（保留 outline 風格） */
-  .card__btns > .button:first-child {
-    background: #f9f1f0;
-  }
-  
-  /* 送出：右邊那顆（奶茶漸層主按鈕） */
-  .card__btns > .button:last-child {
-    background: linear-gradient(135deg, #ba9b86 0%, #a88977 100%);
-    border-color: transparent;
-    color: #f9f1f0;
-  }
-  
-  /* 送出 disabled 狀態 */
-  .card__btns > .button:last-child[disabled] {
-    opacity: 0.6;
-    cursor: not-allowed;
-    box-shadow: none;
-  }
-  
-  /* 送出 hover 效果（只有沒 disabled 時） */
-  .card__btns > .button:last-child:not([disabled]):hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(186, 155, 134, 0.4);
-  }
-  
-  /* 小飛機 icon 動畫（沿用你原本的） */
-  #arrow-hover {
-    width: 12px;
-    height: 12px;
-    position: absolute;
-    right: 10px;
-    bottom: 8px;
-    opacity: 0;
-    transform: translateX(8px);
-    transition: all 0.25s cubic-bezier(.14, .59, 1, 1.01);
-  }
-  
-  #button-1:hover #arrow-hover {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  
-  /* 手機：縮小 padding */
-  @media (max-width: 768px) {
-    :host {
-      --body-pad-y: 16px;
-      --body-pad-x: 18px;
-    }
-  }
-  
+}
