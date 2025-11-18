@@ -44,6 +44,12 @@ body.cdk-global-scrollblock {
   padding: 0 !important;
 }
 
+/* 給預排班 dialog 用，把高度撐滿，蓋掉前面那條 auto */
+.cdk-overlay-pane.no-scroll.schedule-dialog-panel .all-flex {
+  min-height: 100% !important;
+}
+
+
 //讓dailog可以自動縮放
 .cdk-overlay-pane.no-scroll .all-flex {
   min-height: auto !important;

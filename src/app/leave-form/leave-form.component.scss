@@ -2,17 +2,17 @@
   display: flex;
   justify-content: center;
   padding: 30px;
-  background-color:  #f9f1f0;
+  background-color: #f9f1f0; // 奶茶底
   min-height: 100vh;
 
   .form-container {
     position: relative;
     width: 90%;
     max-width: 900px;
-    background: #fff;
+    background: #ffffff;
     padding: 30px;
     border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,.1);
+    box-shadow: 0 4px 12px rgba(186, 155, 134, 0.18); // 奶茶陰影
 
     /* 共用按鈕 */
     .btn {
@@ -21,38 +21,56 @@
       font-weight: 600;
       padding: 8px 18px;
       cursor: pointer;
-      transition: .2s ease-in-out;
+      transition: 0.2s ease-in-out;
     }
+
     .btn-submit {
-      background-color: #21467a;
-      color: #fff;
-      &:hover { background-color: #1a3861; }
+      background-color: #ba9b86; // 奶茶主色
+      color: #ffffff;
+
+      &:hover {
+        background-color: #a88977; // 稍深
+      }
     }
 
     .btn-add {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      
       line-height: 1;
-  
-      /* 方方的、有底色 */
-      background-color: #f1f5ff;          // 淺藍底
-      color: #1f2933;
-      border: 1px solid #d0ddff;
-      border-radius: 8px;                 // 不再是膠囊
-      padding: 8px 20px;
-      min-width: 140px;                   // 看起來比較像一塊「方形按鈕」
-  
+    
+      background-color: #ffffff;
+      color: #ba9b86;
+      border: 1px solid #ba9b86;
+      border-radius: 8px;
+    
       &:hover {
-        background-color: #e0e9ff;        // 滑過去變深一點
-        border-color: #becdfb;
+        background-color: #f9f1f0;
+        border-color: #a88977;
+      }
+    
+      span {
+        display: inline-flex;
+        align-items: center;
+        line-height: 1;
       }
     }
-  
+    
     .btn-add-icon {
-      font-size: 18px;
+      font-size: 19px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    
+      position: relative;
+      top: -1px;   
+   
     }
+    
+    
+    
 
     /* 頂部列 */
     .topbar {
@@ -67,9 +85,10 @@
         justify-self: center;
         margin: 0;
         text-align: center;
-        color: #2b4c7e;
+        color: #8d6f5c; // 奶茶標題色
         font-weight: 800;
       }
+
       > button {
         position: absolute;
         top: 40px;
@@ -88,79 +107,126 @@
         display: flex;
         flex-direction: column;
 
-        h3 { margin-bottom: 8px; color: #333; }
+        h3 {
+          margin-bottom: 8px;
+          color: #5a4a3f; // 標籤文字
+        }
+
         .form-control {
           padding: 8px;
           border-radius: 6px;
-          border: 1px solid #ccc;
+          border: 1px solid #e8dad3; // 奶茶邊框
+          background-color: #ffffff;
+          color: #5a4a3f;
+          font-size: 14px;
+        }
+
+        .form-control:disabled {
+          background-color: #f9f1f0; // 讀取時數用淡底
+          color: #9a8579;
         }
       }
     }
 
     /* 四班時刻表（顯示用） */
     .shift-badges {
-      //把每隔div變成一格一格
       display: grid;
-      //grid-template-columns把一格一格變成一排 repeat()重複建立欄 auto-fit自動決定要塞幾欄
-      //minmax(140px, 1fr))最低的寬是140px，最大寬可以撐到平均分配的比例（1fr）
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       gap: 10px;
       margin: 10px 0 18px;
       padding: 14px;
-      border: 1px solid #eef1f6;
+      border: 1px solid #e8dad3;
       border-radius: 10px;
-      background: #f5f5f5;
+      background: #fefbf9; // 淺奶茶區塊底
     }
+
     .shift-badge {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 13px; color: #334155;
-      background: #fff; border: 1px solid #e6ecf7;
-      border-radius: 8px; padding: 8px 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,.04);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #8d6f5c;
+      background: #ffffff;
+      border: 1px solid #e8dad3;
+      border-radius: 8px;
+      padding: 8px 12px;
+      box-shadow: 0 2px 6px rgba(186, 155, 134, 0.08);
     }
-    .shift-dot { width: 8px; height: 8px; border-radius: 50%; }
-    .shift-dot.night { background: #5e35b1; }
-    .shift-dot.morning { background: #ffb300; }
-    .shift-dot.afternoon { background: #00acc1; }
-    .shift-dot.evening { background: #8e24aa; }
+
+    .shift-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    /* 班別顏色維持原本邏輯（只改整體氛圍用） */
+    .shift-dot.night {
+      background: #5e35b1;
+    }
+    .shift-dot.morning {
+      background: #ffb300;
+    }
+    .shift-dot.afternoon {
+      background: #00acc1;
+    }
+    .shift-dot.evening {
+      background: #8e24aa;
+    }
 
     /* 上傳 */
     .upload-section {
       margin: 20px 0;
-      h3 { margin-bottom: 10px; }
+
+      h3 {
+        margin-bottom: 10px;
+        color: #8d6f5c;
+      }
 
       .upload-box {
         display: flex;
         justify-content: center;
         align-items: center;
-        border: 2px dashed #aaa;
+        border: 2px dashed #e8dad3; // 奶茶虛線
         border-radius: 10px;
         padding: 20px;
-        background: #fafafa;
+        background: #fefbf9;
         cursor: pointer;
-        transition: all .3s ease;
+        transition: all 0.3s ease;
 
-        &:hover { background: #f0f0f0; }
+        &:hover {
+          background: #f7ede6;
+        }
 
-        .folder-icon {   
-          width: 64px;      /* 依你想要的尺寸調整 */
+        .folder-icon {
+          width: 64px;
           height: 64px;
-          //把行內元素變成區塊元素
           display: block;
           margin: 0 auto 6px;
-          //調顏色深淺
-          opacity: .9;       
+          opacity: 0.9;
         }
-        .upload-text { color: #777;  }
+
+        .upload-text {
+          color: #8d6f5c;
+        }
 
         .preview-in-box {
           position: relative;
-          img { width: 150px; height: auto; border-radius: 8px; }
+
+          img {
+            width: 150px;
+            height: auto;
+            border-radius: 8px;
+          }
+
           .btn-remove-inbox {
             position: absolute;
-            top: -5px; right: -5px;
-            border: none; background: red; color: #fff;
-            font-size: 18px; border-radius: 50%; cursor: pointer;
+            top: -5px;
+            right: -5px;
+            border: none;
+            background: #e74c3c;
+            color: #fff;
+            font-size: 18px;
+            border-radius: 50%;
+            cursor: pointer;
           }
         }
       }
@@ -175,41 +241,22 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        h3 { color: #2b4c7e; }
-      }
 
-      // .btn-add {
-      //   display: inline-flex;          // icon + 文字並排
-      //   align-items: center;           // 垂直置中
-      //   gap: 3px;                      // icon 跟文字的距離
-      //   line-height: 1;
-    
-      //   background-color: #f3f4f6;     // 原本的淺灰
-      //   color: #111827;
-      //   border: 1px solid #e5e7eb;
-      //   padding: 8px 18px;
-      //   border-radius: 999px;          // 跟下面那兩顆一樣圓角感
-    
-      //   transition: background-color .15s ease;
-        
-      //   &:hover {
-      //     background-color: #e0e0e0;   // 滑鼠移上來變深一點
-      //   }
-      // }
-    
-      // .btn-add-icon {
-      //   font-size: 20px;               // icon 大小
-      // }
+        h3 {
+          color: #8d6f5c; // 區塊標題
+        }
+      }
 
       /* 既有四欄（其他頁面/情境用） */
       .period-header {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr 80px;
         font-weight: bold;
-        color: #555;
+        color: #8d6f5c;
         margin: 10px 0;
         align-items: center;
       }
+
       .time-segment-row {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr 80px;
@@ -222,11 +269,14 @@
           padding: 0 12px;
           height: var(--ctrl-h);
           min-height: var(--ctrl-h);
-          border: 1px solid #ccc;
+          border: 1px solid #e8dad3;
           border-radius: 6px;
           font-size: 14px;
           box-sizing: border-box;
+          background-color: #ffffff;
+          color: #5a4a3f;
         }
+
         .btn-danger {
           height: var(--ctrl-h);
           min-height: var(--ctrl-h);
@@ -239,40 +289,51 @@
           color: #fff;
           border: none;
           cursor: pointer;
-          &:hover { background-color: #c0392b; }
+
+          &:hover {
+            background-color: #c0392b;
+          }
         }
       }
 
       /* ===== 非整天：五欄等寬（日期/當日班別/開始/結束/刪除） ===== */
       .period-header--with-shift {
         display: grid;
-        grid-template-columns: repeat(5, 1fr); /* 等寬五欄 */
+        grid-template-columns: repeat(5, 1fr);
         gap: 12px;
-        font-weight: bold; color: #555;
-        margin: 10px 0; align-items: center;
+        font-weight: bold;
+        color: #8d6f5c;
+        margin: 10px 0;
+        align-items: center;
       }
+
       .time-segment-row--with-shift {
         display: grid;
-        grid-template-columns: repeat(5, 1fr); /* 等寬五欄 */
-        gap: 12px; align-items: center;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 12px;
+        align-items: center;
 
         .form-control {
           width: 100%;
           padding: 0 12px;
           height: var(--ctrl-h);
           min-height: var(--ctrl-h);
-          border: 1px solid #ccc;
+          border: 1px solid #e8dad3;
           border-radius: 6px;
           font-size: 14px;
           box-sizing: border-box;
+          background-color: #ffffff;
+          color: #5a4a3f;
         }
+
         /* 當日班別唯讀欄：超長省略 */
         input[readonly] {
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
-        /* 刪除鈕也與其他欄位同高同寬（填滿第5欄） */
+
+        /* 刪除鈕同高同寬（填滿第5欄） */
         .btn-danger {
           width: 100%;
           height: var(--ctrl-h);
@@ -285,7 +346,10 @@
           color: #fff;
           border: none;
           cursor: pointer;
-          &:hover { background-color: #c0392b; }
+
+          &:hover {
+            background-color: #c0392b;
+          }
         }
       }
 
@@ -306,26 +370,29 @@
       margin-top: 20px;
 
       .btn-cancel {
-        background-color: #c9c9c9;
-        color: #333;
-        &:hover { background-color: #b5b5b5; }
+        background-color: #e8dad3; // 奶茶取消鈕
+        color: #8d6f5c;
+
+        &:hover {
+          background-color: #dfcfc6;
+        }
       }
     }
   }
 }
 
-/* 卡片 */
+/* 卡片（每一段請假 row 的外框） */
 .period-box {
-  border: 1.5px solid #dcdcdc;
+  border: 1.5px solid #e8dad3;
   border-radius: 10px;
   padding: 15px;
   margin-bottom: 15px;
-  background-color: #fdfdfd;
-  box-shadow: 0 2px 6px rgba(0,0,0,.05);
-  transition: all .2s ease-in-out;
+  background-color: #ffffff;
+  box-shadow: 0 2px 6px rgba(186, 155, 134, 0.12);
+  transition: all 0.2s ease-in-out;
 
   &:hover {
-    background-color: #f7faff;
-    border-color: #a0b6d9;
+    background-color: #f9f1f0;
+    border-color: #d7b9a3;
   }
 }

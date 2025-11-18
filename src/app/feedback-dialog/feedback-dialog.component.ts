@@ -6,11 +6,12 @@ import { SuccessDialogComponent } from '../success-dialog/success-dialog.compone
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { HttpClient } from '@angular/common/http';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
+import { MatIconModule } from '@angular/material/icon';
 
 
 @Component({
   selector: 'app-feedback-dialog',
-  imports: [FormsModule, MatDialogModule],
+  imports: [FormsModule, MatDialogModule,MatIconModule],
   templateUrl: './feedback-dialog.component.html',
   styleUrl: './feedback-dialog.component.scss'
 })

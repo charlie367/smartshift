@@ -3,7 +3,8 @@
    ========================= */
 $sidebar-w: 220px; // Sidebar fixed width
 $sidebar-offset: 240px; // Content offset used in several blocks
-$header-offset: 75px; // Spacing to clear fixed top bar
+$header-offset: 65px; // Spacing to clear fixed top bar
+$content-gap: 20px;   // 你要的下面 20 gap
 $card-radius: 12px; // Card border radius
 $panel-radius: 16px; // Larger panel radius
 $shadow-1: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -18,11 +19,11 @@ $muted-bg: #f5f5f5;
 }
 
 %mt-header {
-  margin-top: $header-offset;
+  margin-top: $header-offset + $content-gap;
 }
 
 %mt-header-important {
-  margin-top: $header-offset !important;
+  margin-top: $header-offset + $content-gap !important;
 }
 
 /* =========================
@@ -97,6 +98,7 @@ $muted-bg: #f5f5f5;
     margin-bottom: 20px;
     gap: 20px;
     font-weight: bold;
+    color: #ba9b86;  
   }
 
   /* 週格：7 欄等寬 */
@@ -660,11 +662,29 @@ $muted-bg: #f5f5f5;
 }
 
 .month-header .arrow {
-  background: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
   border: none;
-  font-size: 20px;
   cursor: pointer;
   margin: 0 12px;
+
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.month-header .arrow:hover {
+  background-color: rgba(0, 0, 0, 0.06);  // 跟上面箭頭一樣灰色圈圈
+  transform: translateY(-1px);
+}
+
+.month-header .arrow:active {
+  background-color: rgba(0, 0, 0, 0.12);
+  transform: translateY(0);
 }
 
 .month-header .month-title {
@@ -673,6 +693,7 @@ $muted-bg: #f5f5f5;
   gap: 6px;
   color: #ba9b86;
 }
+
 
 .stats-row {
   display: flex;

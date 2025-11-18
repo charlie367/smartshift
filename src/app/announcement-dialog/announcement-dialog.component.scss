@@ -26,6 +26,19 @@
 }
 .notice-title { font-size: 28px; font-weight: bold; color: #3f51b5; margin: 0; }
 
+
+.notice-title {
+  display: flex;
+  align-items: center;
+  gap: 3px; // 圖示和文字之間的距離
+}
+
+.notice-title .notice-icon {
+  width: 35px;   // 你可以自己調大小
+  height: 35px;
+  object-fit: contain;
+}
+
 /* 分頁膠囊按鈕（新增） */
 .tabs { display: flex; gap: 12px; justify-content: center; margin: 6px 0 10px; }
 .tab-btn {

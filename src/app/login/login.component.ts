@@ -185,7 +185,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy{
         const HOLD_SUCCESS_MS = 900; // 成功字樣停留多久再切下一步
         const startedAt = Date.now();
 
-        this.statusMsg = '正在新增密碼...';
+        this.statusMsg = '正在新增密碼 . . .';
 
         this.http.post('http://localhost:8080/head/changePassword', {
           id: this.form.employeeId,

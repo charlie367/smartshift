@@ -5,13 +5,13 @@
       <div class="lr-wrap__head">
         <div class="page-head">
           <div class="head-left">
-            <span class="material-symbols-rounded">calendar_month</span>
+            <mat-icon>calendar_month</mat-icon>
             <div>
               <div class="head-title">請假申請查看</div>
             </div>
           </div>
           <button class="btn-back" routerLink="/leave" type="button">
-            <span class="material-symbols-rounded">arrow_back</span>
+            <mat-icon>arrow_back</mat-icon>
             返回
           </button>
         </div>
@@ -101,7 +101,9 @@
               @if (filteredRows.length === 0) {
                 <tr>
                   <td colspan="7" class="empty">
-                    <div class="empty-ic">📄</div>
+                    <div class="empty-ic">
+                      <img src="/upload.png" alt="查無資料" />
+                    </div>
                     <div>查無資料</div>
                   </td>
                 </tr>

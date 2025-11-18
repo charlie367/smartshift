@@ -486,7 +486,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     this.dialog.open(PreScheduleDialogComponent, {
       width: '900px',
       height: '700px',
-      panelClass: 'no-scroll',
+      panelClass: ['no-scroll','schedule-dialog-panel'],
       maxWidth: '100vw',
       data: { employeeId }
     });

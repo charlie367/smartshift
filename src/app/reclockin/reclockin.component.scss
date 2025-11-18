@@ -11,13 +11,16 @@
 :host{display:block;width:100%;height:100%}
 .reclockin-root{
   position:relative;width:100%;height:100%;box-sizing:border-box;
-  background:#f5f6f8;overflow:hidden;  --band-w: clamp(440px, 92%, 520px);
+  background:linear-gradient(135deg,#f9f1f0 0%,#e8d5cc 100%);
+  overflow:hidden;  --band-w: clamp(440px, 92%, 520px);
 }
 
 /* ========== 白卡（Grid 控距 + 統一寬度） ========== */
-.reclockin-root{ --band-w: clamp(440px, 92%, 520px); } /* 520px 上限最貼近範例 */
+.reclockin-root{ --band-w: clamp(440px, 92%, 520px); }
 .attendance-container{
-  height:100%;padding:22px 24px;background:#fff;border-radius:18px;
+  height:100%;padding:22px 24px;
+  background:#f9f1f0;
+  border-radius:18px;
   box-shadow:0 6px 20px rgba(0,0,0,.06);box-sizing:border-box;
   display:grid;grid-auto-rows:max-content;row-gap:20px;align-content:start;
 }
@@ -28,39 +31,43 @@
 /* ========== 標題 ========== */
 .header{
   width: var(--band-w);
-  margin: 0 auto 10px;   /* 置中 + 與時間卡留距 */
+  margin: 0 auto 10px;
   text-align: center;
 }
 .header .company-name{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;              /* emoji 與文字間距 */
+  gap: 8px;
   font-size: 20px;
   font-weight: 800;
   line-height: 1.25;
-  margin: 0;             /* 清掉可能的預設外距 */
+  margin: 0;
+  color:#ba9b86;
 }
 .header .welcome-text{
   margin: 4px 0 0;
-  color: #8b97a6;
+  color: rgba(186,155,134,.8);
 }
 
-/* ========== 時間卡（更大字、更淡底） ========== */
+/* ========== 時間卡 ========== */
 .time-display{
-  background:#e5e5e5;border:1px solid #e6eaf2;border-radius:16px;
+  background:linear-gradient(135deg,#ba9b86 0%,#a88977 100%);
+  border:1px solid rgba(255,255,255,.35);
+  border-radius:16px;
   padding:20px 18px;
 }
 .current-time{
-  font-size:48px;font-weight:800;letter-spacing:1px;color:#111827;
+  font-size:48px;font-weight:800;letter-spacing:1px;
+  color:#ffffff;
   display: flex; justify-content: center; align-items: center;
 }
 .current-date{
-  margin-top:6px;color:#6b7280;
+  margin-top:6px;color:rgba(255,255,255,.9);
   display: flex; justify-content: center; align-items: center;
 }
 
-/* ========== 按鈕列（更大顆、更像膠囊） ========== */
+/* ========== 按鈕列 ========== */
 .button-container{
   display:flex;justify-content:center;gap:18px;flex-wrap:wrap;padding-top:2px;align-items: center;
 }
@@ -71,31 +78,43 @@
   transition:transform .06s ease, box-shadow .2s ease;
   display:inline-flex;align-items:center;justify-content:center;
 }
-.clock-in-btn {background:linear-gradient(135deg,#23c061,#10a34f)}
-.clock-out-btn{background:linear-gradient(135deg,#ff703e,#ff7f2e)}
+/* claude 那組色 */
+.clock-in-btn {background:linear-gradient(135deg,#8fb88f 0%,#7da77d 100%)}
+.clock-out-btn{background:linear-gradient(135deg,#f4b8a0 0%,#eba589 100%)}
 .button-container button:hover{transform:translateY(-1px)}
 .button-container button:disabled{opacity:.7;cursor:not-allowed}
 
 /* ========== 今日打卡記錄 ========== */
 .attendance-record{
-  margin:0!important;padding:18px;border-radius:16px;border:1px solid #e7ebf3;background:#e5e5e5;text-align:left;
+  margin:0!important;padding:18px;border-radius:16px;
+  border:1px solid #ddc7bc;
+  background:#ebe0db;
+  text-align:left;
 }
 .attendance-record h3{
-  margin:0 0 12px;font-size:16px;font-weight:700;text-align:center;color:#111827;
+  margin:0 0 12px;font-size:16px;font-weight:700;text-align:center;
+  color:#8b6f5e;
 }
 .record-item{
   display:flex;padding:12px 14px;margin:10px 0;border-radius:12px;
-  background:#f8fafc;border:1px solid #eef0f5;
+  background:#ffffff;border:1px solid #e3d4cc;
 }
-.record-label{color:#9aa3af;min-width:96px}
-.record-time{font-weight:700;color:#111827}
+.record-label{
+  color:#ba9b86;
+  min-width:96px;
+}
+.record-time{
+  font-weight:700;
+  color:#2c2c2c;
+}
 .work-duration-card{text-align:center;margin-top:12px}
 .duration-chip{
   display:inline-block;padding:12px 20px;border-radius:12px;color:#fff;font-weight:800;letter-spacing:.5px;
-  background:linear-gradient(135deg,#2a66ff,#6d2bff);box-shadow:inset 0 0 0 1px rgba(255,255,255,.15);
+  background:linear-gradient(135deg,#6b7fd7 0%,#5a6bc5 100%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.15);
 }
 
-/* ========== 內部彈窗（限制在 Dialog 內） ========== */
+/* ========== 內部彈窗 ========== */
 .modal-overlay{
   position:absolute;inset:0;background:rgba(0,0,0,.45);
   display:flex;align-items:center;justify-content:center;z-index:10;
@@ -107,177 +126,161 @@
 
 /* 成功提示 */
 .success-icon{font-size:64px;line-height:1;display:block;margin-bottom:12px}
-.modal-title{font-size:24px;font-weight:800;margin:6px 0 14px}
-/* ✅ 打卡成功彈窗優化 */
+.modal-title{
+  font-size:24px;font-weight:800;margin:6px 0 14px;
+  color:#6b5548;
+}
+/* 打卡成功彈窗文字 */
 .modal-content {
   text-align: center;
   font-weight: bold;
   line-height: 1.4;
 }
-
 .modal-content p {
-  margin: 4px 0; /* 縮小上下距 */
+  margin: 4px 0;
   font-size: 15px;
   font-weight: bold;
   color: #444;
 }
-
-.modal-content p:first-child {
-  margin-top: 6px;
-}
-
-.modal-content p:last-child {
-  margin-bottom: 6px;
-}
-
-.modal-content div {
-  margin: 4px 0; /* 星星與文字間縮小距離 */
-}
-
-.modal-content b {
-  color: #000;
-}
-
+.modal-content p:first-child { margin-top: 6px; }
+.modal-content p:last-child { margin-bottom: 6px; }
+.modal-content div { margin: 4px 0; }
+.modal-content b { color: #000; }
 .success-icon {
   font-weight: bold;
   font-size: 56px;
-  margin-bottom: 8px; /* 上方圖示與標題更靠近 */
+  margin-bottom: 8px;
 }
-
 .modal-title {
   font-weight: bold;
   font-size: 20px;
-  margin-bottom: 8px; /* 標題下方距離縮短 */
+  margin-bottom: 8px;
 }
 
-.close-btn,.cancel-btn,.confirm-btn{border:0;border-radius:999px;padding:10px 22px;font-weight:800;cursor:pointer}
-.close-btn,.cancel-btn{background:#9aa3ae;color:#fff}
-.confirm-btn{background:#1976d2;color:#fff}
+.close-btn,.cancel-btn,.confirm-btn{
+  border:0;border-radius:999px;padding:10px 22px;font-weight:800;cursor:pointer;
+}
+/* 取消 = 淺咖啡、確定 = 咖啡漸層 */
+.close-btn,.cancel-btn{
+  background:#c9b6aa;
+  color:#fff;
+}
+.confirm-btn{
+  background:linear-gradient(135deg,#ba9b86 0%,#a88978 100%);
+  color:#fff;
+}
 
 /* ========== 心情評分 Dialog ========== */
 .mood-modal {
-background:#fff;
-border-radius:20px;
-padding:28px 28px 22px;
-width:min(520px,92%);
-height: 350px; /* 固定高度，避免內容彈動 */
-text-align:center;
-box-shadow:0 18px 48px rgba(0,0,0,.18);
+  background:#fff;
+  border-radius:20px;
+  padding:28px 28px 22px;
+  width:min(520px,92%);
+  height: 350px;
+  text-align:center;
+  box-shadow:0 18px 48px rgba(0,0,0,.18);
 }
 .mood-header .mood-icon {
-font-size: 64px;   /* 放大 */
-margin-bottom: 10px;
+  font-size: 64px;
+  margin-bottom: 10px;
 }
 .mood-title {
-margin: 8px 0 10px;
-font-size: 26px;   /* 放大 */
-font-weight: 900;
+  margin: 8px 0 10px;
+  font-size: 26px;
+  font-weight: 900;
+  color:#6b5548;
 }
 .mood-subtitle {
-margin: 0 0 12px;
-font-size: 18px;   /* 放大 */
-color: #64748b;
+  margin: 0 0 12px;
+  font-size: 18px;
+  color: #8b7465;
 }
 
 /* 星星 */
 .star-rating {
-display:flex;
-justify-content:center;
-gap:10px;
-margin:10px 0;
-flex-wrap:wrap;
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin:10px 0;
+  flex-wrap:wrap;
 }
 .star-button {
-background:transparent;
-border:0;
-cursor:pointer;
-padding:6px;
+  background:transparent;
+  border:0;
+  cursor:pointer;
+  padding:6px;
 }
-.star-icon {
-color:#d1d5db;
-}
-.star-icon.star-filled {
-color:#ffbf00;
-}
+.star-icon { color:#d1d5db; }
+.star-icon.star-filled { color:#ffbf00; }
 
-/* 評語固定高度，不會彈跳 */
+/* 評語固定高度 */
 .mood-description {
-min-height: 28px;  /* 保留空間 */
-margin: 12px 0;
-text-align: center;
+  min-height: 28px;
+  margin: 12px 0;
+  text-align: center;
 }
 .mood-text {
-font-size: 16px;
-font-weight: bold;
-line-height: 28px;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 28px;
 }
 
 /* 按鈕統一樣式 */
 .mood-buttons {
-display: flex;
-justify-content: center;
-gap: 16px;
-margin-top: 16px;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
 }
 .mood-btn {
-flex: 1;
-min-width: 120px;
-padding: 12px 0;
-border: none;
-border-radius: 999px;
-font-size: 15px;
-font-weight: 800;
-cursor: pointer;
-transition: background 0.2s;
-color: #fff;
+  flex: 1;
+  min-width: 120px;
+  padding: 12px 0;
+  border: none;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.2s;
+  color: #fff;
 }
-.cancel-btn {
-background: #9aa3ae;
-}
-.cancel-btn:hover {
-background: #7d7d7d;
-}
-.confirm-btn {
-background: #1976d2;
-}
-.confirm-btn:hover {
-background: #125ca1;
-}
-////////
+.cancel-btn { background: #c9b6aa; }
+.cancel-btn:hover { background: #b89e8d; }
+.confirm-btn { background: linear-gradient(135deg,#ba9b86 0%,#a88978 100%); }
+.confirm-btn:hover { background: linear-gradient(135deg,#b18f7b 0%,#9f7e6c 100%); }
+
+/* ========== dialog-header 區塊 ========== */
 .dialog-header {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 5px;
+  right: 15px;
 }
 
 .dialog-header button {
-  border: none;         /* 移除邊框 */
-  outline: none;        /* 移除點擊時的藍色外框 */
-  box-shadow: none;     /* 移除陰影 */
-  background: transparent; /* 背景透明 */
+  border: none;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
   cursor: pointer;
-  padding: 0;           /* 移除額外內距 */
+  padding: 0;
 }
 
 .dialog-header .mat-icon {
-  font-size: 48px;  /* 調整大小 (預設 24px) */
+  font-size: 48px;
   width: 50px;
   height: 50px;
-  color: #555;      /* 預設顏色 */
+  color: #ba9b86;
 }
 
 .dialog-header .mat-icon:hover {
-  color: #d32f2f;   /* hover 時變紅色 */
+  color: #a88978;
 }
-///
-/* 你原本這段保持不動 */
-/* 讓按鈕永遠是深藍底 + 白字，避免被其他樣式覆蓋 */
 
-
+/* 補打卡申請小按鈕：只改配色，不改位置尺寸 */
 .dialog-header .makeup-solid-btn {
-  position: absolute; /* 新增 */
-  top: 20px;             /* 新增：你可自行調整 */
-  right: 68px;   
+  position: absolute;
+  top: 20px;
+  right: 68px;
   appearance: none;
   display: inline-flex;
   align-items: center;
@@ -286,10 +289,10 @@ background: #125ca1;
   padding: 6px 14px;
   height: 32px;
   border-radius: 12px;
-  border: 1px solid #17365f;
+  border: 1px solid #b9907c;
 
-  background: #1f3f73 !important;   /* 強制深藍底 */
-  color: #fff !important;            /* 強制白字 */
+  background: linear-gradient(135deg,#ba9b86 0%,#a88978 100%) !important;
+  color: #ffffff !important;
 
   font-size: 14px;
   font-weight: 700;
@@ -300,18 +303,26 @@ background: #125ca1;
   transition: background .15s, border-color .15s, box-shadow .15s, transform .02s;
 }
 
-/* hover/active/焦點狀態 */
 .dialog-header .makeup-solid-btn:hover {
-  background: #224a8f !important;
-  border-color: #1b447c;
+  background: linear-gradient(135deg,#b18f7b 0%,#9f7e6c 100%) !important;
+  border-color: #b18f7b;
   box-shadow: 0 3px 6px rgba(0,0,0,.16);
 }
 .dialog-header .makeup-solid-btn:active {
-  background: #173b6c !important;
+  background: linear-gradient(135deg,#a27b67 0%,#8f6b59 100%) !important;
   transform: translateY(1px);
 }
-/* 取消瀏覽器預設 outline，只保留柔和聚焦圈（避免一進來就看到巨大藍圈） */
 .dialog-header .makeup-solid-btn:focus { outline: none; }
 .dialog-header .makeup-solid-btn:focus-visible {
-  box-shadow: 0 0 0 3px rgba(59,130,246,.28);
+  box-shadow: 0 0 0 3px rgba(186,155,134,.3);
+}
+/* 把這顆 X 的灰色 hover / ripple 拿掉 */
+.dialog-header .mat-mdc-button-persistent-ripple::before,
+.dialog-header .mat-mdc-button-persistent-ripple::after {
+  background-color: transparent !important;
+}
+
+/* 順便把 icon-button 的背景也關掉一次（保險） */
+.dialog-header .mat-mdc-icon-button .mdc-icon-button {
+  background-color: transparent !important;
 }

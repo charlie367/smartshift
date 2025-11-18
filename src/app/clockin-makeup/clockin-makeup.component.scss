@@ -1,4 +1,9 @@
 /* ========== 全域基底（僅限此元件樹） ========== */
+/* 放在這個 dialog 的 .scss 最上面就可以 */
+// ::ng-deep .mat-mdc-dialog-surface {
+//   height: 97% !important;
+// }
+
 .makeup-root,
 .makeup-root *,
 .makeup-root *::before,
@@ -6,7 +11,8 @@
 
 /* 外框 */
 .makeup-root {
-  background: #fff;
+  /* 原本 #fff → 改成淡粉米色底 */
+  background: #f9f1f0;
   border-radius: 16px;
   overflow: hidden;
   max-width: 760px;
@@ -17,7 +23,8 @@
 .makeup-header{
   display: flex; align-items: center; justify-content: space-between;
   padding: 14px 20px;
-  background: linear-gradient(90deg, #2563eb, #4f46e5);
+  /* 藍色改成咖啡色漸層 */
+  background: linear-gradient(to right, #ba9b86, #a88978);
   color: #fff;
 }
 .title{ margin: 0; font-size: 20px; font-weight: 700; letter-spacing: .5px; }
@@ -31,7 +38,11 @@
 .icon-btn:active{ transform: translateY(1px); }
 
 /* Body */
-.makeup-body{ padding: 16px 24px 24px 24px; }
+.makeup-body{
+  padding: 16px 24px 24px 24px;
+  /* 內容區也是淡粉底，跟 React 那張一樣 */
+  background: #f9f1f0;
+}
 .scroll-body{ max-height: min(70vh, 560px); overflow-y: auto; padding-bottom: 12px; }
 .form-item{ margin-bottom: 16px; }
 
@@ -43,19 +54,29 @@
 .label{
   display: flex; align-items: center; gap: 8px;
   min-height: 28px; margin-bottom: 8px;
-  color: #374151; font-weight: 600; font-size: 16px; white-space: nowrap;
+  /* 深咖啡色文字 */
+  color: #6b5548; font-weight: 600; font-size: 16px; white-space: nowrap;
 }
-.label-ic { display:inline-block; line-height:1; font-size: 20px; vertical-align: middle; }
+.label-ic { display:inline-block; line-height:1; font-size: 20px; vertical-align: middle; color: #ba9b86; }
 .req{ color: #ef4444; margin-left: 4px; }
 
 /* 表單控制 */
 .input, .textarea{
-  width: 100%; border: 1px solid #d1d5db; border-radius: 10px;
-  padding: 10px 12px; outline: none; background: #fff; color: #111827;
+  width: 100%;
+  /* 灰色邊改成帶點咖啡的米色 */
+  border: 1px solid #d4c4bb; border-radius: 10px;
+  padding: 10px 12px; outline: none;
+  background: #fff;
+  /* 文字改成咖啡色系 */
+  color: #6b5548;
   transition: box-shadow .2s, border-color .2s, background .2s;  resize: none !important;  
 }
-.input::placeholder, .textarea::placeholder{ color: #9ca3af; }
-.input:focus, .textarea:focus{ border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(59,130,246,.20); }
+.input::placeholder, .textarea::placeholder{ color: #b39a8d; }
+/* Focus 藍色高亮改成咖啡色高亮 */
+.input:focus, .textarea:focus{
+  border-color: #ba9b86;
+  box-shadow: 0 0 0 2px rgba(186, 155, 134, .25);
+}
 
 /* 錯誤樣式 */
 .form-item.invalid .input,
@@ -67,27 +88,41 @@
 
 /* 上傳 */
 .uploader{
-  width: 100%; border: 2px dashed #d1d5db; border-radius: 12px;
-  padding: 20px; text-align: center; cursor: pointer; background: #fff;
+  width: 100%;
+  /* 邊框改成咖啡米色 */
+  border: 2px dashed #d4c4bb; border-radius: 12px;
+  padding: 20px; text-align: center; cursor: pointer;
+  background: #fff;
   transition: border-color .2s, background .2s;
 }
-.uploader:hover{ border-color: #60a5fa; background: #fafafa; }
-.uploader.dragover{ border-color: #2563eb; background: #eff6ff; }
+/* Hover / dragover 都走咖啡色調 */
+.uploader:hover{
+  border-color: #ba9b86;
+  background: #faf7f6;
+}
+.uploader.dragover{
+  border-color: #ba9b86;
+  background: #f2e7e2;
+}
 .hidden{ display: none; }
 .preview-img{ max-height: 200px; width: auto; border-radius: 10px; border: 1px solid #e5e7eb; display: block; margin: 0 auto 8px; }
-.file-name{ color: #059669; font-weight: 600; font-size: 14px; margin: 4px 0; }
-.hint{ color: #6b7280; font-size: 12px; }
-.file-ic{ font-size: 40px; color: #10b981; display: block; margin: 0 auto 6px; }
-.upload-ic{ font-size: 40px; color: #9ca3af; display: block; margin: 0 auto 6px; }
-.empty-text{ color: #374151; }
+/* 檔名顏色改成咖啡色，不用綠色 */
+.file-name{ color: #6b5548; font-weight: 600; font-size: 14px; margin: 4px 0; }
+.hint{ color: #8b7465; font-size: 12px; }
+/* 檔案 icon 也用咖啡色 */
+.file-ic{ font-size: 40px; color: #ba9b86; display: block; margin: 0 auto 6px; }
+.upload-ic{ font-size: 40px; color: #b39a8d; display: block; margin: 0 auto 6px; }
+.empty-text{ color: #6b5548; }
 
 /* 小按鈕（一般用途） */
 .mini-btn{
   margin-top: 8px; display: inline-flex; align-items: center; gap: 4px;
-  padding: 4px 8px; border-radius: 8px; border: 1px solid #e5e7eb;
+  padding: 4px 8px; border-radius: 8px;
+  border: 1px solid #d4c4bb;
   background: #fff; cursor: pointer; font-size: 12px;
+  color: #6b5548;
 }
-.mini-btn:hover{ background: #f9fafb; }
+.mini-btn:hover{ background: #f9f1f0; }
 
 /* 兩欄網格（列對齊頂端） */
 .grid-2{
@@ -99,41 +134,61 @@
   display: flex; align-items: center; justify-content: space-between;
   margin: 8px 0 6px;
 }
-.head-left{ display: inline-flex; align-items: center; gap: 6px; color: #374151; font-weight: 700; }
+.head-left{ display: inline-flex; align-items: center; gap: 6px; color: #6b5548; font-weight: 700; }
 .head-text{ font-size: 14px; }
 .row-x{
-  border: 1px solid #e5e7eb; background: #fff; border-radius: 999px;
+  border: 1px solid #d4c4bb; background: #fff; border-radius: 999px;
   width: 30px; height: 30px; cursor: pointer; font-weight: 700;
 }
-.row-x:hover{ background: #f3f4f6; }
+.row-x:hover{ background: #f5ebe6; }
 
 /* 24h：隱藏 WebKit 的 AM/PM 欄位 */
 .input.h24::-webkit-datetime-edit-ampm-field{ display: none; }
 .input.h24::-webkit-calendar-picker-indicator{ cursor: pointer; }
 
-/* 星等 */
+/* 星等（維持原本黃色） */
 .stars{ display: flex; align-items: center; gap: 8px; }
 .star-btn{ border: 0; background: transparent; cursor: pointer; padding: 2px; }
 .star{ font-size: 28px; color: #d1d5db; transition: transform .1s, color .15s; }
 .star.filled{ color: #f59e0b; }
 .star-btn:hover .star{ transform: scale(1.08); }
-.rating-text{ color: #6b7280; font-weight: 600; }
+.rating-text{ color: #8b7465; font-weight: 600; }
 
 /* Footer */
 .btn-row{ display: flex; gap: 12px; padding-top: 8px; }
 .sticky-footer{
-  position: sticky; bottom: 0; background: #fff;
-  padding: 12px 24px 20px 24px; box-shadow: 0 -6px 12px -8px rgba(0,0,0,.12);
+  position: sticky; bottom: 0;
+  /* Footer 白底＋淡咖啡上邊線，跟 React 一樣 */
+  background: #ffffff;
+  padding: 12px 24px 20px 24px;
+  box-shadow: 0 -6px 12px -8px rgba(0,0,0,.12);
+  border-top: 1px solid #e8ddd9;
 }
 .btn{
   flex: 1; height: 40px; padding: 10px 12px; border-radius: 10px;
   font-weight: 600; border: 1px solid transparent; cursor: pointer;
   transition: background .15s, color .15s, border-color .15s, box-shadow .15s, transform .02s;
 }
-.btn.ghost{ background: #fff; border-color: #d1d5db; color: #374151; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
-.btn.ghost:hover{ background: #f9fafb; }
-.btn.primary{ background: #2563eb; color: #fff; border-color: #1f4ed8; box-shadow: 0 1px 2px rgba(0,0,0,.06); }
-.btn.primary:hover{ background: #1d4ed8; }
+
+/* 左邊「清除」按鈕：白底＋咖啡字＋米色邊 */
+.btn.ghost{
+  background: #ffffff;
+  border-color: #d4c4bb;
+  color: #6b5548;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+.btn.ghost:hover{ background: #f9f1f0; }
+
+/* 右邊「送出申請」按鈕：咖啡漸層＋白字 */
+.btn.primary{
+  background: linear-gradient(to right, #ba9b86, #a88978);
+  color: #ffffff;
+  border-color: #a88978;
+  box-shadow: 0 1px 2px rgba(0,0,0,.06);
+}
+.btn.primary:hover{
+  background: linear-gradient(to right, #b18f7b, #9f7e6c);
+}
 .btn.primary:active{ transform: translateY(1px); }
 .btn[disabled]{ opacity: .6; cursor: not-allowed; }
 .spinner{ display: inline-block; width: 16px; height: 16px; border: 2px solid #fff; border-right-color: transparent; border-radius: 50%; margin-right: 6px; animation: spin .7s linear infinite; }
@@ -153,10 +208,13 @@
 .inline-x{
   position: absolute; top: 50%; right: 8px; transform: translateY(-50%);
   width: 28px; height: 28px; padding: 0;
-  border-radius: 999px; border: 1px solid #000; background: #fff;
+  border-radius: 999px;
+  /* 邊框改成米色咖啡 */
+  border: 1px solid #d4c4bb;
+  background: #fff;
   display: flex; align-items: center; justify-content: center; cursor: pointer;
 }
-.inline-x:hover { background: #f3f4f6; }
+.inline-x:hover { background: #f5ebe6; }
 .inline-x mat-icon{ display: block; font-size: 18px; line-height: 1; width: 18px; height: 18px; }
 
 /* === 統一輸入框高度，避免左右欄高低不齊 === */
@@ -198,9 +256,10 @@
   border-radius: 9999px;
   border: 1px solid #d0d7de; background: #fff;
   cursor: pointer; line-height: 1.2; white-space: nowrap;
+  color: #6b5548;
 }
 .add-slot mat-icon{ font-size: 18px; width: 18px; height: 18px; }
-.add-slot:hover{ background: #f6f8fa; border-color: #c3ccd5; }
+.add-slot:hover{ background: #f9f1f0; border-color: #c3ccd5; }
 
 /* 窄螢幕再收一點空間 */
 @media (max-width: 640px){
@@ -226,5 +285,3 @@
   width: 20px;
   height: 20px;
 }
-
-

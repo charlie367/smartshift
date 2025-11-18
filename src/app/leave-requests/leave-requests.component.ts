@@ -6,6 +6,7 @@ import { RouterLink } from '@angular/router';
 import { catchError, forkJoin, map, of } from 'rxjs';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ErrorDialogComponent } from '../error-dialog/error-dialog.component';
+import { MatIconModule } from '@angular/material/icon';
 //型別定義（只是規則，沒有值）
 type LeaveStatus = 'approved' | 'rejected' | 'pending';
 
@@ -41,7 +42,7 @@ interface Row extends GetApplicationAndNameDto {
 @Component({
   selector: 'app-leave-requests',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule, RouterLink, MatDialogModule],
+  imports: [CommonModule, FormsModule, HttpClientModule, RouterLink, MatDialogModule,MatIconModule],
   templateUrl: './leave-requests.component.html',
   styleUrls: ['./leave-requests.component.scss'],
 })
